@@ -1,0 +1,502 @@
+[
+  {
+    "date": "2025-11-01",
+    "quote": "Hope is a good thing, maybe the best of things.",
+    "movie": "The Shawshank Redemption",
+    "year": 1994,
+    "triviaQuestion": "Which real prison was used for Shawshank’s exterior/interiors?",
+    "choices": ["Ohio State Reformatory","Joliet Correctional Center","Eastern State Penitentiary","Sing Sing Correctional Facility"],
+    "correctIndex": 0,
+    "funFact": "The oak tree featured in Red’s final monologue became a real-life tourist landmark in Ohio."
+  },
+  {
+    "date": "2025-11-02",
+    "quote": "Why so serious?",
+    "movie": "The Dark Knight",
+    "year": 2008,
+    "triviaQuestion": "Which 70mm-format camera style helped define its IMAX sequences?",
+    "choices": ["Large-format IMAX MSM 9802","Arriflex 435 ES","Panavision Panaflex Gold II","Aaton 35-III"],
+    "correctIndex": 0,
+    "funFact": "The hospital demolition was a real building implosion captured in a single take."
+  },
+  {
+    "date": "2025-11-03",
+    "quote": "May the Force be with you.",
+    "movie": "Star Wars: A New Hope",
+    "year": 1977,
+    "triviaQuestion": "Which London-area studio hosted principal photography in 1976?",
+    "choices": ["Elstree Studios","Pinewood Studios","Shepperton Studios","Leavesden Studios"],
+    "correctIndex": 0,
+    "funFact": "Luke’s surname was originally written as “Starkiller” in early drafts."
+  },
+  {
+    "date": "2025-11-04",
+    "quote": "Life finds a way.",
+    "movie": "Jurassic Park",
+    "year": 1993,
+    "triviaQuestion": "What sound combo famously created the T. rex roar?",
+    "choices": ["Baby elephant + tiger + alligator","Lion + camel + walrus","Bear + whale + ostrich","Hippo + leopard + seal"],
+    "correctIndex": 0,
+    "funFact": "The iconic water-ripple on the cup was made by plucking a guitar string attached under the dashboard."
+  },
+  {
+    "date": "2025-11-05",
+    "quote": "I'm king of the world!",
+    "movie": "Titanic",
+    "year": 1997,
+    "triviaQuestion": "Which ocean-set tank facility was built for the production?",
+    "choices": ["Fox Baja Studios (Rosarito)","Pinewood Underwater Stage","Malta Film Water Tanks","Stan Winston Water Stage"],
+    "correctIndex": 0,
+    "funFact": "Huge near–full-scale ship sets were constructed, including a 90% exterior of the starboard side."
+  },
+  {
+    "date": "2025-11-06",
+    "quote": "Just keep swimming.",
+    "movie": "Finding Nemo",
+    "year": 2003,
+    "triviaQuestion": "What species is Dory in the film’s taxonomy?",
+    "choices": ["Palette surgeonfish (Paracanthurus hepatus)","Royal blue tang (Acanthurus coeruleus)","Blue damselfish (Chrysiptera cyanea)","Blue chromis (Chromis cyanea)"],
+    "correctIndex": 0,
+    "funFact": "Ellen DeGeneres improvised many of Dory’s most memorable lines."
+  },
+  {
+    "date": "2025-11-07",
+    "quote": "I'm gonna make him an offer he can't refuse.",
+    "movie": "The Godfather",
+    "year": 1972,
+    "triviaQuestion": "Which cinematographer’s ‘chiaroscuro’ lighting defines its look?",
+    "choices": ["Gordon Willis","Vittorio Storaro","Conrad Hall","Néstor Almendros"],
+    "correctIndex": 0,
+    "funFact": "The cat on Vito Corleone’s lap in the opening scene was a stray found on set."
+  },
+  {
+    "date": "2025-11-08",
+    "quote": "You have to see the matrix for yourself.",
+    "movie": "The Matrix",
+    "year": 1999,
+    "triviaQuestion": "Which camera technique popularized its ‘bullet time’ effect?",
+    "choices": ["Multi-camera array interpolation","Overcranked VistaVision plates","Motion control rotoscope","Slit-scan time displacement"],
+    "correctIndex": 0,
+    "funFact": "The Matrix’s signature green code was inspired by characters from a sushi cookbook."
+  },
+  {
+    "date": "2025-11-09",
+    "quote": "There's no place like home.",
+    "movie": "The Wizard of Oz",
+    "year": 1939,
+    "triviaQuestion": "What material were the original ruby slippers sequins made from?",
+    "choices": ["Celluloid-coated gelatin","Dyed glass beads","Aluminum foil flakes","Lacquered mica"],
+    "correctIndex": 0,
+    "funFact": "In the original L. Frank Baum novel, Dorothy’s shoes were silver—changed to ruby for Technicolor pop."
+  },
+  {
+    "date": "2025-11-10",
+    "quote": "To infinity and beyond!",
+    "movie": "Toy Story",
+    "year": 1995,
+    "triviaQuestion": "Which company distributed Pixar’s first feature release?",
+    "choices": ["Walt Disney Pictures","Buena Vista International","Sony Pictures Releasing","20th Century Fox"],
+    "correctIndex": 0,
+    "funFact": "It was the first fully computer-animated feature film in history."
+  },
+  {
+    "date": "2025-11-11",
+    "quote": "It’s not who I am underneath, but what I do that defines me.",
+    "movie": "Batman Begins",
+    "year": 2005,
+    "triviaQuestion": "What Tibetan-sounding location hides the League’s mountain base?",
+    "choices": ["Bhutan (fictionalized setting)","Nepal’s Mustang","India’s Ladakh","China’s Sichuan"],
+    "correctIndex": 0,
+    "funFact": "The Tumbler Batmobile was a drivable vehicle that could perform real jumps."
+  },
+  {
+    "date": "2025-11-12",
+    "quote": "Carpe diem. Seize the day, boys.",
+    "movie": "Dead Poets Society",
+    "year": 1989,
+    "triviaQuestion": "In-universe, at which fictional academy is it set?",
+    "choices": ["Welton Academy","Wellington Academy","New England Collegiate","St. Andrew’s Academy"],
+    "correctIndex": 0,
+    "funFact": "Filming took place at St. Andrew’s School in Delaware, standing in for Welton Academy."
+  },
+  {
+    "date": "2025-11-13",
+    "quote": "Our lives are defined by opportunities, even the ones we miss.",
+    "movie": "The Curious Case of Benjamin Button",
+    "year": 2008,
+    "triviaQuestion": "Which author’s short story inspired the film?",
+    "choices": ["F. Scott Fitzgerald","William Faulkner","T. S. Eliot","Ernest Hemingway"],
+    "correctIndex": 0,
+    "funFact": "Groundbreaking facial-aging VFX were developed to portray Brad Pitt across decades."
+  },
+  {
+    "date": "2025-11-14",
+    "quote": "After all, tomorrow is another day!",
+    "movie": "Gone with the Wind",
+    "year": 1939,
+    "triviaQuestion": "Which color process defined its original release prints?",
+    "choices": ["Technicolor three-strip","Kodachrome monopack","Agfacolor Neu","Eastmancolor"],
+    "correctIndex": 0,
+    "funFact": "Hattie McDaniel won an Academy Award for her performance—the first Oscar for a Black actor."
+  },
+  {
+    "date": "2025-11-15",
+    "quote": "Do, or do not. There is no try.",
+    "movie": "Star Wars: The Empire Strikes Back",
+    "year": 1980,
+    "triviaQuestion": "What is the name of the swamp planet where Yoda lives?",
+    "choices": ["Dagobah","D’Qar","Ahch-To","Yavin 4"],
+    "correctIndex": 0,
+    "funFact": "The famous twist was kept secret; alternate script pages were used to avoid leaks."
+  },
+  {
+    "date": "2025-11-16",
+    "quote": "It’s supposed to be hard. If it wasn’t hard, everyone would do it. The hard is what makes it great.",
+    "movie": "A League of Their Own",
+    "year": 1992,
+    "triviaQuestion": "Which real league is dramatized in the film?",
+    "choices": ["All-American Girls Professional Baseball League","National Girls Baseball League","Women’s All-Star Baseball League","American Women’s Baseball Association"],
+    "correctIndex": 0,
+    "funFact": "Real AAGPBL players make cameo appearances in the closing credits game."
+  },
+  {
+    "date": "2025-11-17",
+    "quote": "Keep moving forward.",
+    "movie": "Meet the Robinsons",
+    "year": 2007,
+    "triviaQuestion": "Whose motto inspired the film’s recurring line?",
+    "choices": ["Walt Disney","Thomas Edison","Benjamin Franklin","Henry Ford"],
+    "correctIndex": 0,
+    "funFact": "The film closes with an on-screen quote from Walt Disney: “Keep Moving Forward.”"
+  },
+  {
+    "date": "2025-11-18",
+    "quote": "What we do in life echoes in eternity.",
+    "movie": "Gladiator",
+    "year": 2000,
+    "triviaQuestion": "Which Roman emperor is a central antagonist?",
+    "choices": ["Commodus","Nero","Caligula","Marcus Aurelius"],
+    "correctIndex": 0,
+    "funFact": "Russell Crowe’s “Are you not entertained?” line was partly improvised on set."
+  },
+  {
+    "date": "2025-11-19",
+    "quote": "To see the world, things dangerous to come to, to see behind walls, to draw closer, to find each other, and to feel.",
+    "movie": "The Secret Life of Walter Mitty",
+    "year": 2013,
+    "triviaQuestion": "Which magazine is Mitty’s employer in the film?",
+    "choices": ["LIFE","TIME","National Geographic","Look"],
+    "correctIndex": 0,
+    "funFact": "Many of the film’s sweeping landscapes were shot on location in Iceland."
+  },
+  {
+    "date": "2025-11-20",
+    "quote": "It is not our abilities that show what we truly are… it is our choices.",
+    "movie": "Harry Potter and the Chamber of Secrets",
+    "year": 2002,
+    "triviaQuestion": "Who was Hogwarts headmaster during this story?",
+    "choices": ["Albus Dumbledore","Phineas Nigellus Black","Armando Dippet","Severus Snape"],
+    "correctIndex": 0,
+    "funFact": "The production used dozens of custom-wand props; cast members reportedly went through many during filming."
+  },
+  {
+    "date": "2025-11-21",
+    "quote": "Why do we fall? So we can learn to pick ourselves up.",
+    "movie": "Batman Begins",
+    "year": 2005,
+    "triviaQuestion": "What is the name of the crime-ridden Gotham area?",
+    "choices": ["The Narrows","Park Row","Burnley","Otisburg"],
+    "correctIndex": 0,
+    "funFact": "Christian Bale’s distinct Batman voice became a defining—and heavily parodied—take on the character."
+  },
+  {
+    "date": "2025-11-22",
+    "quote": "Never give up, never surrender!",
+    "movie": "Galaxy Quest",
+    "year": 1999,
+    "triviaQuestion": "What is the alien race that recruits the cast?",
+    "choices": ["Thermians","Minbari","Betazoids","Vogons"],
+    "correctIndex": 0,
+    "funFact": "A 2013 poll of Star Trek fans famously crowned it one of the best ‘Star Trek’ movies despite being a parody."
+  },
+  {
+    "date": "2025-11-23",
+    "quote": "There is no secret ingredient.",
+    "movie": "Kung Fu Panda",
+    "year": 2008,
+    "triviaQuestion": "What is the name of the coveted martial arts scroll?",
+    "choices": ["Dragon Scroll","Scroll of Peace","Jade Scroll","Silk of Wisdom"],
+    "correctIndex": 0,
+    "funFact": "Jack Black popularized the catchphrase “Skadoosh,” which became tied to the franchise."
+  },
+  {
+    "date": "2025-11-24",
+    "quote": "Sometimes it is the people no one imagines anything of who do the things that no one can imagine.",
+    "movie": "The Imitation Game",
+    "year": 2014,
+    "triviaQuestion": "Which machine’s name became synonymous with German encryption?",
+    "choices": ["Enigma","Lorenz","Purple","Typex"],
+    "correctIndex": 0,
+    "funFact": "Production recreated Bletchley Park’s huts with meticulous period detail."
+  },
+  {
+    "date": "2025-11-25",
+    "quote": "Just because someone stumbles and loses their path, doesn’t mean they’re lost forever.",
+    "movie": "X-Men: Days of Future Past",
+    "year": 2014,
+    "triviaQuestion": "What are the mutant-hunting robots in this timeline?",
+    "choices": ["Sentinels","Reavers","Hellfire Drones","Omega Guards"],
+    "correctIndex": 0,
+    "funFact": "The Quicksilver kitchen scene used ultra–high-speed photography to freeze practical elements."
+  },
+  {
+    "date": "2025-11-26",
+    "quote": "You mustn’t be afraid to dream a little bigger, darling.",
+    "movie": "Inception",
+    "year": 2010,
+    "triviaQuestion": "What device enables synchronized shared dreaming?",
+    "choices": ["PASIV (Portable Automated Somnacin IntraVenous)","REM Nexus","SomniLink","Hypnoset"],
+    "correctIndex": 0,
+    "funFact": "A rotating hallway set was built to achieve the zero-gravity fight with minimal CGI."
+  },
+  {
+    "date": "2025-11-27",
+    "quote": "All we have to decide is what to do with the time that is given to us.",
+    "movie": "The Lord of the Rings: The Fellowship of the Ring",
+    "year": 2001,
+    "triviaQuestion": "Name the Elven realm where the Fellowship meets Galadriel.",
+    "choices": ["Lothlórien","Rivendell","Mirkwood","Valinor"],
+    "correctIndex": 0,
+    "funFact": "Weta Workshop built massive ‘bigatures’—miniatures so large they filled entire rooms."
+  },
+  {
+    "date": "2025-11-28",
+    "quote": "Adventure is out there!",
+    "movie": "Up",
+    "year": 2009,
+    "triviaQuestion": "What is the name of the South American tepui destination?",
+    "choices": ["Paradise Falls","Angel Crest","Tepui Rosario","Serranía del Viento"],
+    "correctIndex": 0,
+    "funFact": "Paradise Falls was inspired by Venezuela’s Angel Falls and the surrounding tepui mesas."
+  },
+  {
+    "date": "2025-11-29",
+    "quote": "The flower that blooms in adversity is the most rare and beautiful of all.",
+    "movie": "Mulan",
+    "year": 1998,
+    "triviaQuestion": "Which dynasty setting loosely frames the film’s period?",
+    "choices": ["Northern Wei","Tang","Ming","Song"],
+    "correctIndex": 0,
+    "funFact": "Ming-Na Wen voiced Mulan, with Lea Salonga providing the character’s singing voice."
+  },
+  {
+    "date": "2025-11-30",
+    "quote": "You control your destiny—you don’t need magic to do it.",
+    "movie": "Brave",
+    "year": 2012,
+    "triviaQuestion": "Which Scottish kingdom is Merida the princess of?",
+    "choices": ["DunBroch","DunBroth","Dunnottar","Dunsinane"],
+    "correctIndex": 0,
+    "funFact": "Merida is Pixar’s first female lead protagonist."
+  },
+  {
+    "date": "2025-12-01",
+    "quote": "Get busy living, or get busy dying.",
+    "movie": "The Shawshank Redemption",
+    "year": 1994,
+    "triviaQuestion": "What is the name of the rock hammer’s brand Red procures?",
+    "choices": ["Rock Hammer by Geology Pro","Rita’s Craft Hammer","Estwing Geological","ChiselMaster 12"],
+    "correctIndex": 2,
+    "funFact": "The film’s popularity exploded on cable and home video, later topping many ‘greatest films’ lists."
+  },
+  {
+    "date": "2025-12-02",
+    "quote": "It’s not about how hard you hit. It’s about how hard you can get hit and keep moving forward.",
+    "movie": "Rocky Balboa",
+    "year": 2006,
+    "triviaQuestion": "Which real network’s show hosts the film’s simulated fight?",
+    "choices": ["HBO","Showtime","ESPN Classic","Fox Sports"],
+    "correctIndex": 2,
+    "funFact": "Stallone returned to the role after 16 years, training intensely to fight in the ring again at 60."
+  },
+  {
+    "date": "2025-12-03",
+    "quote": "Just because something works doesn’t mean it can’t be improved.",
+    "movie": "Black Panther",
+    "year": 2018,
+    "triviaQuestion": "What is the fictional metal powering Wakanda’s tech?",
+    "choices": ["Vibranium","Adamantium","Nth Metal","Uru"],
+    "correctIndex": 0,
+    "funFact": "Costumes blended Afro-futurist design with real African textiles and 3D-printed details."
+  },
+  {
+    "date": "2025-12-04",
+    "quote": "Sometimes the right path is not the easiest one.",
+    "movie": "Pocahontas",
+    "year": 1995,
+    "triviaQuestion": "Which song won the film’s Best Original Song Oscar?",
+    "choices": ["Colors of the Wind","Just Around the Riverbend","If I Never Knew You","Savages"],
+    "correctIndex": 0,
+    "funFact": "The film released the same weekend as ‘Toy Story’s’ early production push—Disney had two teams competing."
+  },
+  {
+    "date": "2025-12-05",
+    "quote": "The only limit is your soul.",
+    "movie": "Ratatouille",
+    "year": 2007,
+    "triviaQuestion": "Which Paris restaurant critic is central to the climax?",
+    "choices": ["Anton Ego","François Lemaire","Jean Gusteau","Colette Tatou"],
+    "correctIndex": 0,
+    "funFact": "Chef Thomas Keller consulted; Remy’s signature dish was inspired by his ‘confit byaldi.’"
+  },
+  {
+    "date": "2025-12-06",
+    "quote": "Fear is the mind-killer.",
+    "movie": "Dune",
+    "year": 2021,
+    "triviaQuestion": "To which Great House does Paul belong?",
+    "choices": ["House Atreides","House Harkonnen","House Corrino","House Richese"],
+    "correctIndex": 0,
+    "funFact": "Desert exteriors were filmed in Jordan and Abu Dhabi to capture Arrakis’ scale."
+  },
+  {
+    "date": "2025-12-07",
+    "quote": "There’s some good in this world, and it’s worth fighting for.",
+    "movie": "The Lord of the Rings: The Two Towers",
+    "year": 2002,
+    "triviaQuestion": "Name the fortress where the climactic siege takes place.",
+    "choices": ["Helm’s Deep (Hornburg)","Minas Tirith","Isengard","Amon Hen"],
+    "correctIndex": 0,
+    "funFact": "Gollum became a landmark in performance capture, blending Andy Serkis’s acting with advanced VFX."
+  },
+  {
+    "date": "2025-12-08",
+    "quote": "You are who you choose to be.",
+    "movie": "The Iron Giant",
+    "year": 1999,
+    "triviaQuestion": "Which Cold War year is the film set in?",
+    "choices": ["1957","1962","1959","1961"],
+    "correctIndex": 0,
+    "funFact": "Based on Ted Hughes’ book; Brad Bird wove in 1950s sci-fi and Superman homage."
+  },
+  {
+    "date": "2025-12-09",
+    "quote": "With great power comes great responsibility.",
+    "movie": "Spider-Man",
+    "year": 2002,
+    "triviaQuestion": "Which New York bridge hosts the key Green Goblin showdown?",
+    "choices": ["Queensboro Bridge","Brooklyn Bridge","Manhattan Bridge","Williamsburg Bridge"],
+    "correctIndex": 0,
+    "funFact": "The upside-down rain kiss was notoriously difficult to film for Tobey Maguire."
+  },
+  {
+    "date": "2025-12-10",
+    "quote": "Everything is possible, even the impossible.",
+    "movie": "Mary Poppins Returns",
+    "year": 2018,
+    "triviaQuestion": "What is the term for the lamplighters in the film?",
+    "choices": ["Leeries","Linkboys","Lucifers","Lampwrights"],
+    "correctIndex": 0,
+    "funFact": "Dick Van Dyke performed a dancing cameo at age 92."
+  },
+  {
+    "date": "2025-12-11",
+    "quote": "A million dollars isn’t cool. You know what’s cool? A billion dollars.",
+    "movie": "The Social Network",
+    "year": 2010,
+    "triviaQuestion": "Who composed the film’s Oscar-winning score?",
+    "choices": ["Trent Reznor & Atticus Ross","Hans Zimmer","Alexandre Desplat","Clint Mansell"],
+    "correctIndex": 0,
+    "funFact": "Most Harvard scenes were shot at Johns Hopkins and other campuses after Harvard denied permission."
+  },
+  {
+    "date": "2025-12-12",
+    "quote": "Not quite my tempo.",
+    "movie": "Whiplash",
+    "year": 2014,
+    "triviaQuestion": "Which instrument does Andrew practice obsessively?",
+    "choices": ["Drums","Saxophone","Piano","Trumpet"],
+    "correctIndex": 0,
+    "funFact": "The feature expanded from Damien Chazelle’s 18-minute short made to attract financing."
+  },
+  {
+    "date": "2025-12-13",
+    "quote": "Mankind was born on Earth. It was never meant to die here.",
+    "movie": "Interstellar",
+    "year": 2014,
+    "triviaQuestion": "Which theoretical physicist advised on the film’s black hole visuals?",
+    "choices": ["Kip Thorne","Brian Greene","Michio Kaku","Stephen Hawking"],
+    "correctIndex": 0,
+    "funFact": "Simulations produced by the VFX team led to academic insights about gravitational lensing."
+  },
+  {
+    "date": "2025-12-14",
+    "quote": "Seize your moment.",
+    "movie": "Coco",
+    "year": 2017,
+    "triviaQuestion": "What is the name of the Day of the Dead land Miguel visits?",
+    "choices": ["Land of the Dead","Xibalba","Mictlan","La Ofrenda"],
+    "correctIndex": 0,
+    "funFact": "The film’s research trips across Mexico influenced its music, architecture, and alebrije designs."
+  },
+  {
+    "date": "2025-12-15",
+    "quote": "You got a dream, you gotta protect it.",
+    "movie": "The Pursuit of Happyness",
+    "year": 2006,
+    "triviaQuestion": "Which real entrepreneur is Will Smith portraying?",
+    "choices": ["Chris Gardner","Daymond John","Reginald Lewis","Robert Smith"],
+    "correctIndex": 0,
+    "funFact": "The real Chris Gardner makes a cameo at the end, passing Will Smith on the street."
+  },
+  {
+    "date": "2025-12-16",
+    "quote": "Remember who you are.",
+    "movie": "The Lion King",
+    "year": 1994,
+    "triviaQuestion": "What is the name of Simba’s homeland?",
+    "choices": ["The Pride Lands","The Elephant Graveyard","Hakuna Plains","Mufasa’s Reach"],
+    "correctIndex": 0,
+    "funFact": "The wildebeest stampede combined hand-drawn elements with pioneering crowd simulation."
+  },
+  {
+    "date": "2025-12-17",
+    "quote": "Once you’ve met someone, you never really forget them.",
+    "movie": "Spirited Away",
+    "year": 2001,
+    "triviaQuestion": "Which studio produced this Academy Award–winning film?",
+    "choices": ["Studio Ghibli","Toei Animation","Madhouse","Production I.G"],
+    "correctIndex": 0,
+    "funFact": "It became the first (and for years only) non-English animated film to win the Best Animated Feature Oscar."
+  },
+  {
+    "date": "2025-12-18",
+    "quote": "I never look back, darling. It distracts from the now.",
+    "movie": "The Incredibles",
+    "year": 2004,
+    "triviaQuestion": "Which fashion-obsessed character says “No capes!”?",
+    "choices": ["Edna Mode","Mirage","Violet Parr","Evelyn Deavor"],
+    "correctIndex": 0,
+    "funFact": "Edna Mode’s voice is by director Brad Bird himself."
+  },
+  {
+    "date": "2025-12-19",
+    "quote": "One step at a time. One punch at a time. One round at a time.",
+    "movie": "Creed",
+    "year": 2015,
+    "triviaQuestion": "Who plays Adonis Creed?",
+    "choices": ["Michael B. Jordan","John Boyega","Jonathan Majors","Anthony Mackie"],
+    "correctIndex": 0,
+    "funFact": "Fight scenes used long takes to heighten realism, including a notable two-round single-shot bout."
+  },
+  {
+    "date": "2025-12-20",
+    "quote": "I’m going to have to science the shit out of this.",
+    "movie": "The Martian",
+    "year": 2015,
+    "triviaQuestion": "Which space agency is central to the rescue effort?",
+    "choices": ["NASA","ESA","Roscosmos","ISRO"],
+    "correctIndex": 0,
+    "funFact": "NASA advised on mission details; the production filmed Martian landscapes in Wadi Rum, Jordan."
+  }
+]
