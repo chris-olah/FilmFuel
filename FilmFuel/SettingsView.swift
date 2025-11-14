@@ -6,14 +6,19 @@ struct SettingsView: View {
     var onShowTipJar: (() -> Void)? = nil
 
     @State private var showDevActions = false
-    @State private var showToast = false
-    @State private var toastText = ""
 
     var body: some View {
         ZStack {
+            Color(.systemGroupedBackground)
+                .ignoresSafeArea()
+
             List {
                 // Navigate to Notifications screen
-                Section(header: Text("Preferences")) {
+                Section(header: Text("Preferences"),
+                        footer: Text("Customize when FilmFuel sends your daily quote and trivia reminders.")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                ) {
                     NavigationLink {
                         NotificationsScreen()
                             .environmentObject(appModel)
@@ -23,9 +28,14 @@ struct SettingsView: View {
                 }
 
                 // Tip Jar
-                Section("Support") {
+                Section(
+                    header: Text("Support"),
+                    footer: Text("If FilmFuel helps keep you motivated, you can leave a small tip to support future updates.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                ) {
                     NavigationLink {
-                        TipJarView()   // <-- new Tip Jar screen with custom amounts
+                        TipJarView()   // <-- Tip Jar screen with custom amounts
                     } label: {
                         Label("Tip Jar", systemImage: "heart.circle.fill")
                     }
@@ -33,34 +43,51 @@ struct SettingsView: View {
 
                 // About (+ hidden dev unlock)
                 Section("About") {
-                    Text(versionString)
-                        .foregroundStyle(.secondary)
-                        .contentShape(Rectangle())
-                        .onTapGesture(count: 5) {
-                            showDevActions = true
-                            #if os(iOS)
-                            UIImpactFeedbackGenerator(style: .soft).impactOccurred()
-                            #endif
-                        }
+                    HStack {
+                        Text("Version")
+                        Spacer()
+                        Text(versionString)
+                            .foregroundStyle(.secondary)
+                            .contentShape(Rectangle())
+                            .onTapGesture(count: 5) {
+                                showDevActions = true
+                                #if os(iOS)
+                                UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+                                #endif
+                            }
+                    }
 
-                    Text("Daily iconic movie quotes and trivia.")
+                    Text("Daily iconic movie quotes and trivia to keep you inspired.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
                 }
             }
+            .listStyle(.insetGrouped)
             .navigationTitle("Settings")
             .toolbar {
                 #if DEBUG
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button { showDevActions = true } label: { Image(systemName: "gear") }
-                        .accessibilityLabel("Developer Actions")
+                    Button { showDevActions = true } label: {
+                        Image(systemName: "gear")
+                    }
+                    .accessibilityLabel("Developer Actions")
                 }
                 #endif
             }
-            .confirmationDialog("Developer Actions",
-                                isPresented: $showDevActions,
-                                titleVisibility: .visible) {
-                Button("Reset ALL (Debug)", role: .destructive) { appModel.debugResetAll() }
-                Button("Clear Today Completion") { appModel.debugClearTodayCompletion() }
-                Button("Set Yesterday Completed") { appModel.debugSetYesterdayCompleted() }
+            .confirmationDialog(
+                "Developer Actions",
+                isPresented: $showDevActions,
+                titleVisibility: .visible
+            ) {
+                Button("Reset ALL (Debug)", role: .destructive) {
+                    appModel.debugResetAll()
+                }
+                Button("Clear Today Completion") {
+                    appModel.debugClearTodayCompletion()
+                }
+                Button("Set Yesterday Completed") {
+                    appModel.debugSetYesterdayCompleted()
+                }
                 Button("Cancel", role: .cancel) { }
             }
         }
@@ -69,6 +96,6 @@ struct SettingsView: View {
     private var versionString: String {
         let v = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
         let b = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
-        return "Version \(v) (\(b))"
+        return "\(v) (\(b))"
     }
 }

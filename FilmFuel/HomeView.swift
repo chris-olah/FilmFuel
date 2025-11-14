@@ -1,4 +1,7 @@
 import SwiftUI
+#if canImport(UIKit)
+import UIKit
+#endif
 
 struct HomeView: View {
     @EnvironmentObject private var appModel: AppModel
@@ -78,7 +81,6 @@ struct HomeView: View {
                         .padding(.trailing, 2)
                     }
                     .fixedSize(horizontal: false, vertical: true)
-                    .layoutPriority(1)
 
                     // Share (top-right global action)
                     Button {
@@ -97,14 +99,14 @@ struct HomeView: View {
                 // Give the hero zone some air
                 Spacer(minLength: 10)
 
-                // HERO QUOTE CARD
+                // HERO QUOTE CARD (no "Today’s quote" label above)
                 QuoteCard(
                     text: appModel.todayQuote.text,
                     movie: appModel.todayQuote.movie,
                     year: appModel.todayQuote.year
                 )
-                .padding(.top, 6)
-                .padding(.bottom, 2)
+                .padding(.top, 2)
+                .padding(.bottom, 4)
 
                 // STREAK READOUT — center "Correct …" (protected), let Day/Best flex
                 HStack(alignment: .firstTextBaseline, spacing: 10) {
@@ -147,6 +149,7 @@ struct HomeView: View {
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.top, 4)
+                .padding(.horizontal)
 
                 // Create a strong “stage” gap before CTA
                 Spacer(minLength: 18)
@@ -154,14 +157,32 @@ struct HomeView: View {
                 // CTA
                 if !appModel.quizCompletedToday {
                     Button {
+                        #if os(iOS)
+                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                        #endif
                         onStartQuiz?()
                     } label: {
-                        Text("Take Today’s Quiz")
-                            .frame(maxWidth: .infinity)
+                        VStack(spacing: 4) {
+                            Label("Take Today’s Quiz", systemImage: "gamecontroller.fill")
+                                .font(.headline)
+                            Text("1 quick question • keep your streak alive")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                        }
+                        .padding(.vertical, 14)
+                        .frame(maxWidth: .infinity)
+                        .background(
+                            LinearGradient(
+                                colors: [Color.black, Color(.darkGray)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                        )
+                        .foregroundStyle(.white)
+                        .shadow(radius: 8, y: 4)
                     }
-                    .buttonStyle(.borderedProminent)
-                    .tint(.black)             // premium film vibe
-                    .controlSize(.large)
+                    .buttonStyle(.plain)
                     .padding(.horizontal)
                     .accessibilityIdentifier("startQuizButton")
                 } else {
@@ -177,6 +198,7 @@ struct HomeView: View {
                     }
                     .frame(maxWidth: .infinity)
                     .multilineTextAlignment(.center)
+                    .padding(.horizontal)
                     .padding(.top, 2)
                 }
 
@@ -185,7 +207,6 @@ struct HomeView: View {
             }
 
             // ===== TOAST DISABLED =====
-            // (Left here commented in case you want it back later)
             /*
             if showMilestoneToast {
                 VStack {
@@ -243,27 +264,12 @@ struct HomeView: View {
         if newRecord && milestone {
             triggerSuccessHaptic()
             milestoneText = "Milestone \(String(newValue))! 🔥 New Record!"
-            // Toast disabled:
-            // withAnimation(.spring(response: 0.4, dampingFraction: 0.9)) {
-            //     showMilestoneToast = true
-            // }
-            // dismissToastAfterDelay()
         } else if newRecord {
             triggerSuccessHaptic()
             milestoneText = "New Record \(String(newValue))! 🔥"
-            // Toast disabled:
-            // withAnimation(.spring(response: 0.4, dampingFraction: 0.9)) {
-            //     showMilestoneToast = true
-            // }
-            // dismissToastAfterDelay()
         } else if milestone {
             triggerSuccessHaptic()
             milestoneText = "Milestone \(String(newValue))! 🔥"
-            // Toast disabled:
-            // withAnimation(.spring(response: 0.4, dampingFraction: 0.9)) {
-            //     showMilestoneToast = true
-            // }
-            // dismissToastAfterDelay()
         } else {
             triggerLightPop()
         }
