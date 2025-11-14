@@ -207,6 +207,20 @@ struct DiscoverView: View {
         )
         .navigationTitle("Discover")
         .toolbar {
+
+            // LEFT: Saved Quotes shortcut
+            ToolbarItem(placement: .navigationBarLeading) {
+                NavigationLink {
+                    FavoritesScreen()
+                        .environmentObject(appModel)
+                } label: {
+                    Image(systemName: "heart.fill")
+                        .foregroundStyle(.pink)
+                        .imageScale(.large)
+                }
+            }
+
+            // RIGHT: Sort + Shuffle
             ToolbarItemGroup(placement: .navigationBarTrailing) {
                 Menu {
                     Picker("Sort", selection: $vm.sort) {
@@ -227,6 +241,9 @@ struct DiscoverView: View {
             }
         }
         .onAppear {
+            // 🔁 Reload favorites whenever Discover becomes visible
+            favorites = FavoriteStore.load()
+
             if vm.quotes.isEmpty {
                 vm.load(seed: appModel.todayQuote)
             }

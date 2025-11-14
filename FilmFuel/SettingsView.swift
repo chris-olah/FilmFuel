@@ -13,11 +13,12 @@ struct SettingsView: View {
                 .ignoresSafeArea()
 
             List {
-                // Navigate to Notifications screen
-                Section(header: Text("Preferences"),
-                        footer: Text("Customize when FilmFuel sends your daily quote and trivia reminders.")
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
+                // Preferences
+                Section(
+                    header: Text("Preferences"),
+                    footer: Text("Customize when FilmFuel sends your daily quote and trivia reminders.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
                 ) {
                     NavigationLink {
                         NotificationsScreen()
@@ -27,7 +28,7 @@ struct SettingsView: View {
                     }
                 }
 
-                // Tip Jar
+                // Support
                 Section(
                     header: Text("Support"),
                     footer: Text("If FilmFuel helps keep you motivated, you can leave a small tip to support future updates.")
@@ -35,13 +36,28 @@ struct SettingsView: View {
                         .foregroundStyle(.secondary)
                 ) {
                     NavigationLink {
-                        TipJarView()   // <-- Tip Jar screen with custom amounts
+                        TipJarView()
                     } label: {
                         Label("Tip Jar", systemImage: "heart.circle.fill")
                     }
                 }
 
-                // About (+ hidden dev unlock)
+                // ⭐️ NEW: Saved Quotes Library
+                Section(
+                    header: Text("Library"),
+                    footer: Text("Browse all the quotes you've saved while discovering movies.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                ) {
+                    NavigationLink {
+                        FavoritesScreen()
+                            .environmentObject(appModel)
+                    } label: {
+                        Label("Saved Quotes", systemImage: "heart.fill")
+                    }
+                }
+
+                // About section
                 Section("About") {
                     HStack {
                         Text("Version")
