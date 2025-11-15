@@ -11,14 +11,13 @@ final class TipJarStore: ObservableObject {
     @Published var errorMessage: String?
 
     /// Your product IDs from App Store Connect.
-    /// Set their prices there (e.g. $0.49, $0.99, $1.99, $4.99, $6.99, $9.99, etc.).
+    /// Make sure these exactly match the IDs you created there.
     private let productIDs: [String] = [
-        "tip.tiny",    // under a dollar, e.g. $0.49
-        "tip.small",   // e.g. $0.99
-        "tip.medium",  // e.g. $2.99
-        "tip.large",   // e.g. $4.99
-        "tip.big",     // e.g. $6.99
-        "tip.huge"     // e.g. $9.99
+        "tip.popcorn1",  // Popcorn Treat
+        "tip.popcorn2",  // Popcorn Refill
+        "tip.popcorn3",  // Movie Night Combo
+        "tip.popcorn4",  // Deluxe Popcorn Bucket
+        "tip.popcorn5"   // Blockbuster Support
     ]
 
     init() {
@@ -67,6 +66,7 @@ final class TipJarStore: ObservableObject {
                 }
 
             case .userCancelled:
+                // User backed out of the purchase sheet.
                 break
 
             case .pending:

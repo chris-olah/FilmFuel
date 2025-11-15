@@ -4,10 +4,12 @@ import UserNotifications
 @main
 struct FilmFuelApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    @StateObject private var appModel = AppModel()
 
     var body: some Scene {
         WindowGroup {
             AppRootView()
+                .environmentObject(appModel)
         }
     }
 }

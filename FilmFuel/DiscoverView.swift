@@ -228,7 +228,7 @@ struct DiscoverView: View {
                             Text(s.label).tag(s)
                         }
                     }
-                    .onChange(of: vm.sort) { _ in
+                    .onChange(of: vm.sort) {
                         vm.applySort()
                     }
                 } label: {

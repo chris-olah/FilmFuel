@@ -80,7 +80,7 @@ struct TipJarView: View {
         .padding(.top, 8)
     }
 
-    /// A small set of one-tap tips (e.g. tiny / small / medium).
+    /// A small set of one-tap tips (e.g. 3 smallest popcorn tiers).
     private var quickTipsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Quick Tips")
@@ -144,7 +144,7 @@ struct TipJarView: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Choose Any Amount")
                             .font(.headline)
-                        Text("Pick from all available tip amounts, including under a dollar or bigger tips.")
+                        Text("Pick from all available tip amounts, from a small treat to a blockbuster boost.")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
@@ -181,7 +181,7 @@ struct TipJarView: View {
                 Text("Thank you!")
                     .font(.subheadline)
                     .fontWeight(.semibold)
-                Text("Your \(product.displayName.lowercased()) helps keep FilmFuel going. 🎬")
+                Text("Your \(labelFor(product: product).lowercased()) helps keep FilmFuel going. 🎬")
                     .font(.caption)
             }
 
@@ -255,21 +255,19 @@ struct TipJarView: View {
 
     // MARK: - Helpers
 
-    /// Nice label names based on product IDs.
+    /// Nice label names based on product IDs (Popcorn theme).
     private func labelFor(product: Product) -> String {
         switch product.id {
-        case "tip.tiny":
-            return "Tiny Tip"
-        case "tip.small":
-            return "Small Tip"
-        case "tip.medium":
-            return "Medium Tip"
-        case "tip.large":
-            return "Large Tip"
-        case "tip.big":
-            return "Big Tip"
-        case "tip.huge":
-            return "Huge Tip"
+        case "tip.popcorn1":
+            return "Popcorn Treat"
+        case "tip.popcorn2":
+            return "Popcorn Refill"
+        case "tip.popcorn3":
+            return "Movie Night Combo"
+        case "tip.popcorn4":
+            return "Deluxe Popcorn Bucket"
+        case "tip.popcorn5":
+            return "Blockbuster Support"
         default:
             return product.displayName
         }
