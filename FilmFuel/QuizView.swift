@@ -24,6 +24,7 @@ struct QuizView: View {
 
     // "More trivia" sheet
     @State private var showMoreTriviaSheet = false
+    @State private var showMoreButton = false
 
     // Computed accessors
     private var trivia: TriviaQuestion? { appModel.todayTrivia }
@@ -35,7 +36,8 @@ struct QuizView: View {
             // Background
             LinearGradient(
                 colors: [Color(.systemBackground), Color(.secondarySystemBackground)],
-                startPoint: .top, endPoint: .bottom
+                startPoint: .top,
+                endPoint: .bottom
             )
             .ignoresSafeArea()
 
@@ -52,12 +54,11 @@ struct QuizView: View {
                     resultSection(trivia: trivia)
                         .padding(.horizontal)
                 } else {
-                    Text("Loading today’s trivia…")
-                        .foregroundStyle(.secondary)
-                        .padding()
+                    loadingSection()
                 }
 
-                Spacer(minLength: 8)
+                // ⬆️ Bigger spacer so "Play More Trivia" sits a bit higher
+                Spacer(minLength: 32)
             }
 
             // Confetti overlay on correct (daily quiz)
@@ -83,12 +84,21 @@ struct QuizView: View {
             if appModel.quizCompletedToday {
                 reviewMode = true
                 reveal = true
+                showMoreButton = true
             }
 
             // kick off answer animations
             DispatchQueue.main.async {
                 withAnimation(.spring(response: 0.5, dampingFraction: 0.85)) {
                     answersAppeared = true
+                }
+            }
+        }
+        // iOS 17-style onChange (no deprecation)
+        .onChange(of: reveal) {
+            if reveal {
+                withAnimation(.spring(response: 0.5, dampingFraction: 0.85).delay(0.1)) {
+                    showMoreButton = true
                 }
             }
         }
@@ -109,54 +119,59 @@ struct QuizView: View {
                         .imageScale(.medium)
                 }
             }
-            // No trailing toolbar item – share lives in header top-right now
+            // No trailing toolbar item – share + stats live in header
         }
     }
 
-    // MARK: - Sections
+    // MARK: - Header
 
     @ViewBuilder
     private func headerSection() -> some View {
         HStack(alignment: .center, spacing: 12) {
+            // Left: title + movie/year
             VStack(alignment: .leading, spacing: 4) {
+                Text("Today’s Quiz")
+                    .font(.title3.weight(.semibold))
+
+                Text(
+                    quoteYear == 0
+                    ? quoteMovie
+                    : "\(quoteMovie) • \(quoteYear)"
+                )
+                .font(.callout.weight(.semibold))        // slightly bigger + bolder
+                .foregroundStyle(.primary)               // higher contrast
+                .lineLimit(2)
+                .minimumScaleFactor(0.85)
+            }
+
+            Spacer(minLength: 8)
+
+            // Center: streak stats (if any)
+            if appModel.dailyStreak > 0 || appModel.bestCorrectStreak > 0 {
                 HStack(spacing: 6) {
-                    Text("Today’s Quiz")
-                        .font(.title3.weight(.semibold))
-
-                    if let trivia {
-                        difficultyPill(trivia.difficulty)
+                    if appModel.dailyStreak > 0 {
+                        statPill(
+                            icon: "flame.fill",
+                            label: "\(appModel.dailyStreak)",
+                            subtitle: "Daily",
+                            color: .orange
+                        )
+                        .accessibilityLabel("Current daily streak: \(appModel.dailyStreak) days")
                     }
-                }
-
-                Text(quoteYear == 0
-                     ? quoteMovie
-                     : "\(quoteMovie) • \(quoteYear)")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-                    .truncationMode(.tail)
-
-                // Streak info
-                HStack(spacing: 8) {
-                    Label {
-                        Text("\(appModel.dailyStreak) day streak")
-                    } icon: {
-                        Image(systemName: "flame.fill")
-                    }
-                    .font(.caption2.weight(.semibold))
-                    .foregroundStyle(.orange)
 
                     if appModel.bestCorrectStreak > 0 {
-                        Text("Best: \(appModel.bestCorrectStreak)")
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
+                        statPill(
+                            icon: "trophy.fill",
+                            label: "\(appModel.bestCorrectStreak)",
+                            subtitle: "Best",
+                            color: .yellow
+                        )
+                        .accessibilityLabel("Best streak: \(appModel.bestCorrectStreak)")
                     }
                 }
             }
 
-            Spacer()
-
-            // Top-right Share icon (always visible)
+            // Right: share button
             Button {
                 showShare = true
             } label: {
@@ -164,30 +179,64 @@ struct QuizView: View {
                     .imageScale(.medium)
                     .font(.body.weight(.semibold))
             }
+            .accessibilityLabel("Share today’s quiz")
         }
         .padding(.horizontal)
-        // More top padding so it clears the status bar / Dynamic Island
-        .padding(.top, 32)
+        // Middle ground so it clears status bar / Dynamic Island
+        .padding(.top, 24)
     }
 
-    private func difficultyPill(_ difficulty: String) -> some View {
-        let label = difficulty.capitalized
-        let color: Color
-        switch difficulty.lowercased() {
-        case "easy":   color = .green
-        case "medium": color = .orange
-        case "hard":   color = .red
-        default:       color = .gray
+    // Stat pill with tiny subtitle (Daily / Best)
+    private func statPill(icon: String, label: String, subtitle: String, color: Color) -> some View {
+        VStack(spacing: 2) {
+            HStack(spacing: 4) {
+                Image(systemName: icon)
+                    .imageScale(.small)
+                Text(label)
+                    .font(.caption2.weight(.semibold))
+            }
+
+            Text(subtitle)
+                .font(.caption2)
+                .foregroundStyle(.secondary)
         }
-
-        return Text(label)
-            .font(.caption2.weight(.semibold))
-            .padding(.horizontal, 8)
-            .padding(.vertical, 3)
-            .background(color.opacity(0.12))
-            .foregroundStyle(color)
-            .clipShape(Capsule())
+        .padding(.horizontal, 8)
+        .padding(.vertical, 6)
+        .background(
+            .ultraThinMaterial,
+            in: Capsule()
+        )
+        .overlay(
+            Capsule()
+                .stroke(Color.secondary.opacity(0.25), lineWidth: 1)
+        )
+        .foregroundStyle(color)
+        .lineLimit(1)
+        .minimumScaleFactor(0.8)
     }
+
+    // MARK: - Loading
+
+    @ViewBuilder
+    private func loadingSection() -> some View {
+        VStack(spacing: 12) {
+            ProgressView()
+            Text("Fetching today’s quiz…")
+                .font(.callout)
+                .foregroundStyle(.secondary)
+
+            Button {
+                appModel.ensureTodayTrivia()
+            } label: {
+                Label("Retry", systemImage: "arrow.clockwise")
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.small)
+        }
+        .padding()
+    }
+
+    // MARK: - Quiz Card
 
     @ViewBuilder
     private func quizCard(trivia: TriviaQuestion) -> some View {
@@ -258,6 +307,8 @@ struct QuizView: View {
         .padding(.top, 4)
     }
 
+    // MARK: - Submit Button
+
     @ViewBuilder
     private func submitButtonSection(trivia: TriviaQuestion) -> some View {
         if !reviewMode && !reveal {
@@ -275,6 +326,8 @@ struct QuizView: View {
         }
     }
 
+    // MARK: - Result Section
+
     @ViewBuilder
     private func resultSection(trivia: TriviaQuestion) -> some View {
         if reveal {
@@ -288,7 +341,16 @@ struct QuizView: View {
             )
             .transition(.opacity.combined(with: .move(edge: .bottom)))
 
-            // Nicer "Play More Trivia" button (no infinity symbol)
+            if reviewMode {
+                // Short, less cluttered helper text
+                Text("New quiz unlocks tomorrow.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.top, 2)
+            }
+
+            // "Play More Trivia" button
             Button {
                 showMoreTriviaSheet = true
             } label: {
@@ -302,6 +364,9 @@ struct QuizView: View {
             .controlSize(.large)
             .padding(.top, 4)
             .padding(.bottom, 8)
+            .scaleEffect(showMoreButton ? 1.0 : 0.9)
+            .opacity(showMoreButton ? 1.0 : 0.0)
+            .shadow(radius: showMoreButton ? 4 : 0, y: showMoreButton ? 2 : 0)
         }
     }
 
@@ -360,7 +425,6 @@ struct QuizView: View {
 
         return lines.joined(separator: "\n")
     }
-
 
     private func safeAnswerText(trivia: TriviaQuestion) -> String {
         let idx = trivia.correctIndex
@@ -433,14 +497,17 @@ struct AnswerRow: View {
             .padding(.horizontal, 14)
             .padding(.vertical, 14)
             .contentShape(Rectangle())
+            .scaleEffect(reveal && isCorrectChoice ? 1.02 : 1.0)
+            .animation(.spring(response: 0.4, dampingFraction: 0.85), value: reveal)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(ScaledButtonStyle())
         .background(backgroundStyle)
         .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .strokeBorder(borderStyle, lineWidth: 1)
         )
+        .accessibilityLabel(accessibilityDescription)
     }
 
     private var backgroundStyle: Color {
@@ -470,7 +537,29 @@ struct AnswerRow: View {
         }
         return Color.secondary.opacity(0.18)
     }
+
+    private var accessibilityDescription: String {
+        if reviewMode || reveal {
+            if isCorrectChoice {
+                return "\(text), correct answer"
+            } else if isSelected {
+                return "\(text), your choice, incorrect"
+            }
+        }
+        return text
+    }
 }
+
+// ButtonStyle for subtle press-scale
+struct ScaledButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
+            .animation(.spring(response: 0.25, dampingFraction: 0.8), value: configuration.isPressed)
+    }
+}
+
+// MARK: - Result Panel
 
 struct ResultPanel: View {
     let reviewMode: Bool
@@ -479,6 +568,10 @@ struct ResultPanel: View {
     let triviaAnswer: String
     let movieTitle: String
     let movieYear: Int
+
+    private var yearText: String {
+        String(movieYear)
+    }
 
     var verdictText: String {
         if let correct = isCorrect {
@@ -499,7 +592,7 @@ struct ResultPanel: View {
                     .font(.headline.weight(.semibold))
                     .foregroundStyle(verdictColor)
 
-                Text("From \(movieTitle) (\(movieYear))")
+                Text("From \(movieTitle) (\(yearText))")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
@@ -539,6 +632,8 @@ struct ResultPanel: View {
         .shadow(radius: 2, y: 1)
     }
 }
+
+// MARK: - Banner Toast
 
 struct BannerToast: View {
     let text: String
