@@ -5,6 +5,20 @@ import UserNotifications
 import WidgetKit
 #endif
 
+// MARK: - Trivia model (for trivia.json)
+
+struct TriviaQuestion: Identifiable, Codable, Hashable {
+    let id: String
+    let movieTitle: String
+    let year: Int
+    let genre: String
+    let difficulty: String   // "easy", "medium", "hard"
+    let question: String
+    let options: [String]
+    let correctIndex: Int
+    let extraInfo: String?
+}
+
 // MARK: - Reminder preferences keys (shared)
 enum Prefs {
     static let reminderHourKey = "ff.reminder.hour"
@@ -223,6 +237,10 @@ final class AppModel: ObservableObject {
     private let kLastAnsweredDay = "ff.lastAnsweredDayKey"
     private let kLastResultWasCorrect = "ff.lastResultWasCorrect"
 
+    // Trivia keys
+    private let kTriviaLastDate = "ff.trivia.lastDate"
+    private let kTriviaLastQuestionID = "ff.trivia.lastQuestionID"
+
     private var defaults: UserDefaults { .standard }
 
     // UI state
@@ -250,6 +268,10 @@ final class AppModel: ObservableObject {
 
     // NEW: expose all quotes for Discover
     @Published var allQuotes: [Quote] = []
+
+    // Trivia
+    @Published var triviaBank: [TriviaQuestion] = []
+    @Published var todayTrivia: TriviaQuestion?
 
     // Data
     private let repo = QuotesRepository(jsonFileName: "quotes")
@@ -301,6 +323,10 @@ final class AppModel: ObservableObject {
         defaults.set(today, forKey: kLastSeenDay)
 
         refreshReminderIfNeededForToday()
+
+        // Trivia setup
+        loadTriviaIfNeeded()
+        ensureTodayTrivia()
     }
 
     // MARK: - Daily refresh
@@ -325,6 +351,52 @@ final class AppModel: ObservableObject {
             : nil
 
         refreshReminderIfNeededForToday()
+        ensureTodayTrivia()
+    }
+
+    // MARK: - Trivia loading
+
+    func loadTriviaIfNeeded() {
+        if !triviaBank.isEmpty { return }
+
+        guard
+            let url = Bundle.main.url(forResource: "trivia", withExtension: "json"),
+            let data = try? Data(contentsOf: url)
+        else {
+            print("⚠️ Could not load trivia.json from bundle")
+            return
+        }
+
+        do {
+            let decoded = try JSONDecoder().decode([TriviaQuestion].self, from: data)
+            triviaBank = decoded
+        } catch {
+            print("⚠️ Failed to decode trivia.json: \(error)")
+        }
+    }
+
+    func ensureTodayTrivia() {
+        loadTriviaIfNeeded()
+        guard !triviaBank.isEmpty else { return }
+
+        let today = DailyClock.currentDayKey()
+        let storedDate = defaults.string(forKey: kTriviaLastDate)
+        let storedID = defaults.string(forKey: kTriviaLastQuestionID)
+
+        // If we already picked a question for today, reuse it
+        if storedDate == today,
+           let id = storedID,
+           let existing = triviaBank.first(where: { $0.id == id }) {
+            todayTrivia = existing
+            return
+        }
+
+        // Otherwise pick a new one
+        guard let new = triviaBank.randomElement() else { return }
+        todayTrivia = new
+
+        defaults.set(today, forKey: kTriviaLastDate)
+        defaults.set(new.id, forKey: kTriviaLastQuestionID)
     }
 
     // MARK: - Register Answer
