@@ -54,6 +54,9 @@ final class DiscoverVM: ObservableObject {
     private var inFlight: Set<String> = []
     private let maxConcurrentFetches = 2
 
+    // endless feed extension guard
+    private var isExtending = false
+
     init(provider: MovieMetaProvider, repo: QuotesRepository) {
         self.provider = provider
         self.repo = repo
@@ -131,6 +134,20 @@ final class DiscoverVM: ObservableObject {
         }
     }
 
+    /// When the user scrolls near the end, append another shuffled batch
+    func extendIfNeeded(currentIndex: Int) {
+        guard !quotes.isEmpty else { return }
+        let thresholdIndex = max(quotes.count - 3, 0)
+        guard currentIndex >= thresholdIndex else { return }
+        guard !isExtending else { return }
+        guard !repo.quotes.isEmpty else { return }
+
+        isExtending = true
+        let extra = repo.quotes.shuffled()
+        quotes.append(contentsOf: extra)
+        isExtending = false
+    }
+
     // MARK: - Helpers
 
     func key(for q: Quote) -> String { "\(q.movie)|\(q.year)|\(q.text)" }
@@ -154,6 +171,7 @@ struct DiscoverView: View {
     )
 
     @State private var favorites: Set<String> = FavoriteStore.load()
+    @State private var showSavedToast = false
 
     var body: some View {
         let items: [(key: String, quote: Quote)] = vm.quotes.map { (vm.key(for: $0), $0) }
@@ -171,21 +189,43 @@ struct DiscoverView: View {
                         index: idx + 1,
                         totalCount: items.count,
                         onToggleFavorite: {
-                            if favorites.contains(key) { favorites.remove(key) }
-                            else { favorites.insert(key) }
-                            FavoriteStore.save(favorites)
-                            #if os(iOS)
+                            // Determine if this action is saving or unsaving
+                            let isSaving = !favorites.contains(key)
+
+                            withAnimation(.spring(response: 0.25, dampingFraction: 0.8)) {
+                                if favorites.contains(key) {
+                                    favorites.remove(key)
+                                } else {
+                                    favorites.insert(key)
+                                }
+                                FavoriteStore.save(favorites)
+                            }
+                            #if canImport(UIKit)
                             UIImpactFeedbackGenerator(style: .light).impactOccurred()
                             #endif
+
+                            // Show toast only on save
+                            if isSaving {
+                                showSavedToast = true
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                                    withAnimation(.easeOut) {
+                                        showSavedToast = false
+                                    }
+                                }
+                            }
                         },
                         onShare: { share(q) }
                     )
                     .onAppear {
+                        // prefetch meta for this + next
                         Task { await vm.ensureMeta(for: q) }
                         if idx + 1 < items.count {
                             let next = items[idx + 1].quote
                             Task { await vm.ensureMeta(for: next) }
                         }
+
+                        // 🔁 Extend deck when near the end to allow continuous scrolling
+                        vm.extendIfNeeded(currentIndex: idx)
                     }
                     .containerRelativeFrame(.vertical)  // full-screen page
                     .id(key)
@@ -194,7 +234,16 @@ struct DiscoverView: View {
             .scrollTargetLayout()
         }
         .scrollTargetBehavior(.paging)
+        .scrollIndicators(.hidden)
         .ignoresSafeArea(edges: .bottom)
+        // Toast overlay at bottom
+        .overlay(alignment: .bottom) {
+            if showSavedToast {
+                SavedToast()
+                    .padding(.bottom, 24)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+        }
         .background(
             LinearGradient(
                 colors: [
@@ -228,20 +277,30 @@ struct DiscoverView: View {
                             Text(s.label).tag(s)
                         }
                     }
-                    .onChange(of: vm.sort) {
-                        vm.applySort()
+                    // iOS 17-style onChange (two-parameter closure – no deprecation)
+                    .onChange(of: vm.sort) { _, _ in
+                        withAnimation(.spring(response: 0.4, dampingFraction: 0.85)) {
+                            vm.applySort()
+                        }
                     }
                 } label: {
                     Label("Sort", systemImage: "arrow.up.arrow.down.circle")
                 }
 
-                Button { vm.reshuffle() } label: {
+                Button {
+                    withAnimation(.spring(response: 0.45, dampingFraction: 0.9)) {
+                        vm.reshuffle()
+                    }
+                    #if canImport(UIKit)
+                    UIImpactFeedbackGenerator(style: .rigid).impactOccurred()
+                    #endif
+                } label: {
                     Label("Shuffle", systemImage: "shuffle")
                 }
             }
         }
         .onAppear {
-            // 🔁 Reload favorites whenever Discover becomes visible
+            // Reload favorites whenever Discover becomes visible
             favorites = FavoriteStore.load()
 
             if vm.quotes.isEmpty {
@@ -277,6 +336,13 @@ private struct DiscoverCard: View {
     var onToggleFavorite: () -> Void
     var onShare: () -> Void
 
+    @State private var showFavoriteFlash: Bool = false
+    @State private var showMoreDetails: Bool = false
+
+    @Environment(\.openURL) private var openURL
+
+    // MARK: - Derived text / colors
+
     /// Always use fun fact from JSON, never from meta
     private var funFactText: String {
         if let raw = quote.funFact?.trimmingCharacters(in: .whitespacesAndNewlines),
@@ -291,8 +357,76 @@ private struct DiscoverCard: View {
         return s == "__LOADING__" ? "Loading…" : s
     }
 
+    private var imdbNumeric: Double? {
+        Double(meta?.ratingText ?? "")
+    }
+
+    private var rtNumeric: Int? {
+        guard let txt = meta?.rtTomatometer else { return nil }
+        let stripped = txt.replacingOccurrences(of: "%", with: "")
+        return Int(stripped)
+    }
+
+    private var accentColor: Color {
+        if let rating = imdbNumeric {
+            switch rating {
+            case 8.5...: return .green
+            case 7.5...: return .orange
+            default:     return .blue.opacity(0.7)
+            }
+        }
+        return .blue.opacity(0.7)
+    }
+
+    private func eraTag(for year: Int) -> String? {
+        switch year {
+        case ..<1980:      return "Classic"
+        case 1980..<2005:  return "Throwback"
+        case 2005...:      return "Modern"
+        default:           return nil
+        }
+    }
+
+    private var isFanFavorite: Bool {
+        if let r = imdbNumeric {
+            return r >= 8.5
+        }
+        return false
+    }
+
+    /// IMDb search URL for this movie
+    private var imdbURL: URL? {
+        let query = "\(quote.movie) \(quote.year)"
+        guard let encoded = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
+            return nil
+        }
+        return URL(string: "https://www.imdb.com/find/?q=\(encoded)&s=tt")
+    }
+
+    /// Rotten Tomatoes search URL for this movie
+    private var rtURL: URL? {
+        let query = quote.movie
+        guard let encoded = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
+            return nil
+        }
+        return URL(string: "https://www.rottentomatoes.com/search?search=\(encoded)")
+    }
+
     var body: some View {
         GeometryReader { geo in
+            // Subtle 3D tilt + scale based on vertical position
+            let frame = geo.frame(in: .global)
+            #if canImport(UIKit)
+            let screenHeight = UIScreen.main.bounds.height
+            #else
+            let screenHeight = frame.height
+            #endif
+
+            let distanceFromCenter = abs(screenHeight / 2 - frame.midY)
+            let normalized = min(distanceFromCenter / screenHeight, 1)
+            let scale = 1 - normalized * 0.08
+            let tiltAngle = Angle(degrees: Double((screenHeight / 2 - frame.midY) / screenHeight) * 6.0)
+
             let safeBottom = geo.safeAreaInsets.bottom
             let verticalPad: CGFloat = geo.size.height < 700 ? 12 : 20
 
@@ -302,13 +436,13 @@ private struct DiscoverCard: View {
                     .fill(.ultraThinMaterial)
                     .overlay(
                         RoundedRectangle(cornerRadius: 26, style: .continuous)
-                            .strokeBorder(Color.white.opacity(0.18), lineWidth: 1)
+                            .strokeBorder(accentColor.opacity(0.35), lineWidth: 1.3)
                     )
                     .shadow(radius: 12, y: 8)
 
-                // MAIN CONTENT (starts near top like original)
+                // MAIN CONTENT (starts near top)
                 VStack(spacing: 18) {
-                    // Top: position / movie
+                    // Top: position / movie / tags
                     HStack(alignment: .firstTextBaseline) {
                         Text("\(index)/\(totalCount)")
                             .font(.caption2.monospacedDigit())
@@ -319,21 +453,33 @@ private struct DiscoverCard: View {
 
                         Spacer()
 
-                        VStack(alignment: .trailing, spacing: 2) {
+                        VStack(alignment: .trailing, spacing: 4) {
                             Text(quote.movie)
-                                .font(.title2.weight(.semibold))   // slightly bigger title
+                                .font(.title2.weight(.semibold))
                                 .multilineTextAlignment(.trailing)
                                 .lineLimit(2)
                                 .minimumScaleFactor(0.85)
+
                             Text(String(quote.year))
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
+
+                            // Highlight strip: era + fan favorite tag
+                            HStack(spacing: 6) {
+                                if let tag = eraTag(for: quote.year) {
+                                    TagPill(text: tag, systemImage: "clock.arrow.circlepath")
+                                }
+                                if isFanFavorite {
+                                    TagPill(text: "Fan Favorite", systemImage: "flame.fill")
+                                }
+                            }
+                            .frame(maxWidth: .infinity, alignment: .trailing)
                         }
                     }
                     .padding(.horizontal, 18)
                     .padding(.top, 12)
 
-                    // Quote card
+                    // Quote card + context menu
                     Text("“\(quote.text)”")
                         .font(.title2.weight(.semibold))
                         .multilineTextAlignment(.center)
@@ -347,8 +493,34 @@ private struct DiscoverCard: View {
                                 .fill(Color(.secondarySystemBackground).opacity(0.9))
                         )
                         .padding(.horizontal, 18)
+                        .contextMenu {
+                            Button {
+                                #if canImport(UIKit)
+                                UIPasteboard.general.string = "\"\(quote.text)\" — \(quote.movie) (\(quote.year))"
+                                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                #endif
+                            } label: {
+                                Label("Copy with movie", systemImage: "doc.on.doc")
+                            }
 
-                    // Ratings row
+                            Button {
+                                #if canImport(UIKit)
+                                UIPasteboard.general.string = quote.text
+                                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                #endif
+                            } label: {
+                                Label("Copy quote only", systemImage: "quote.bubble")
+                            }
+
+                            Button {
+                                triggerFavoriteToggle()
+                            } label: {
+                                Label(isFavorite ? "Unsave quote" : "Save quote",
+                                      systemImage: isFavorite ? "heart.slash" : "heart")
+                            }
+                        }
+
+                    // Ratings strip (simple chips)
                     HStack(spacing: 8) {
                         Chip(icon: "star.fill", text: "IMDb \(meta?.ratingText ?? "–")")
                         if let rt = meta?.rtTomatometer {
@@ -364,6 +536,7 @@ private struct DiscoverCard: View {
                         VStack(alignment: .leading, spacing: 6) {
                             Label("Fun Fact", systemImage: "lightbulb")
                                 .font(.footnote.weight(.semibold))
+                                .foregroundStyle(accentColor)
                             Text(funFactText)
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
@@ -381,6 +554,103 @@ private struct DiscoverCard: View {
                                 .foregroundStyle(.secondary)
                                 .multilineTextAlignment(.leading)
                         }
+
+                        // Expandable "More about this movie"
+                        if imdbURL != nil || rtURL != nil || imdbNumeric != nil || rtNumeric != nil {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Button {
+                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) {
+                                        showMoreDetails.toggle()
+                                    }
+                                    #if canImport(UIKit)
+                                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                    #endif
+                                } label: {
+                                    HStack(spacing: 6) {
+                                        Text("More about this movie")
+                                        Spacer()
+                                        Image(systemName: showMoreDetails ? "chevron.up" : "chevron.down")
+                                            .font(.caption.weight(.semibold))
+                                    }
+                                    .font(.caption.weight(.medium))
+                                    .foregroundStyle(.primary)
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 8)
+                                    .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                                }
+
+                                if showMoreDetails {
+                                    VStack(alignment: .leading, spacing: 8) {
+                                        // Ratings summary line
+                                        if imdbNumeric != nil || rtNumeric != nil || meta?.metacritic != nil {
+                                            HStack(spacing: 8) {
+                                                if let imdb = imdbNumeric {
+                                                    Label(String(format: "IMDb %.1f", imdb), systemImage: "star.fill")
+                                                }
+                                                if let rt = rtNumeric {
+                                                    Label("RT \(rt)%", systemImage: "percent")
+                                                }
+                                                if let m = meta?.metacritic {
+                                                    Label("MC \(m)", systemImage: "chart.bar.fill")
+                                                }
+                                            }
+                                            .font(.caption2)
+                                            .foregroundStyle(.secondary)
+                                        }
+
+                                        // Branded IMDb / Rotten buttons
+                                        HStack(spacing: 10) {
+                                            if let url = imdbURL {
+                                                Button {
+                                                    #if canImport(UIKit)
+                                                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                                    #endif
+                                                    openURL(url)
+                                                } label: {
+                                                    HStack(spacing: 6) {
+                                                        Text("IMDb")
+                                                            .fontWeight(.heavy)
+                                                        Image(systemName: "arrow.up.right")
+                                                    }
+                                                    .font(.caption.weight(.semibold))
+                                                    .padding(.horizontal, 12)
+                                                    .padding(.vertical, 8)
+                                                    .background(
+                                                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                                            .fill(Color(red: 245/255, green: 197/255, blue: 24/255))
+                                                    )
+                                                    .foregroundStyle(Color.black)
+                                                }
+                                            }
+
+                                            if let url = rtURL {
+                                                Button {
+                                                    #if canImport(UIKit)
+                                                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                                    #endif
+                                                    openURL(url)
+                                                } label: {
+                                                    HStack(spacing: 6) {
+                                                        Text("Rotten Tomatoes")
+                                                            .fontWeight(.semibold)
+                                                        Image(systemName: "arrow.up.right")
+                                                    }
+                                                    .font(.caption.weight(.semibold))
+                                                    .padding(.horizontal, 12)
+                                                    .padding(.vertical, 8)
+                                                    .background(
+                                                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                                            .fill(Color.red.opacity(0.9))
+                                                    )
+                                                    .foregroundStyle(Color.white)
+                                                }
+                                            }
+                                        }
+                                    }
+                                    .transition(.opacity.combined(with: .move(edge: .top)))
+                                }
+                            }
+                        }
                     }
                     .padding(.horizontal, 18)
                     .padding(.bottom, 16)
@@ -394,10 +664,12 @@ private struct DiscoverCard: View {
                 VStack(spacing: 24) {
                     Spacer()
 
-                    Button(action: onToggleFavorite) {
+                    Button(action: {
+                        triggerFavoriteToggle()
+                    }) {
                         VStack(spacing: 6) {
                             Image(systemName: isFavorite ? "heart.fill" : "heart")
-                                .font(.system(size: 24))   // slightly smaller
+                                .font(.system(size: 24))
                             Text(isFavorite ? "Saved" : "Save")
                                 .font(.caption2)
                         }
@@ -413,7 +685,7 @@ private struct DiscoverCard: View {
                     Button(action: onShare) {
                         VStack(spacing: 6) {
                             Image(systemName: "square.and.arrow.up")
-                                .font(.system(size: 24))   // slightly smaller
+                                .font(.system(size: 24))
                             Text("Share")
                                 .font(.caption2)
                         }
@@ -430,11 +702,57 @@ private struct DiscoverCard: View {
                 }
                 .padding(.trailing, 24)
                 .frame(maxWidth: .infinity, alignment: .trailing)
+
+                // Favorite flash overlay
+                if showFavoriteFlash {
+                    RoundedRectangle(cornerRadius: 26, style: .continuous)
+                        .strokeBorder(Color.red.opacity(0.7), lineWidth: 3)
+                        .shadow(color: .red.opacity(0.25), radius: 16, y: 8)
+                        .padding(4)
+                        .transition(.opacity.combined(with: .scale))
+                }
             }
             .padding(.horizontal, 16)
             .padding(.vertical, verticalPad)
             .frame(width: geo.size.width, height: geo.size.height)
+            .scaleEffect(scale)
+            .rotation3DEffect(tiltAngle, axis: (x: 1, y: 0, z: 0))
+            // Double-tap anywhere on the card to favorite
+            .contentShape(Rectangle())
+            .onTapGesture(count: 2) {
+                triggerFavoriteToggle()
+            }
         }
+    }
+
+    // Shared logic for heart button + double-tap + context menu save
+    private func triggerFavoriteToggle() {
+        withAnimation(.spring(response: 0.28, dampingFraction: 0.75)) {
+            onToggleFavorite()
+            showFavoriteFlash = true
+        }
+        #if canImport(UIKit)
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        #endif
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+            withAnimation(.easeOut) {
+                showFavoriteFlash = false
+            }
+        }
+    }
+}
+
+// MARK: - Highlight pill
+private struct TagPill: View {
+    let text: String
+    let systemImage: String
+
+    var body: some View {
+        Label(text, systemImage: systemImage)
+            .font(.caption2.weight(.medium))
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(.thinMaterial, in: Capsule())
     }
 }
 
@@ -452,5 +770,20 @@ private struct Chip: View {
         .padding(.horizontal, 10)
         .padding(.vertical, 6)
         .background(.thinMaterial, in: Capsule())
+    }
+}
+
+// MARK: - Saved toast
+private struct SavedToast: View {
+    var body: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "checkmark.circle.fill")
+            Text("Saved to Favorites")
+        }
+        .font(.subheadline.weight(.semibold))
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .background(.ultraThinMaterial, in: Capsule())
+        .shadow(radius: 8, y: 4)
     }
 }
