@@ -19,15 +19,18 @@ struct HomeView: View {
     /// Callback from parent to open the Quiz screen via NavigationStack/Tab switch
     var onStartQuiz: (() -> Void)? = nil
 
-    // MARK: - Derived
-
+    // MARK: - Greeting
     private var greetingText: String {
         let hour = Calendar.current.component(.hour, from: Date())
         switch hour {
-        case 5..<12:  return "☀️ Morning"
-        case 12..<17: return "🌤️ Afternoon"
-        case 17..<23: return "🌙 Evening"
-        default:      return "👋 Welcome"
+        case 5..<12:
+            return "Good morning"
+        case 12..<17:
+            return "Good afternoon"
+        case 17..<22:
+            return "Good evening"
+        default:
+            return "Welcome back"
         }
     }
 
@@ -44,25 +47,48 @@ struct HomeView: View {
             // CONTENT
             VStack(alignment: .leading, spacing: 0) {
 
-                // ===== HEADER (title left, pills + share right) =====
-                HStack(spacing: 8) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("FilmFuel")
-                            .font(.title3.weight(.semibold))
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.8)
+                // ===== HEADER AREA =====
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack(alignment: .top, spacing: 12) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            // Greeting
+                            Text(greetingText)
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(.secondary)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.8)
 
-                        Text(greetingText)
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.7)
+                            // Brand
+                            Text("FILMFUEL")
+                                .font(.system(size: 20, weight: .heavy, design: .rounded))
+                                .tracking(3)
+                                .foregroundColor(.primary)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.8)
+
+                            Text("Daily movie energy")
+                                .font(.caption2.weight(.medium))
+                                .foregroundStyle(.secondary)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.8)
+                        }
+                        .layoutPriority(10)
+
+                        Spacer(minLength: 8)
+
+                        // Share (top-right global action)
+                        Button {
+                            showingShare = true
+                        } label: {
+                            Image(systemName: "square.and.arrow.up")
+                                .imageScale(.medium)
+                                .font(.headline)
+                                .foregroundStyle(.secondary)
+                                .contentShape(Rectangle())
+                        }
                     }
-                    .layoutPriority(10) // make sure this wins space
 
-                    Spacer(minLength: 8)
-
-                    // Pills on the right; scroll if needed
+                    // Streak pills in their own row (won’t collide with share button)
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 8) {
                             StreakPill(
@@ -78,28 +104,16 @@ struct HomeView: View {
                                     && appModel.correctStreak == appModel.bestCorrectStreak
                             )
                         }
-                        .padding(.trailing, 2)
-                    }
-                    .fixedSize(horizontal: false, vertical: true)
-
-                    // Share (top-right global action)
-                    Button {
-                        showingShare = true
-                    } label: {
-                        Image(systemName: "square.and.arrow.up")
-                            .imageScale(.medium)
-                            .font(.headline)
-                            .foregroundStyle(.secondary)
-                            .contentShape(Rectangle())
+                        .padding(.vertical, 4)
                     }
                 }
-                .padding(.horizontal)
-                .padding(.top, 8)
+                .padding(.horizontal, 16)
+                .padding(.top, 12)
 
                 // Give the hero zone some air
-                Spacer(minLength: 10)
+                Spacer(minLength: 16)
 
-                // HERO QUOTE CARD (no "Today’s quote" label above)
+                // HERO QUOTE CARD
                 QuoteCard(
                     text: appModel.todayQuote.text,
                     movie: appModel.todayQuote.movie,
@@ -149,9 +163,9 @@ struct HomeView: View {
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.top, 4)
-                .padding(.horizontal)
+                .padding(.horizontal, 16)
 
-                // Create a strong “stage” gap before CTA
+                // Gap before CTA
                 Spacer(minLength: 18)
 
                 // CTA
@@ -183,7 +197,7 @@ struct HomeView: View {
                         .shadow(radius: 8, y: 4)
                     }
                     .buttonStyle(.plain)
-                    .padding(.horizontal)
+                    .padding(.horizontal, 16)
                     .accessibilityIdentifier("startQuizButton")
                 } else {
                     VStack(spacing: 4) {
@@ -198,11 +212,11 @@ struct HomeView: View {
                     }
                     .frame(maxWidth: .infinity)
                     .multilineTextAlignment(.center)
-                    .padding(.horizontal)
+                    .padding(.horizontal, 16)
                     .padding(.top, 2)
                 }
 
-                // Soften the landing before the bottom
+                // Bottom padding
                 Spacer(minLength: 16)
             }
 
@@ -394,7 +408,7 @@ private struct QuoteCard: View {
             RoundedRectangle(cornerRadius: 24, style: .continuous)
                 .stroke(Color.white.opacity(0.2), lineWidth: 1)
         )
-        .padding(.horizontal)
+        .padding(.horizontal, 16)
         .shadow(radius: 4, y: 2)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(text) — \(movie) \(String(year))")

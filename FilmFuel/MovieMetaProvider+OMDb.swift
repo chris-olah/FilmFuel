@@ -16,14 +16,17 @@ struct MovieMeta: Equatable, Codable {
     var metacritic: String?         // e.g., "73/100"
 
     // MARK: - Extra rich fields from OMDb
-    var title: String?              // "The Pursuit of Happyness"
-    var imdbID: String?             // "tt0454921"
-    var actors: String?             // "Will Smith, Jaden Smith, ..."
-    var boxOffice: String?          // "$163,566,459"
+    var title: String?              // "The Dark Knight"
+    var imdbID: String?             // "tt0468569"
+    var actors: String?             // "Christian Bale, Heath Ledger, ..."
+    var boxOffice: String?          // "$1,006,234,167"
     var posterURL: String?          // "https://m.media-amazon.com/..."
 
-    // 🏆 Awards (e.g. "Won 1 Oscar. Another 24 wins & 56 nominations.")
+    // 🏆 Awards (e.g. "Won 2 Oscars. Another 161 wins & 163 nominations.")
     var awards: String?
+
+    // 🎬 Genre (e.g. "Action, Crime, Drama")
+    var genre: String?
 }
 
 protocol MovieMetaProvider {
@@ -51,7 +54,8 @@ private struct OMDbResponse: Decodable {
     let BoxOffice: String?
     let Poster: String?
     let Metascore: String?
-    let Awards: String?             // 🆕
+    let Awards: String?             // awards text
+    let Genre: String?              // "Action, Crime, Drama" etc.
 }
 
 private struct OMDbSearchResponse: Decodable {
@@ -76,7 +80,8 @@ final class OMDbMovieMetaProvider: MovieMetaProvider {
     private let groupID = "group.com.chrisolah.FilmFuel"
 
     // 🚀 bump this to invalidate all old cached entries at once
-    private let cacheVersion = "v3"
+    private let cacheVersion = "v4"   // ⬅️ bumped from v3 to v4
+
     private let cacheKeyPrefix = "ff.meta."
 
     private var suite: UserDefaults { UserDefaults(suiteName: groupID) ?? .standard }
@@ -93,7 +98,7 @@ final class OMDbMovieMetaProvider: MovieMetaProvider {
             if isNegativeCache(cached) {
                 print("📦 cache (NEGATIVE) -> refetch:", cacheKey)
             } else {
-                print("📦 cache hit:", cacheKey)
+                print("📦 cache hit:", cacheKey, "| genre:", cached.genre ?? "nil")
                 return cached
             }
         }
@@ -111,7 +116,8 @@ final class OMDbMovieMetaProvider: MovieMetaProvider {
                     actors: nil,
                     boxOffice: nil,
                     posterURL: nil,
-                    awards: nil
+                    awards: nil,
+                    genre: nil
                 ),
                 as: cacheKey
             )
@@ -161,7 +167,8 @@ final class OMDbMovieMetaProvider: MovieMetaProvider {
                 actors: nil,
                 boxOffice: nil,
                 posterURL: nil,
-                awards: nil
+                awards: nil,
+                genre: nil
             ),
             as: cacheKey
         )
@@ -294,7 +301,15 @@ final class OMDbMovieMetaProvider: MovieMetaProvider {
             plotText = "No plot summary available."
         }
 
-        return MovieMeta(
+        // 🔧 Explicitly clean full genre string from OMDb
+        let cleanedGenre: String? = {
+            guard let raw = r.Genre,
+                  !raw.isEmpty,
+                  raw != "N/A" else { return nil }
+            return raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        }()
+
+        let meta = MovieMeta(
             ratingText: imdb ?? "–",
             funFact: fallbackFunFact.ifEmpty("Cinema tidbit coming soon."),
             summary: plotText,
@@ -305,8 +320,16 @@ final class OMDbMovieMetaProvider: MovieMetaProvider {
             actors: sanitize(r.Actors),
             boxOffice: sanitize(r.BoxOffice),
             posterURL: sanitize(r.Poster),
-            awards: sanitize(r.Awards)   // 🆕
+            awards: sanitize(r.Awards),
+            genre: cleanedGenre          // ✅ keep full OMDb genre, e.g. "Action, Crime, Drama"
         )
+
+        print("🎬 OMDb meta built for",
+              meta.title ?? "<unknown>",
+              "| year:", r.Year ?? "n/a",
+              "| genre:", meta.genre ?? "nil")
+
+        return meta
     }
 
     private func sanitize(_ value: String?) -> String? {
@@ -349,7 +372,7 @@ final class OMDbMovieMetaProvider: MovieMetaProvider {
         if let data = try? JSONEncoder().encode(meta) {
             suite.set(data, forKey: key)
         }
-        print("💾 cache save:", key)
+        print("💾 cache save:", key, "| genre:", meta.genre ?? "nil")
         return meta
     }
 

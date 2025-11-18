@@ -85,7 +85,8 @@ final class DiscoverVM: ObservableObject {
                     actors: nil,
                     boxOffice: nil,
                     posterURL: nil,
-                    awards: nil
+                    awards: nil,
+                    genre: nil
                 )
                 changed = true
             }
@@ -179,6 +180,9 @@ struct DiscoverView: View {
     @State private var favorites: Set<String> = FavoriteStore.load()
     @State private var showSavedToast = false
 
+    // For haptic when a new page becomes active
+    @State private var lastHapticIndex: Int? = nil
+
     var body: some View {
         let items: [(key: String, quote: Quote)] = vm.quotes.map { (vm.key(for: $0), $0) }
 
@@ -232,6 +236,14 @@ struct DiscoverView: View {
 
                         // 🔁 Extend deck when near the end to allow continuous scrolling
                         vm.extendIfNeeded(currentIndex: idx)
+
+                        // 🎯 Haptic when a new page becomes active
+                        #if canImport(UIKit)
+                        if lastHapticIndex != idx {
+                            lastHapticIndex = idx
+                            UISelectionFeedbackGenerator().selectionChanged()
+                        }
+                        #endif
                     }
                     .containerRelativeFrame(.vertical)  // full-screen page
                     .id(key)
@@ -270,7 +282,7 @@ struct DiscoverView: View {
                         .environmentObject(appModel)
                 } label: {
                     Image(systemName: "heart.fill")
-                        .foregroundStyle(.pink)
+                        .foregroundStyle(.primary)   // neutral instead of pink
                         .imageScale(.large)
                 }
             }
@@ -283,7 +295,6 @@ struct DiscoverView: View {
                             Text(s.label).tag(s)
                         }
                     }
-                    // iOS 17-style onChange (two-parameter closure – no deprecation)
                     .onChange(of: vm.sort) { _, _ in
                         withAnimation(.spring(response: 0.4, dampingFraction: 0.85)) {
                             vm.applySort()
@@ -378,6 +389,13 @@ private struct DiscoverCard: View {
         return Int(stripped)
     }
 
+    private var metacriticNumeric: Int? {
+        guard let raw = meta?.metacritic else { return nil }
+        let digits = raw.prefix { $0.isNumber }
+        guard !digits.isEmpty, let value = Int(digits) else { return nil }
+        return value
+    }
+
     private var actorsText: String? {
         guard let a = meta?.actors,
               !a.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
@@ -410,31 +428,61 @@ private struct DiscoverCard: View {
         return URL(string: p)
     }
 
-    private var accentColor: Color {
-        if let rating = imdbNumeric {
-            switch rating {
-            case 8.5...: return .green
-            case 7.5...: return .orange
-            default:     return .blue.opacity(0.7)
-            }
+    /// Full OMDb genre string, e.g. "Action, Crime, Drama"
+    private var genreText: String? {
+        guard let g = meta?.genre?
+            .trimmingCharacters(in: .whitespacesAndNewlines),
+              !g.isEmpty,
+              g != "N/A" else {
+            return nil
         }
-        return .blue.opacity(0.7)
+        return g
     }
 
+    // "Accent" now just uses primary, so no separate brand color
+    private var accentColor: Color {
+        .primary
+    }
+
+    // MARK: - Tag logic
+
+    /// Era pill text based on year
     private func eraTag(for year: Int) -> String? {
         switch year {
-        case ..<1980:      return "Classic"
-        case 1980..<2005:  return "Throwback"
-        case 2005...:      return "Modern"
-        default:           return nil
+        case ..<1980:
+            return "Golden Age Cinema"
+        case 1980..<1990:
+            return "80s Icons"
+        case 1990..<2000:
+            return "90s Classics"
+        case 2000..<2010:
+            return "2000s Era"
+        case 2010...:
+            return "Modern Hits"
+        default:
+            return nil
         }
     }
 
-    private var isFanFavorite: Bool {
-        if let r = imdbNumeric {
-            return r >= 8.5
+    /// Audience-based tag from IMDb
+    private var audienceTag: (text: String, systemImage: String)? {
+        guard let r = imdbNumeric else { return nil }
+        if r >= 8.5 {
+            return ("Audience Favorite", "person.3.fill")
+        } else if r >= 7.5 {
+            return ("Fan Approved", "hand.thumbsup.fill")
         }
-        return false
+        return nil
+    }
+
+    /// Critics tag from RT / Metacritic
+    private var criticsTag: (text: String, systemImage: String)? {
+        let rt = rtNumeric ?? -1
+        let mc = metacriticNumeric ?? -1
+        if rt >= 90 || mc >= 80 {
+            return ("Critically Acclaimed", "rosette")
+        }
+        return nil
     }
 
     /// IMDb URL: prefer imdbID if present, otherwise search
@@ -482,13 +530,13 @@ private struct DiscoverCard: View {
                     .fill(.ultraThinMaterial)
                     .overlay(
                         RoundedRectangle(cornerRadius: 26, style: .continuous)
-                            .strokeBorder(accentColor.opacity(0.35), lineWidth: 1.3)
+                            .strokeBorder(accentColor.opacity(0.08), lineWidth: 1.3)
                     )
                     .shadow(radius: 12, y: 8)
 
                 // MAIN CONTENT (starts near top)
-                VStack(spacing: 18) {
-                    // Top: position / movie / tags
+                VStack(spacing: geo.size.height < 700 ? 12 : 18) {
+                    // Top: position / movie / year + FULL genre / tags
                     HStack(alignment: .firstTextBaseline) {
                         Text("\(index)/\(totalCount)")
                             .font(.caption2.monospacedDigit())
@@ -506,18 +554,35 @@ private struct DiscoverCard: View {
                                 .lineLimit(2)
                                 .minimumScaleFactor(0.85)
 
-                            Text(String(quote.year))
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+                            HStack(spacing: 4) {
+                                Text(String(quote.year))
+                                if let genre = genreText {
+                                    Text("•")
+                                    Text(genre)
+                                }
+                            }
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                            .truncationMode(.tail)
 
-                            // Highlight strip: era + fan favorite tag
-                            HStack(spacing: 6) {
-                                if let tag = eraTag(for: quote.year) {
-                                    TagPill(text: tag, systemImage: "clock.arrow.circlepath")
+                            // Highlight strip: era + audience + critics + awards
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: 6) {
+                                    if let tag = eraTag(for: quote.year) {
+                                        TagPill(text: tag, systemImage: "clock.arrow.circlepath")
+                                    }
+                                    if let a = audienceTag {
+                                        TagPill(text: a.text, systemImage: a.systemImage)
+                                    }
+                                    if let c = criticsTag {
+                                        TagPill(text: c.text, systemImage: c.systemImage)
+                                    }
+                                    if awardsText != nil {
+                                        TagPill(text: "Award Winner", systemImage: "trophy.fill")
+                                    }
                                 }
-                                if isFanFavorite {
-                                    TagPill(text: "Fan Favorite", systemImage: "flame.fill")
-                                }
+                                .padding(.vertical, 2)
                             }
                             .frame(maxWidth: .infinity, alignment: .trailing)
                         }
@@ -536,7 +601,12 @@ private struct DiscoverCard: View {
                         .frame(maxWidth: .infinity)
                         .background(
                             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                .fill(Color(.secondarySystemBackground).opacity(0.9))
+                                .fill(Color(.secondarySystemBackground).opacity(0.95))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                        .stroke(Color(.separator).opacity(0.3), lineWidth: 1)
+                                )
+                                .shadow(radius: 8, y: 4)
                         )
                         .padding(.horizontal, 18)
                         .contextMenu {
@@ -582,11 +652,16 @@ private struct DiscoverCard: View {
                         VStack(alignment: .leading, spacing: 6) {
                             Label("Fun Fact", systemImage: "lightbulb")
                                 .font(.footnote.weight(.semibold))
-                                .foregroundStyle(accentColor)
+                                .foregroundStyle(.secondary)
                             Text(funFactText)
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                                 .multilineTextAlignment(.leading)
+                                .padding(10)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                        .fill(Color(.tertiarySystemBackground))
+                                )
                         }
 
                         Divider().opacity(0.2)
@@ -606,6 +681,7 @@ private struct DiscoverCard: View {
                             rtURL != nil ||
                             imdbNumeric != nil ||
                             rtNumeric != nil ||
+                            metacriticNumeric != nil ||
                             actorsText != nil ||
                             boxOfficeText != nil ||
                             awardsText != nil ||
@@ -636,7 +712,7 @@ private struct DiscoverCard: View {
                                 if showMoreDetails {
                                     VStack(alignment: .leading, spacing: 8) {
                                         // Ratings summary line
-                                        if imdbNumeric != nil || rtNumeric != nil || meta?.metacritic != nil {
+                                        if imdbNumeric != nil || rtNumeric != nil || metacriticNumeric != nil {
                                             HStack(spacing: 8) {
                                                 if let imdb = imdbNumeric {
                                                     Label(String(format: "IMDb %.1f", imdb), systemImage: "star.fill")
@@ -644,12 +720,19 @@ private struct DiscoverCard: View {
                                                 if let rt = rtNumeric {
                                                     Label("RT \(rt)%", systemImage: "percent")
                                                 }
-                                                if let m = meta?.metacritic {
+                                                if let m = metacriticNumeric {
                                                     Label("MC \(m)", systemImage: "chart.bar.fill")
                                                 }
                                             }
                                             .font(.caption2)
                                             .foregroundStyle(.secondary)
+                                        }
+
+                                        // Full genre line in details
+                                        if let genre = genreText {
+                                            Label("Genre: \(genre)", systemImage: "film")
+                                                .font(.caption2)
+                                                .foregroundStyle(.secondary)
                                         }
 
                                         // Cast + Box Office
@@ -671,29 +754,7 @@ private struct DiscoverCard: View {
                                                 .foregroundStyle(.secondary)
                                         }
 
-                                        // Poster link
-                                        if let url = posterURL {
-                                            Button {
-                                                #if canImport(UIKit)
-                                                UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                                                #endif
-                                                openURL(url)
-                                            } label: {
-                                                HStack(spacing: 6) {
-                                                    Image(systemName: "photo")
-                                                    Text("View poster")
-                                                }
-                                                .font(.caption.weight(.semibold))
-                                                .padding(.horizontal, 12)
-                                                .padding(.vertical, 8)
-                                                .background(
-                                                    RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                                        .fill(Color(.tertiarySystemBackground))
-                                                )
-                                            }
-                                        }
-
-                                        // Branded IMDb / Rotten buttons
+                                        // IMDb / Rotten buttons – colored again
                                         HStack(spacing: 10) {
                                             if let url = imdbURL {
                                                 Button {
@@ -712,7 +773,7 @@ private struct DiscoverCard: View {
                                                     .padding(.vertical, 8)
                                                     .background(
                                                         RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                                            .fill(Color(red: 245/255, green: 197/255, blue: 24/255))
+                                                            .fill(Color(red: 245/255, green: 197/255, blue: 24/255)) // IMDb yellow
                                                     )
                                                     .foregroundStyle(Color.black)
                                                 }
@@ -735,10 +796,32 @@ private struct DiscoverCard: View {
                                                     .padding(.vertical, 8)
                                                     .background(
                                                         RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                                            .fill(Color.red.opacity(0.9))
+                                                            .fill(Color.red.opacity(0.9)) // RT red
                                                     )
                                                     .foregroundStyle(Color.white)
                                                 }
+                                            }
+                                        }
+
+                                        // 🎟 View poster (below IMDb/RT)
+                                        if let url = posterURL {
+                                            Button {
+                                                #if canImport(UIKit)
+                                                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                                #endif
+                                                openURL(url)
+                                            } label: {
+                                                HStack(spacing: 6) {
+                                                    Image(systemName: "photo")
+                                                    Text("View poster")
+                                                }
+                                                .font(.caption.weight(.semibold))
+                                                .padding(.horizontal, 12)
+                                                .padding(.vertical, 8)
+                                                .background(
+                                                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                                        .fill(Color(.tertiarySystemBackground))
+                                                )
                                             }
                                         }
                                     }
@@ -775,7 +858,7 @@ private struct DiscoverCard: View {
                                 .shadow(radius: 6, y: 3)
                         )
                     }
-                    .tint(isFavorite ? .red : .primary)
+                    .tint(.primary)  // neutral
 
                     Button(action: onShare) {
                         VStack(spacing: 6) {

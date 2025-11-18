@@ -10,6 +10,10 @@ struct AppRootView: View {
     @State private var selectedTab: RootTab = .home
     @State private var showTipJar: Bool = false
 
+    // MARK: - Onboarding
+    @AppStorage("ff.hasSeenOnboarding") private var hasSeenOnboarding: Bool = false
+    @State private var showOnboarding: Bool = false
+
     var body: some View {
         NavigationStack {
             TabView(selection: $selectedTab) {
@@ -60,6 +64,17 @@ struct AppRootView: View {
             }
             .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
                 consumePendingRouteIfAny()
+            }
+            // Decide whether to show onboarding
+            .onAppear {
+                if !hasSeenOnboarding {
+                    showOnboarding = true
+                }
+            }
+            // Full-screen onboarding on first launch
+            .fullScreenCover(isPresented: $showOnboarding) {
+                OnboardingView()
+                    .environmentObject(appModel)
             }
         }
     }
