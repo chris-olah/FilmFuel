@@ -79,7 +79,13 @@ final class DiscoverVM: ObservableObject {
                     funFact: "",
                     summary: "__LOADING__",
                     rtTomatometer: nil,
-                    metacritic: nil
+                    metacritic: nil,
+                    title: nil,
+                    imdbID: nil,
+                    actors: nil,
+                    boxOffice: nil,
+                    posterURL: nil,
+                    awards: nil
                 )
                 changed = true
             }
@@ -214,7 +220,7 @@ struct DiscoverView: View {
                                 }
                             }
                         },
-                        onShare: { share(q) }
+                        onShare: { share(q, meta: vm.metas[key]) }
                     )
                     .onAppear {
                         // prefetch meta for this + next
@@ -309,9 +315,10 @@ struct DiscoverView: View {
         }
     }
 
-    private func share(_ q: Quote) {
+    private func share(_ q: Quote, meta: MovieMeta?) {
         #if canImport(UIKit)
-        let txt = "“\(q.text)” — \(q.movie) (\(q.year)) #FilmFuel"
+        let displayTitle = meta?.title ?? q.movie
+        let txt = "“\(q.text)” — \(displayTitle) (\(q.year)) #FilmFuel"
         let av = UIActivityViewController(activityItems: [txt], applicationActivities: nil)
 
         if let scene = UIApplication.shared.connectedScenes
@@ -343,6 +350,10 @@ private struct DiscoverCard: View {
 
     // MARK: - Derived text / colors
 
+    private var displayTitle: String {
+        meta?.title ?? quote.movie
+    }
+
     /// Always use fun fact from JSON, never from meta
     private var funFactText: String {
         if let raw = quote.funFact?.trimmingCharacters(in: .whitespacesAndNewlines),
@@ -365,6 +376,38 @@ private struct DiscoverCard: View {
         guard let txt = meta?.rtTomatometer else { return nil }
         let stripped = txt.replacingOccurrences(of: "%", with: "")
         return Int(stripped)
+    }
+
+    private var actorsText: String? {
+        guard let a = meta?.actors,
+              !a.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+              a != "N/A" else {
+            return nil
+        }
+        return a
+    }
+
+    private var boxOfficeText: String? {
+        guard let b = meta?.boxOffice,
+              !b.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+              b != "N/A" else {
+            return nil
+        }
+        return b
+    }
+
+    private var awardsText: String? {
+        guard let a = meta?.awards,
+              !a.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+              a != "N/A" else {
+            return nil
+        }
+        return a
+    }
+
+    private var posterURL: URL? {
+        guard let p = meta?.posterURL, !p.isEmpty, p != "N/A" else { return nil }
+        return URL(string: p)
     }
 
     private var accentColor: Color {
@@ -394,9 +437,12 @@ private struct DiscoverCard: View {
         return false
     }
 
-    /// IMDb search URL for this movie
+    /// IMDb URL: prefer imdbID if present, otherwise search
     private var imdbURL: URL? {
-        let query = "\(quote.movie) \(quote.year)"
+        if let id = meta?.imdbID, !id.isEmpty {
+            return URL(string: "https://www.imdb.com/title/\(id)/")
+        }
+        let query = "\(displayTitle) \(quote.year)"
         guard let encoded = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
             return nil
         }
@@ -405,7 +451,7 @@ private struct DiscoverCard: View {
 
     /// Rotten Tomatoes search URL for this movie
     private var rtURL: URL? {
-        let query = quote.movie
+        let query = displayTitle
         guard let encoded = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
             return nil
         }
@@ -454,7 +500,7 @@ private struct DiscoverCard: View {
                         Spacer()
 
                         VStack(alignment: .trailing, spacing: 4) {
-                            Text(quote.movie)
+                            Text(displayTitle)
                                 .font(.title2.weight(.semibold))
                                 .multilineTextAlignment(.trailing)
                                 .lineLimit(2)
@@ -496,7 +542,7 @@ private struct DiscoverCard: View {
                         .contextMenu {
                             Button {
                                 #if canImport(UIKit)
-                                UIPasteboard.general.string = "\"\(quote.text)\" — \(quote.movie) (\(quote.year))"
+                                UIPasteboard.general.string = "“\(quote.text)” — \(displayTitle) (\(quote.year))"
                                 UIImpactFeedbackGenerator(style: .light).impactOccurred()
                                 #endif
                             } label: {
@@ -556,7 +602,15 @@ private struct DiscoverCard: View {
                         }
 
                         // Expandable "More about this movie"
-                        if imdbURL != nil || rtURL != nil || imdbNumeric != nil || rtNumeric != nil {
+                        if imdbURL != nil ||
+                            rtURL != nil ||
+                            imdbNumeric != nil ||
+                            rtNumeric != nil ||
+                            actorsText != nil ||
+                            boxOfficeText != nil ||
+                            awardsText != nil ||
+                            posterURL != nil {
+
                             VStack(alignment: .leading, spacing: 8) {
                                 Button {
                                     withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) {
@@ -596,6 +650,47 @@ private struct DiscoverCard: View {
                                             }
                                             .font(.caption2)
                                             .foregroundStyle(.secondary)
+                                        }
+
+                                        // Cast + Box Office
+                                        if let actors = actorsText {
+                                            Label("Cast: \(actors)", systemImage: "person.3.fill")
+                                                .font(.caption2)
+                                                .foregroundStyle(.secondary)
+                                        }
+                                        if let box = boxOfficeText {
+                                            Label("Box office: \(box)", systemImage: "dollarsign.circle")
+                                                .font(.caption2)
+                                                .foregroundStyle(.secondary)
+                                        }
+
+                                        // 🏆 Awards
+                                        if let awards = awardsText {
+                                            Label("Awards: \(awards)", systemImage: "trophy.fill")
+                                                .font(.caption2)
+                                                .foregroundStyle(.secondary)
+                                        }
+
+                                        // Poster link
+                                        if let url = posterURL {
+                                            Button {
+                                                #if canImport(UIKit)
+                                                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                                #endif
+                                                openURL(url)
+                                            } label: {
+                                                HStack(spacing: 6) {
+                                                    Image(systemName: "photo")
+                                                    Text("View poster")
+                                                }
+                                                .font(.caption.weight(.semibold))
+                                                .padding(.horizontal, 12)
+                                                .padding(.vertical, 8)
+                                                .background(
+                                                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                                        .fill(Color(.tertiarySystemBackground))
+                                                )
+                                            }
                                         }
 
                                         // Branded IMDb / Rotten buttons

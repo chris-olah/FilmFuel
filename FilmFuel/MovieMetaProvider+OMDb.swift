@@ -14,6 +14,16 @@ struct MovieMeta: Equatable, Codable {
     var summary: String
     var rtTomatometer: String?      // e.g., "90%"
     var metacritic: String?         // e.g., "73/100"
+
+    // MARK: - Extra rich fields from OMDb
+    var title: String?              // "The Pursuit of Happyness"
+    var imdbID: String?             // "tt0454921"
+    var actors: String?             // "Will Smith, Jaden Smith, ..."
+    var boxOffice: String?          // "$163,566,459"
+    var posterURL: String?          // "https://m.media-amazon.com/..."
+
+    // 🏆 Awards (e.g. "Won 1 Oscar. Another 24 wins & 56 nominations.")
+    var awards: String?
 }
 
 protocol MovieMetaProvider {
@@ -22,7 +32,11 @@ protocol MovieMetaProvider {
 
 // OMDb fields
 private struct OMDbResponse: Decodable {
-    struct RatingItem: Decodable { let Source: String; let Value: String }
+    struct RatingItem: Decodable {
+        let Source: String
+        let Value: String
+    }
+
     let Title: String?
     let Year: String?
     let Plot: String?
@@ -30,6 +44,14 @@ private struct OMDbResponse: Decodable {
     let Ratings: [RatingItem]?
     let Response: String?           // "True"/"False"
     let Error: String?
+
+    // Extra fields we want to use
+    let imdbID: String?
+    let Actors: String?
+    let BoxOffice: String?
+    let Poster: String?
+    let Metascore: String?
+    let Awards: String?             // 🆕
 }
 
 private struct OMDbSearchResponse: Decodable {
@@ -54,7 +76,7 @@ final class OMDbMovieMetaProvider: MovieMetaProvider {
     private let groupID = "group.com.chrisolah.FilmFuel"
 
     // 🚀 bump this to invalidate all old cached entries at once
-    private let cacheVersion = "v2"
+    private let cacheVersion = "v3"
     private let cacheKeyPrefix = "ff.meta."
 
     private var suite: UserDefaults { UserDefaults(suiteName: groupID) ?? .standard }
@@ -83,7 +105,13 @@ final class OMDbMovieMetaProvider: MovieMetaProvider {
                     funFact: fallbackFunFact.ifEmpty("Cinema tidbit coming soon."),
                     summary: "Missing OMDb API key.",
                     rtTomatometer: nil,
-                    metacritic: nil
+                    metacritic: nil,
+                    title: nil,
+                    imdbID: nil,
+                    actors: nil,
+                    boxOffice: nil,
+                    posterURL: nil,
+                    awards: nil
                 ),
                 as: cacheKey
             )
@@ -127,7 +155,13 @@ final class OMDbMovieMetaProvider: MovieMetaProvider {
                 funFact: fallbackFunFact.ifEmpty("Cinema tidbit coming soon."),
                 summary: "Summary unavailable.",
                 rtTomatometer: nil,
-                metacritic: nil
+                metacritic: nil,
+                title: nil,
+                imdbID: nil,
+                actors: nil,
+                boxOffice: nil,
+                posterURL: nil,
+                awards: nil
             ),
             as: cacheKey
         )
@@ -168,12 +202,16 @@ final class OMDbMovieMetaProvider: MovieMetaProvider {
             let (data, resp) = try await URLSession.shared.data(from: url)
             guard (resp as? HTTPURLResponse)?.statusCode == 200 else { return nil }
             let result = try JSONDecoder().decode(OMDbSearchResponse.self, from: data)
-            guard (result.Response ?? "False") == "True", let list = result.Search, !list.isEmpty else { return nil }
+            guard (result.Response ?? "False") == "True",
+                  let list = result.Search,
+                  !list.isEmpty else { return nil }
 
             // prefer movies; then prefer matching year if feasible
             let movies = list.filter { ($0.mediaType ?? "movie") == "movie" }
             let pick: OMDbSearchResponse.Item? = {
-                if year > 0 { return movies.first(where: { $0.Year.contains(String(year)) }) ?? movies.first }
+                if year > 0 {
+                    return movies.first(where: { $0.Year.contains(String(year)) }) ?? movies.first
+                }
                 return movies.first
             }()
 
@@ -234,32 +272,55 @@ final class OMDbMovieMetaProvider: MovieMetaProvider {
         var rt: String?
         var mc: String?
 
+        // Rotten + Metacritic from Ratings list
         r.Ratings?.forEach { item in
-            if item.Source == "Rotten Tomatoes" { rt = sanitize(item.Value) }
-            if item.Source == "Metacritic"      { mc = sanitize(item.Value) }
+            if item.Source == "Rotten Tomatoes" {
+                rt = sanitize(item.Value)
+            }
+            if item.Source == "Metacritic" {
+                mc = sanitize(item.Value)
+            }
+        }
+
+        // Prefer explicit Metascore if present
+        if let metascore = sanitize(r.Metascore) {
+            mc = metascore
         }
 
         let plotText: String
-        if let p = r.Plot, !p.isEmpty, p != "N/A" { plotText = p }
-        else { plotText = "No plot summary available." }
+        if let p = r.Plot, !p.isEmpty, p != "N/A" {
+            plotText = p
+        } else {
+            plotText = "No plot summary available."
+        }
 
         return MovieMeta(
             ratingText: imdb ?? "–",
             funFact: fallbackFunFact.ifEmpty("Cinema tidbit coming soon."),
             summary: plotText,
             rtTomatometer: rt,
-            metacritic: mc
+            metacritic: mc,
+            title: sanitize(r.Title),
+            imdbID: sanitize(r.imdbID),
+            actors: sanitize(r.Actors),
+            boxOffice: sanitize(r.BoxOffice),
+            posterURL: sanitize(r.Poster),
+            awards: sanitize(r.Awards)   // 🆕
         )
     }
 
     private func sanitize(_ value: String?) -> String? {
-        guard let s = value, !s.isEmpty, s != "N/A" else { return nil }
+        guard let s = value,
+              !s.isEmpty,
+              s != "N/A" else { return nil }
         return s
     }
 
     private func hasUsableRatingsOrPlot(_ r: OMDbResponse) -> Bool {
         let hasIMDb = sanitize(r.imdbRating) != nil
-        let hasRT   = r.Ratings?.contains { $0.Source == "Rotten Tomatoes" && $0.Value != "N/A" } ?? false
+        let hasRT   = r.Ratings?.contains {
+            $0.Source == "Rotten Tomatoes" && $0.Value != "N/A"
+        } ?? false
         let hasPlot = (r.Plot?.isEmpty == false && r.Plot != "N/A")
         return hasIMDb || hasRT || hasPlot
     }
@@ -285,7 +346,9 @@ final class OMDbMovieMetaProvider: MovieMetaProvider {
     }
 
     private func store(_ meta: MovieMeta, as key: String) -> MovieMeta {
-        if let data = try? JSONEncoder().encode(meta) { suite.set(data, forKey: key) }
+        if let data = try? JSONEncoder().encode(meta) {
+            suite.set(data, forKey: key)
+        }
         print("💾 cache save:", key)
         return meta
     }
