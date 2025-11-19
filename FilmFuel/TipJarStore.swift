@@ -1,49 +1,64 @@
+//
+//  TipJarStore.swift
+//  FilmFuel
+//
+//  Created by Chris Olah on 11/19/25.
+//
+
 import Foundation
 import StoreKit
 import Combine
 
 @MainActor
 final class TipJarStore: ObservableObject {
+
     @Published var products: [Product] = []
     @Published var isLoading: Bool = false
     @Published var isPurchasing: Bool = false
-    @Published var lastThankedProduct: Product?
     @Published var errorMessage: String?
+    @Published var lastThankedProduct: Product?
 
-    /// Your product IDs from App Store Connect.
-    /// Make sure these exactly match the IDs you created there.
+    // MARK: - Product IDs (Option A)
     private let productIDs: [String] = [
-        "tip.popcorn1",  // Popcorn Treat
-        "tip.popcorn2",  // Popcorn Refill
-        "tip.popcorn3",  // Movie Night Combo
-        "tip.popcorn4",  // Deluxe Popcorn Bucket
-        "tip.popcorn5"   // Blockbuster Support
+        "tip.popcorn.small",   // Popcorn Treat
+        "tip.popcorn.medium",  // Double Feature Tip
+        "tip.popcorn.large"    // Blockbuster Boost
     ]
 
     init() {
-        Task {
-            await loadProducts()
-        }
+        Task { await loadProducts() }
     }
 
+    // MARK: - Load Products
+
     func loadProducts() async {
-        guard !isLoading else { return }
         isLoading = true
         errorMessage = nil
 
         do {
-            let storeProducts = try await Product.products(for: productIDs)
+            let storeProducts = try await Product.products(for: Set(productIDs))
 
-            // Sort by price ascending so the UI and picker feel natural.
-            let sorted = storeProducts.sorted { $0.price < $1.price }
-            self.products = sorted
+            let filtered = storeProducts
+                .filter { productIDs.contains($0.id) }
+                .sorted { $0.price < $1.price }
+
+            products = filtered
+
+            if filtered.isEmpty {
+                errorMessage = "Tip options are not available right now."
+            }
+
+            print("Loaded \(filtered.count) Tip Jar products")
         } catch {
-            self.errorMessage = "Unable to load tip options right now. Please try again later."
-            print("TipJarStore loadProducts error: \(error)")
+            print("TipJarStore: load error:", error.localizedDescription)
+            errorMessage = "Unable to load tip options. Please try again."
+            products = []
         }
 
         isLoading = false
     }
+
+    // MARK: - Purchase
 
     func purchase(_ product: Product) async {
         guard !isPurchasing else { return }
@@ -54,32 +69,44 @@ final class TipJarStore: ObservableObject {
             let result = try await product.purchase()
 
             switch result {
-            case .success(let verification):
-                switch verification {
-                case .verified(let transaction):
+            case .success(let verificationResult):
+                if let transaction = checkVerified(verificationResult) {
                     await transaction.finish()
-                    lastThankedProduct = product
-
-                case .unverified(_, let error):
-                    errorMessage = "There was a problem verifying your purchase."
-                    print("Unverified transaction: \(error.localizedDescription)")
+                    if let match = products.first(where: { $0.id == transaction.productID }) {
+                        lastThankedProduct = match
+                    }
+                } else {
+                    errorMessage = "Purchase verification failed."
                 }
 
             case .userCancelled:
-                // User backed out of the purchase sheet.
                 break
 
             case .pending:
                 errorMessage = "Your purchase is pending."
 
             @unknown default:
-                break
+                errorMessage = "Unexpected purchase outcome."
             }
+
         } catch {
-            errorMessage = "Something went wrong while processing the purchase."
-            print("TipJarStore purchase error: \(error)")
+            print("Purchase error:", error.localizedDescription)
+            errorMessage = "Purchase failed. Please try again."
         }
 
         isPurchasing = false
+    }
+
+    // MARK: - Verification Helper
+
+    private func checkVerified<T>(_ result: VerificationResult<T>) -> T? {
+        switch result {
+        case .unverified(_, let verificationError):
+            print("Unverified transaction:", verificationError.localizedDescription)
+            return nil
+
+        case .verified(let signedType):
+            return signedType
+        }
     }
 }

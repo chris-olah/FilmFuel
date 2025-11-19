@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		9F9575C22ECE44D600277D3F /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9F9575C12ECE44D600277D3F /* StoreKit.framework */; };
 		9FC904FD2EB3E3F700399DE2 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9FC904FC2EB3E3F700399DE2 /* WidgetKit.framework */; };
 		9FC904FF2EB3E3F700399DE2 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9FC904FE2EB3E3F700399DE2 /* SwiftUI.framework */; };
 		9FC905102EB3E3F800399DE2 /* FilmFuelWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 9FC904FA2EB3E3F700399DE2 /* FilmFuelWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -45,6 +46,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		9F9575C12ECE44D600277D3F /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		9FC904DC2EB27C6100399DE2 /* FilmFuel.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FilmFuel.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9FC904FA2EB3E3F700399DE2 /* FilmFuelWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = FilmFuelWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		9FC904FC2EB3E3F700399DE2 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
@@ -97,6 +99,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9F9575C22ECE44D600277D3F /* StoreKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -136,6 +139,7 @@
 		9FC904FB2EB3E3F700399DE2 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				9F9575C12ECE44D600277D3F /* StoreKit.framework */,
 				9FC904FC2EB3E3F700399DE2 /* WidgetKit.framework */,
 				9FC904FE2EB3E3F700399DE2 /* SwiftUI.framework */,
 			);

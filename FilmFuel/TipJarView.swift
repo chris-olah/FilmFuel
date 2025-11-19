@@ -1,11 +1,15 @@
+//
+//  TipJarView.swift
+//  FilmFuel
+//
+//  Created by Chris Olah on 11/19/25.
+//
+
 import SwiftUI
 import StoreKit
 
 struct TipJarView: View {
     @StateObject private var store = TipJarStore()
-
-    @State private var showingCustomSheet = false
-    @State private var selectedProductID: Product.ID?
 
     var body: some View {
         NavigationStack {
@@ -15,16 +19,18 @@ struct TipJarView: View {
                 if store.isLoading {
                     ProgressView("Loading tip options…")
                         .padding(.top, 8)
+
                 } else if let message = store.errorMessage {
                     errorSection(message: message)
+
                 } else if store.products.isEmpty {
                     Text("Tip options are not available right now.")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                         .padding(.top, 8)
+
                 } else {
                     quickTipsSection
-                    customTipSection
                 }
 
                 if let product = store.lastThankedProduct {
@@ -37,13 +43,10 @@ struct TipJarView: View {
             .padding()
             .navigationTitle("Tip Jar")
             .navigationBarTitleDisplayMode(.inline)
-            .sheet(isPresented: $showingCustomSheet) {
-                customTipSheet
-            }
         }
     }
 
-    // MARK: - Sections
+    // MARK: - Header
 
     private var headerSection: some View {
         VStack(spacing: 8) {
@@ -65,35 +68,34 @@ struct TipJarView: View {
         .padding(.top)
     }
 
+    // MARK: - Error
+
     private func errorSection(message: String) -> some View {
         VStack(spacing: 8) {
             Text(message)
                 .font(.subheadline)
                 .multilineTextAlignment(.center)
+
             Button("Try Again") {
-                Task {
-                    await store.loadProducts()
-                }
+                Task { await store.loadProducts() }
             }
             .buttonStyle(.bordered)
         }
         .padding(.top, 8)
     }
 
-    /// A small set of one-tap tips (e.g. 3 smallest popcorn tiers).
+    // MARK: - Tip List (3 options)
+
     private var quickTipsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Quick Tips")
                 .font(.headline)
 
-            // Use first 3 as “quick” suggestions by price.
-            let quickProducts = Array(store.products.prefix(3))
+            let products = store.products.sorted { $0.price < $1.price }
 
-            ForEach(quickProducts, id: \.id) { product in
+            ForEach(products, id: \.id) { product in
                 Button {
-                    Task {
-                        await store.purchase(product)
-                    }
+                    Task { await store.purchase(product) }
                 } label: {
                     HStack {
                         VStack(alignment: .leading, spacing: 4) {
@@ -120,7 +122,7 @@ struct TipJarView: View {
                     }
                     .padding()
                     .background(
-                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        RoundedRectangle(cornerRadius: 16)
                             .fill(Color(.secondarySystemBackground))
                     )
                 }
@@ -131,46 +133,7 @@ struct TipJarView: View {
         .padding(.top, 8)
     }
 
-    /// Button to open the custom amount picker (uses *all* products).
-    private var customTipSection: some View {
-        VStack(spacing: 8) {
-            Divider()
-                .padding(.vertical, 4)
-
-            Button {
-                showingCustomSheet = true
-            } label: {
-                HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Choose Any Amount")
-                            .font(.headline)
-                        Text("Pick from all available tip amounts, from a small treat to a blockbuster boost.")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-
-                    Spacer()
-
-                    Image(systemName: "slider.horizontal.3")
-                        .font(.body)
-                        .foregroundStyle(.secondary)
-                }
-                .padding()
-                .background(
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .fill(Color(.tertiarySystemBackground))
-                )
-            }
-            .buttonStyle(.plain)
-            .disabled(store.products.isEmpty || store.isPurchasing)
-
-            Text("Tips are handled securely by the App Store. We never see your payment details.")
-                .font(.footnote)
-                .multilineTextAlignment(.center)
-                .foregroundStyle(.secondary)
-                .padding(.top, 4)
-        }
-    }
+    // MARK: - Thank You Banner
 
     private func thankYouBanner(for product: Product) -> some View {
         HStack(spacing: 10) {
@@ -181,6 +144,7 @@ struct TipJarView: View {
                 Text("Thank you!")
                     .font(.subheadline)
                     .fontWeight(.semibold)
+
                 Text("Your \(labelFor(product: product).lowercased()) helps keep FilmFuel going. 🎬")
                     .font(.caption)
             }
@@ -189,85 +153,22 @@ struct TipJarView: View {
         }
         .padding()
         .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
+            RoundedRectangle(cornerRadius: 16)
                 .fill(Color(.systemGreen).opacity(0.15))
         )
         .padding(.top, 8)
     }
 
-    // MARK: - Custom Tip Sheet
+    // MARK: - Label Helper
 
-    private var customTipSheet: some View {
-        NavigationStack {
-            VStack(spacing: 16) {
-                if store.products.isEmpty {
-                    Text("No tip options are available right now.")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                } else {
-                    let sorted = store.products.sorted { $0.price < $1.price }
-
-                    Picker("Tip amount", selection: $selectedProductID) {
-                        ForEach(sorted, id: \.id) { product in
-                            Text("\(product.displayPrice) – \(labelFor(product: product))")
-                                .tag(product.id as Product.ID?)
-                        }
-                    }
-                    .pickerStyle(.wheel)
-                    .onAppear {
-                        if selectedProductID == nil {
-                            selectedProductID = sorted.first?.id
-                        }
-                    }
-
-                    Button {
-                        guard
-                            let id = selectedProductID,
-                            let product = store.products.first(where: { $0.id == id })
-                        else { return }
-
-                        Task {
-                            await store.purchase(product)
-                            // If purchase succeeds, the thank-you banner will update in the main view.
-                        }
-                    } label: {
-                        Text("Tip This Amount")
-                            .frame(maxWidth: .infinity)
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .disabled(store.isPurchasing)
-                    .padding(.top, 8)
-                }
-
-                Spacer()
-            }
-            .padding()
-            .navigationTitle("Custom Tip")
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button("Close") {
-                        showingCustomSheet = false
-                    }
-                }
-            }
-        }
-    }
-
-    // MARK: - Helpers
-
-    /// Nice label names based on product IDs (Popcorn theme).
     private func labelFor(product: Product) -> String {
         switch product.id {
-        case "tip.popcorn1":
+        case "tip.popcorn.small":
             return "Popcorn Treat"
-        case "tip.popcorn2":
-            return "Popcorn Refill"
-        case "tip.popcorn3":
-            return "Movie Night Combo"
-        case "tip.popcorn4":
-            return "Deluxe Popcorn Bucket"
-        case "tip.popcorn5":
-            return "Blockbuster Support"
+        case "tip.popcorn.medium":
+            return "Double Feature Tip"
+        case "tip.popcorn.large":
+            return "Blockbuster Boost"
         default:
             return product.displayName
         }
