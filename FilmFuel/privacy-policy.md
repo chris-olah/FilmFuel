@@ -102,4 +102,4 @@ Updates will be posted with a new “Last Updated” date.
 If you have any questions about this Privacy Policy, you can contact:
 
 Chris Olah
-Email: [you can add your developer email here]
+Email: chriso2123@icloud.com
