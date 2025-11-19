@@ -1,0 +1,192 @@
+[
+  {
+    "id": "pulp_fiction_wallet_q1",
+    "movieTitle": "Pulp Fiction",
+    "year": 1994,
+    "difficulty": "easy",
+    "question": "What bold phrase is written on Jules’s iconic wallet?",
+    "options": ["Bad Mother******", "The Shepherd", "Vengeance", "Forgive Me"],
+    "correctIndex": 0,
+    "extraInfo": "Tarantino himself owned the original wallet — Samuel L. Jackson begged to keep it as a souvenir."
+  },
+  {
+    "id": "kill_bill_yellow_suit_q1",
+    "movieTitle": "Kill Bill: Vol. 1",
+    "year": 2003,
+    "difficulty": "easy",
+    "question": "What color is The Bride’s instantly recognizable fight outfit?",
+    "options": ["Red and white", "Yellow and black", "Black leather", "White silk"],
+    "correctIndex": 1,
+    "extraInfo": "The look pays homage to Bruce Lee’s suit from 'Game of Death.'"
+  },
+  {
+    "id": "django_d_notsilent_q1",
+    "movieTitle": "Django Unchained",
+    "year": 2012,
+    "difficulty": "normal",
+    "question": "What does Dr. Schultz proudly tell Django about the silent letter in his name?",
+    "options": ["The J is silent", "The G is silent", "The O is silent", "The D is silent"],
+    "correctIndex": 3,
+    "extraInfo": "Jamie Foxx kept Django’s saddle and wore it home while filming."
+  },
+  {
+    "id": "inglourious_scalp_q1",
+    "movieTitle": "Inglourious Basterds",
+    "year": 2009,
+    "difficulty": "challenging",
+    "question": "What unusual trophy does Aldo Raine demand his soldiers collect from Nazis?",
+    "options": ["Dog tags", "Scalps", "Boot laces", "Medals"],
+    "correctIndex": 1,
+    "extraInfo": "Brad Pitt improvised Raine’s Tennessee accent after hearing Tarantino’s note: 'Make him dangerous but charming.'"
+  },
+  {
+    "id": "reservoir_dogs_colors_q1",
+    "movieTitle": "Reservoir Dogs",
+    "year": 1992,
+    "difficulty": "normal",
+    "question": "What naming system does Joe use to assign aliases to the crew?",
+    "options": ["Greek gods", "Numbers", "Animals", "Colors"],
+    "correctIndex": 3,
+    "extraInfo": "The arguments over names were improvised — creating one of the movie’s funniest scenes."
+  },
+  {
+    "id": "hateful_eight_poison_q1",
+    "movieTitle": "The Hateful Eight",
+    "year": 2015,
+    "difficulty": "challenging",
+    "question": "What deadly ingredient causes chaos in Minnie’s Haberdashery?",
+    "options": ["Belladonna stew", "Cyanide coffee", "Rat poison cookies", "Tainted whiskey"],
+    "correctIndex": 1,
+    "extraInfo": "The choking scene reactions were genuinely improvised — Tarantino encouraged the actors to go wild."
+  },
+  {
+    "id": "kill_bill_oden_sword_q1",
+    "movieTitle": "Kill Bill: Vol. 1",
+    "year": 2003,
+    "difficulty": "normal",
+    "question": "Who forges the legendary katana The Bride wields?",
+    "options": ["Budd", "Pai Mei", "Hattori Hanzo", "O-Ren Ishii"],
+    "correctIndex": 2,
+    "extraInfo": "Sonny Chiba’s Hanzo role was a direct tribute to classic samurai TV dramas."
+  },
+  {
+    "id": "pulp_fiction_mia_shake_q1",
+    "movieTitle": "Pulp Fiction",
+    "year": 1994,
+    "difficulty": "easy",
+    "question": "At Jack Rabbit Slim’s, what flavor milkshake does Mia order that shocks Vincent with its price?",
+    "options": ["Chocolate", "Strawberry", "Vanilla", "Oreo"],
+    "correctIndex": 2,
+    "extraInfo": "The $5 shake became so iconic restaurants started adding it to menus."
+  },
+  {
+    "id": "django_blue_suit_q1",
+    "movieTitle": "Django Unchained",
+    "year": 2012,
+    "difficulty": "normal",
+    "question": "What bold outfit choice does Django wear to his first day as a 'free man'?",
+    "options": ["A red formal tux", "A bright blue suit", "All white", "A black leather coat"],
+    "correctIndex": 1,
+    "extraInfo": "Foxx said he picked the outfit because 'Django had to announce himself to the world.'"
+  },
+  {
+    "id": "basterds_three_q1",
+    "movieTitle": "Inglourious Basterds",
+    "year": 2009,
+    "difficulty": "challenging",
+    "question": "What subtle hand gesture gives Archie Hicox away to the Germans?",
+    "options": ["Snapping with the wrong hand", "Pointing with the thumb", "Raising two fingers", "Raising three fingers incorrectly"],
+    "correctIndex": 3,
+    "extraInfo": "The gesture mistake was historically accurate — German officers really used it to detect impostors."
+  },
+  {
+    "id": "pulp_fiction_gold_watch_q1",
+    "movieTitle": "Pulp Fiction",
+    "year": 1994,
+    "difficulty": "challenging",
+    "question": "What object belonging to Butch becomes the centerpiece of his entire storyline?",
+    "options": ["A wedding ring", "A dog tag", "A family watch", "A silver lighter"],
+    "correctIndex": 2,
+    "extraInfo": "The watch monologue is one of the most legendary (and unhinged) speeches in cinema history."
+  },
+  {
+    "id": "hateful_eight_guitar_q1",
+    "movieTitle": "The Hateful Eight",
+    "year": 2015,
+    "difficulty": "normal",
+    "question": "What priceless item did Kurt Russell accidentally destroy while filming?",
+    "options": ["A period lantern", "A stagecoach window", "An antique Martin guitar", "A real Civil War jacket"],
+    "correctIndex": 2,
+    "extraInfo": "It was a museum piece — the crew didn’t tell Russell because they wanted a real reaction. They got one."
+  },
+  {
+    "id": "kill_bill_pai_mei_q1",
+    "movieTitle": "Kill Bill: Vol. 2",
+    "year": 2004,
+    "difficulty": "normal",
+    "question": "What impossibly brutal move does Pai Mei teach The Bride?",
+    "options": ["Cobra Strike", "Dragon's Palm", "Shadow Step Kick", "Five Point Palm Exploding Heart Technique"],
+    "correctIndex": 3,
+    "extraInfo": "Tarantino saved the move for Vol. 2 because he thought it was 'too lethal to debut early.'"
+  },
+  {
+    "id": "once_hollywood_flamer_q1",
+    "movieTitle": "Once Upon a Time in Hollywood",
+    "year": 2019,
+    "difficulty": "easy",
+    "question": "What outrageous weapon does Rick Dalton use against the intruders?",
+    "options": ["A flamethrower", "A samurai sword", "A spear gun", "A chainsaw"],
+    "correctIndex": 0,
+    "extraInfo": "DiCaprio trained with a real flamethrower — and joked he wanted to take it home."
+  },
+  {
+    "id": "reservoir_dogs_tip_q1",
+    "movieTitle": "Reservoir Dogs",
+    "year": 1992,
+    "difficulty": "normal",
+    "question": "During the cafe scene, who famously refuses to tip the waitress?",
+    "options": ["Mr. Blonde", "Mr. White", "Nice Guy Eddie", "Mr. Pink"],
+    "correctIndex": 3,
+    "extraInfo": "Tarantino originally wrote the argument to critique tipping culture — it became a defining character moment."
+  },
+  {
+    "id": "jackie_brown_money_q1",
+    "movieTitle": "Jackie Brown",
+    "year": 1997,
+    "difficulty": "challenging",
+    "question": "What method does Jackie use to smuggle the cash out of the mall?",
+    "options": ["A suitcase double", "A hollow shopping bag", "A decoy store employee switch", "A hidden airport locker"],
+    "correctIndex": 2,
+    "extraInfo": "This is Tarantino’s most underrated twist—fans still debate the logistics."
+  },
+  {
+    "id": "django_candieland_q1",
+    "movieTitle": "Django Unchained",
+    "year": 2012,
+    "difficulty": "normal",
+    "question": "What plantation serves as the setting for the film’s explosive finale?",
+    "options": ["Candyland", "Old River Acres", "Moonlight Grove", "Seven Pines"],
+    "correctIndex": 0,
+    "extraInfo": "Leonardo DiCaprio accidentally cut his hand during filming — and kept acting through the blood."
+  },
+  {
+    "id": "basterds_strudel_q1",
+    "movieTitle": "Inglourious Basterds",
+    "year": 2009,
+    "difficulty": "normal",
+    "question": "What dessert does Hans Landa order for Shosanna while interrogating her?",
+    "options": ["Chocolate cake", "Strudel with cream", "Apple tart", "Black Forest cake"],
+    "correctIndex": 1,
+    "extraInfo": "Christoph Waltz’s calm eating makes the scene unbearably tense."
+  },
+  {
+    "id": "kill_bill_grave_q1",
+    "movieTitle": "Kill Bill: Vol. 2",
+    "year": 2004,
+    "difficulty": "challenging",
+    "question": "What impossible stunt does The Bride pull off after being buried alive?",
+    "options": ["Climbs out through the dirt", "Slows her breathing for hours", "Punches through the coffin", "Breaks her chains with her feet"],
+    "correctIndex": 3,
+    "extraInfo": "Uma Thurman trained for months to perform the coffin escape without doubling."
+  }
+]

@@ -5,21 +5,31 @@ import UserNotifications
 import WidgetKit
 #endif
 
-// MARK: - Trivia model (for trivia.json)
+// MARK: - Trivia model (for all trivia packs)
 
 struct TriviaQuestion: Identifiable, Codable, Hashable {
     let id: String
     let movieTitle: String
     let year: Int
-    let genre: String
-    let difficulty: String   // "easy", "medium", "hard"
+    let genre: String?          // optional so older / simpler JSON still works
+    let difficulty: String      // "easy", "normal", "challenging"
     let question: String
     let options: [String]
     let correctIndex: Int
     let extraInfo: String?
 }
 
+// Simple metadata for future pack monetization / filtering (optional but handy)
+struct TriviaPack {
+    let id: String            // e.g. "classics", "pixar"
+    let displayName: String   // e.g. "Classics"
+    let fileName: String      // base name in bundle (no .json)
+    let isPremium: Bool
+    var isUnlocked: Bool
+}
+
 // MARK: - Reminder preferences keys (shared)
+
 enum Prefs {
     static let reminderHourKey = "ff.reminder.hour"
     static let reminderMinuteKey = "ff.reminder.minute"
@@ -27,6 +37,7 @@ enum Prefs {
 }
 
 // MARK: - Reminder content mode (shared)
+
 enum ReminderContentMode: Int, CaseIterable, Identifiable {
     case triviaOnly = 0
     case triviaAndQuote = 1
@@ -44,6 +55,7 @@ enum ReminderContentMode: Int, CaseIterable, Identifiable {
 }
 
 // MARK: - Notifications helper (shared, canonical)
+
 enum NotificationHelper {
 
     static let reminderId = "ff.daily.reminder"
@@ -221,6 +233,7 @@ enum NotificationHelper {
 }
 
 // MARK: - AppModel
+
 final class AppModel: ObservableObject {
 
     // OLD keys (migration only)
@@ -270,13 +283,91 @@ final class AppModel: ObservableObject {
     @Published var allQuotes: [Quote] = []
 
     // Trivia
-    @Published var triviaBank: [TriviaQuestion] = []
+    @Published var triviaBank: [TriviaQuestion] = []    // combined pool from ALL packs
     @Published var todayTrivia: TriviaQuestion?
+
+    // For endless trivia mode (queue-style, no repeats until cycle ends)
+    @Published private var endlessCursorIndex: Int = 0
+
+    // Optional: metadata if you later want a Packs screen / monetization toggles
+    private(set) var triviaPacks: [TriviaPack] = [
+        TriviaPack(
+            id: "classics",
+            displayName: "Classics",
+            fileName: "trivia_classics",
+            isPremium: false,
+            isUnlocked: true
+        ),
+        TriviaPack(
+            id: "scifi",
+            displayName: "Sci-Fi",
+            fileName: "trivia_scifi",
+            isPremium: false,
+            isUnlocked: true
+        ),
+        TriviaPack(
+            id: "pixar",
+            displayName: "Pixar",
+            fileName: "trivia_pixar",
+            isPremium: false,
+            isUnlocked: true
+        ),
+        TriviaPack(
+            id: "nineties",
+            displayName: "90s",
+            fileName: "trivia_90s",
+            isPremium: false,
+            isUnlocked: true
+        ),
+        TriviaPack(
+            id: "twoThousands",
+            displayName: "2000s",
+            fileName: "trivia_2000s",
+            isPremium: false,
+            isUnlocked: true
+        ),
+        TriviaPack(
+            id: "modern",
+            displayName: "Modern",
+            fileName: "trivia_modern",
+            isPremium: false,
+            isUnlocked: true
+        ),
+        TriviaPack(
+            id: "horror",
+            displayName: "Horror",
+            fileName: "trivia_horror",
+            isPremium: false,
+            isUnlocked: true
+        ),
+        TriviaPack(
+            id: "nolan",
+            displayName: "Christopher Nolan",
+            fileName: "trivia_nolan",
+            isPremium: true,
+            isUnlocked: true
+        ),
+        TriviaPack(
+            id: "tarantino",
+            displayName: "Tarantino",
+            fileName: "trivia_tarantino",
+            isPremium: true,
+            isUnlocked: true
+        ),
+        TriviaPack(
+            id: "avengers",
+            displayName: "Avengers",
+            fileName: "trivia_avengers",
+            isPremium: true,
+            isUnlocked: true
+        )
+    ]
 
     // Data
     private let repo = QuotesRepository(jsonFileName: "quotes")
 
     // MARK: - Init
+
     init() {
         let today = DailyClock.currentDayKey()
         dayKey = today
@@ -330,6 +421,7 @@ final class AppModel: ObservableObject {
     }
 
     // MARK: - Daily refresh
+
     func refreshDailyStateIfNeeded() {
         let newKey = DailyClock.currentDayKey()
         guard newKey != dayKey else { return }
@@ -354,24 +446,73 @@ final class AppModel: ObservableObject {
         ensureTodayTrivia()
     }
 
-    // MARK: - Trivia loading
+    // MARK: - Endless trivia helper (no repeats until cycle)
+
+    /// Returns the next trivia question for endless mode, cycling through the shuffled bank
+    /// without repetition until all questions have been seen.
+    func nextEndlessTriviaQuestion() -> TriviaQuestion? {
+        loadTriviaIfNeeded()
+        guard !triviaBank.isEmpty else { return nil }
+
+        if endlessCursorIndex >= triviaBank.count {
+            triviaBank.shuffle()
+            endlessCursorIndex = 0
+        }
+
+        let q = triviaBank[endlessCursorIndex]
+        endlessCursorIndex += 1
+        return q
+    }
+
+    // MARK: - Trivia loading (ALL packs → one pool)
 
     func loadTriviaIfNeeded() {
         if !triviaBank.isEmpty { return }
 
-        guard
-            let url = Bundle.main.url(forResource: "trivia", withExtension: "json"),
-            let data = try? Data(contentsOf: url)
-        else {
-            print("⚠️ Could not load trivia.json from bundle")
-            return
+        var combined: [TriviaQuestion] = []
+
+        // Load each unlocked pack and append its questions
+        for pack in triviaPacks where pack.isUnlocked {
+
+            // First, try inside the TriviaPacks subdirectory
+            let urlInFolder = Bundle.main.url(
+                forResource: pack.fileName,
+                withExtension: "json",
+                subdirectory: "TriviaPacks"
+            )
+
+            // Fallback: try at the root of the bundle
+            let url = urlInFolder ?? Bundle.main.url(
+                forResource: pack.fileName,
+                withExtension: "json"
+            )
+
+            guard let finalURL = url else {
+                print("⚠️ Could not find \(pack.fileName).json in bundle (including TriviaPacks subfolder)")
+                continue
+            }
+
+            do {
+                let data = try Data(contentsOf: finalURL)
+                let decoded = try JSONDecoder().decode([TriviaQuestion].self, from: data)
+                combined.append(contentsOf: decoded)
+            } catch {
+                print("⚠️ Failed to decode \(pack.fileName).json: \(error)")
+            }
         }
 
-        do {
-            let decoded = try JSONDecoder().decode([TriviaQuestion].self, from: data)
-            triviaBank = decoded
-        } catch {
-            print("⚠️ Failed to decode trivia.json: \(error)")
+        // Optional: still support old single trivia.json if you keep it
+        if let url = Bundle.main.url(forResource: "trivia", withExtension: "json"),
+           let data = try? Data(contentsOf: url),
+           let decoded = try? JSONDecoder().decode([TriviaQuestion].self, from: data) {
+            combined.append(contentsOf: decoded)
+        }
+
+        triviaBank = combined.shuffled()
+        endlessCursorIndex = 0
+
+        if triviaBank.isEmpty {
+            print("⚠️ Trivia bank is empty – no packs decoded")
         }
     }
 
@@ -401,7 +542,7 @@ final class AppModel: ObservableObject {
                 movieTitle: todayQuote.movie,
                 year: todayQuote.year,
                 genre: "Daily",
-                difficulty: "mixed",  // ok even though comment says easy/medium/hard
+                difficulty: "mixed",
                 question: quoteTrivia.question,
                 options: quoteTrivia.choices,
                 correctIndex: quoteTrivia.correctIndex,
@@ -414,7 +555,7 @@ final class AppModel: ObservableObject {
             return
         }
 
-        // 2) Fallback: reuse trivia.json-based question if already chosen for today
+        // 2) Fallback: reuse trivia-pack-based question if already chosen for today
         let storedDate = defaults.string(forKey: kTriviaLastDate)
         let storedID = defaults.string(forKey: kTriviaLastQuestionID)
 
@@ -425,7 +566,7 @@ final class AppModel: ObservableObject {
             return
         }
 
-        // 3) Fallback: pick a fresh random question from trivia.json
+        // 3) Fallback: pick a fresh random question from the combined trivia bank
         guard !triviaBank.isEmpty,
               let new = triviaBank.randomElement() else {
             return
@@ -437,6 +578,7 @@ final class AppModel: ObservableObject {
     }
 
     // MARK: - Register Answer
+
     func registerAnswer(correct: Bool) {
         let today = DailyClock.currentDayKey()
 
@@ -505,6 +647,7 @@ final class AppModel: ObservableObject {
     }
 
     // MARK: - Fallback quote
+
     private func fallbackQuote() -> Quote {
         Quote(
             date: dayKey,
@@ -525,6 +668,7 @@ final class AppModel: ObservableObject {
     }
 
     // MARK: - Reminder refresh
+
     private func refreshReminderIfNeededForToday() {
         let d = UserDefaults.standard
         let h = d.integer(forKey: Prefs.reminderHourKey)
@@ -559,6 +703,7 @@ final class AppModel: ObservableObject {
     }
 
     // MARK: - DEBUG
+
     #if DEBUG
     func debugResetAll() {
         if let bundleID = Bundle.main.bundleIdentifier {

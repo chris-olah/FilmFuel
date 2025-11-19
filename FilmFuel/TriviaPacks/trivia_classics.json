@@ -1,0 +1,303 @@
+[
+  {
+    "id": "shawshank_rooftop_beers_q1",
+    "movieTitle": "The Shawshank Redemption",
+    "year": 1994,
+    "difficulty": "normal",
+    "question": "On the prison rooftop, when Andy flips the power dynamic, what drink does he score for the work crew?",
+    "options": [
+      "Ice-cold beers",
+      "Sweet iced tea",
+      "Bourbon shots",
+      "Lemonade in pitchers"
+    ],
+    "correctIndex": 0,
+    "extraInfo": "The men say they felt like free men, if only for a few minutes, while they drank those beers in the sun."
+  },
+  {
+    "id": "godfather_offer_q1",
+    "movieTitle": "The Godfather",
+    "year": 1972,
+    "difficulty": "easy",
+    "question": "In one of the most quoted lines in movie history, what does Don Corleone promise to make?",
+    "options": [
+      "An offer he can't refuse",
+      "A deal with the police",
+      "A peaceful arrangement",
+      "A simple suggestion"
+    ],
+    "correctIndex": 0,
+    "extraInfo": "“I’m gonna make him an offer he can’t refuse” became the defining line of the entire franchise."
+  },
+  {
+    "id": "jaws_bigger_boat_q1",
+    "movieTitle": "Jaws",
+    "year": 1975,
+    "difficulty": "easy",
+    "question": "After seeing the shark up close for the first time, what does Chief Brody say the crew is going to need?",
+    "options": [
+      "A bigger boat",
+      "More harpoons",
+      "A stronger cage",
+      "Reinforced nets"
+    ],
+    "correctIndex": 0,
+    "extraInfo": "The line “You’re gonna need a bigger boat” was partly improvised and became an instant classic."
+  },
+  {
+    "id": "star_wars_father_twist_q1",
+    "movieTitle": "Star Wars: The Empire Strikes Back",
+    "year": 1980,
+    "difficulty": "challenging",
+    "question": "In the Cloud City duel, what shocking truth does Darth Vader actually reveal to Luke?",
+    "options": [
+      "That he is Luke’s father",
+      "That Luke’s sister is in danger",
+      "That Obi-Wan betrayed them both",
+      "That the Emperor created Luke"
+    ],
+    "correctIndex": 0,
+    "extraInfo": "The twist was kept so secret that even most of the cast didn’t know the real line until the premiere."
+  },
+  {
+    "id": "back_to_future_speed_q1",
+    "movieTitle": "Back to the Future",
+    "year": 1985,
+    "difficulty": "normal",
+    "question": "When Doc Brown unveils the DeLorean, what exact speed does it need to hit to time travel?",
+    "options": [
+      "88 miles per hour",
+      "77 miles per hour",
+      "90 miles per hour",
+      "66 miles per hour"
+    ],
+    "correctIndex": 0,
+    "extraInfo": "Doc warns Marty that when this baby hits 88 miles per hour, they’re going to see “some serious shit.”"
+  },
+  {
+    "id": "forrest_gump_box_chocolates_q1",
+    "movieTitle": "Forrest Gump",
+    "year": 1994,
+    "difficulty": "easy",
+    "question": "Sitting on the bench with his suitcase, how does Forrest finish the line 'Life is like a box of ___'?",
+    "options": [
+      "Memories",
+      "Chocolates",
+      "Stories",
+      "Second chances"
+    ],
+    "correctIndex": 1,
+    "extraInfo": "The quote came from Forrest’s mama and turned into one of the most recognizable lines in cinema."
+  },
+  {
+    "id": "pulp_fiction_twist_dance_q1",
+    "movieTitle": "Pulp Fiction",
+    "year": 1994,
+    "difficulty": "normal",
+    "question": "At Jack Rabbit Slim’s, what dance do Vincent Vega and Mia Wallace casually turn into an iconic moment?",
+    "options": [
+      "The Jive",
+      "The Twist",
+      "The Foxtrot",
+      "The Jitterbug"
+    ],
+    "correctIndex": 1,
+    "extraInfo": "Their low-effort, super-cool Twist made an ordinary diner dance floor instantly legendary."
+  },
+  {
+    "id": "rocky_stairs_q1",
+    "movieTitle": "Rocky",
+    "year": 1976,
+    "difficulty": "easy",
+    "question": "When Rocky’s training montage peaks, what does he do at the very top of the Philadelphia steps?",
+    "options": [
+      "Shadowboxes in place",
+      "Throws his fists in the air",
+      "Drops to his knees",
+      "Shouts Adrian’s name"
+    ],
+    "correctIndex": 1,
+    "extraInfo": "Those steps became so famous that fans still run them just to recreate that feeling."
+  },
+  {
+    "id": "indiana_idol_switch_q1",
+    "movieTitle": "Raiders of the Lost Ark",
+    "year": 1981,
+    "difficulty": "normal",
+    "question": "In the trapped temple, what does Indy try to swap the golden idol with before everything goes wrong?",
+    "options": [
+      "A bag of jewels",
+      "A bag of sand",
+      "A stone relic",
+      "A leather pouch"
+    ],
+    "correctIndex": 1,
+    "extraInfo": "Even after carefully weighing the sand, he still triggers the trap and that rolling boulder chase."
+  },
+  {
+    "id": "casablanca_paris_line_q1",
+    "movieTitle": "Casablanca",
+    "year": 1942,
+    "difficulty": "challenging",
+    "question": "Talking to Ilsa about their past, how does Rick finish the line 'We’ll always have ___'?",
+    "options": [
+      "London",
+      "Paris",
+      "Casablanca",
+      "The past"
+    ],
+    "correctIndex": 1,
+    "extraInfo": "That one line turned a short fling in wartime Paris into a love story people still quote today."
+  },
+  {
+    "id": "et_phone_home_q1",
+    "movieTitle": "E.T.",
+    "year": 1982,
+    "difficulty": "easy",
+    "question": "When E.T. finally learns to speak, what simple phrase about communication does he keep repeating?",
+    "options": [
+      "E.T. go home",
+      "E.T. find home",
+      "E.T. phone home",
+      "E.T. call friends"
+    ],
+    "correctIndex": 2,
+    "extraInfo": "“E.T. phone home” turned a homesick alien into one of the most emotional figures in 80s cinema."
+  },
+  {
+    "id": "wizard_oz_yellow_brick_road_q1",
+    "movieTitle": "The Wizard of Oz",
+    "year": 1939,
+    "difficulty": "normal",
+    "question": "Right after Dorothy arrives in Oz, what path is she told to follow to start her journey?",
+    "options": [
+      "The Emerald trail",
+      "The ruby street",
+      "The Yellow Brick Road",
+      "The Munchkin lane"
+    ],
+    "correctIndex": 2,
+    "extraInfo": "The moment she steps onto the Yellow Brick Road is when the movie fully dives into Technicolor magic."
+  },
+  {
+    "id": "ghostbusters_cross_streams_q1",
+    "movieTitle": "Ghostbusters",
+    "year": 1984,
+    "difficulty": "normal",
+    "question": "Egon gives one huge warning about the proton packs—what are the Ghostbusters never supposed to do?",
+    "options": [
+      "Aim at each other",
+      "Use them indoors",
+      "Cross the streams",
+      "Fire above the clouds"
+    ],
+    "correctIndex": 2,
+    "extraInfo": "Crossing the streams is 'bad'… until it becomes the only way to vaporize a god on a New York rooftop."
+  },
+  {
+    "id": "alien_chestburster_q1",
+    "movieTitle": "Alien",
+    "year": 1979,
+    "difficulty": "challenging",
+    "question": "At the crew’s seemingly normal meal, from where does the creature violently burst out, shocking everyone?",
+    "options": [
+      "Kane’s back",
+      "Kane’s throat",
+      "Kane’s chest",
+      "Kane’s stomach"
+    ],
+    "correctIndex": 2,
+    "extraInfo": "The chestburster scene was so intense that some actors weren’t fully prepped on how gory it would be."
+  },
+  {
+    "id": "taxi_driver_mirror_q1",
+    "movieTitle": "Taxi Driver",
+    "year": 1976,
+    "difficulty": "challenging",
+    "question": "In front of the mirror, what challenge does Travis Bickle throw at his own reflection?",
+    "options": [
+      "Who are you?",
+      "Wanna fight?",
+      "You talking to me?",
+      "Feeling lucky?"
+    ],
+    "correctIndex": 2,
+    "extraInfo": "De Niro riffed on the line, turning 'You talking to me?' into a defining moment of 70s cinema."
+  },
+  {
+    "id": "terminator_ill_be_back_q1",
+    "movieTitle": "The Terminator",
+    "year": 1984,
+    "difficulty": "easy",
+    "question": "At the police station front desk, what short promise does the Terminator deliver before returning in a car?",
+    "options": [
+      "See you soon",
+      "I’ll return for you",
+      "Don’t move",
+      "I’ll be back"
+    ],
+    "correctIndex": 3,
+    "extraInfo": "Arnold’s casual 'I’ll be back' became his most famous line and a franchise trademark."
+  },
+  {
+    "id": "good_bad_ugly_standoff_q1",
+    "movieTitle": "The Good, the Bad and the Ugly",
+    "year": 1966,
+    "difficulty": "challenging",
+    "question": "In the final graveyard duel, how many gunslingers face off in that legendary circular standoff?",
+    "options": [
+      "Two",
+      "Four",
+      "Five",
+      "Three"
+    ],
+    "correctIndex": 3,
+    "extraInfo": "The three-way duel, backed by Morricone’s score, is one of the most copied standoffs ever shot."
+  },
+  {
+    "id": "psycho_shower_scene_q1",
+    "movieTitle": "Psycho",
+    "year": 1960,
+    "difficulty": "challenging",
+    "question": "In Hitchcock’s most infamous scene, where is Marion Crane when the screeching-violin attack happens?",
+    "options": [
+      "At her office desk",
+      "In Norman’s parlor",
+      "Inside her car",
+      "Taking a shower"
+    ],
+    "correctIndex": 3,
+    "extraInfo": "The shower scene used dozens of rapid cuts and chocolate syrup as blood to sneak past censors."
+  },
+  {
+    "id": "die_hard_yippee_ki_yay_q1",
+    "movieTitle": "Die Hard",
+    "year": 1988,
+    "difficulty": "normal",
+    "question": "What cowboy-inspired catchphrase does John McClane toss out to taunt Hans Gruber over the radio?",
+    "options": [
+      "Ride or die, partner",
+      "Make my day",
+      "This is my town",
+      "Yippee-ki-yay"
+    ],
+    "correctIndex": 3,
+    "extraInfo": "McClane’s offhand 'Yippee-ki-yay' gave the film its own gritty, smart-mouthed personality."
+  },
+  {
+    "id": "planet_apes_twist_q1",
+    "movieTitle": "Planet of the Apes",
+    "year": 1968,
+    "difficulty": "challenging",
+    "question": "At the very end, what ruined monument does Taylor find in the sand, revealing where he’s really been all along?",
+    "options": [
+      "The Lincoln Memorial",
+      "The Eiffel Tower",
+      "The White House",
+      "The Statue of Liberty"
+    ],
+    "correctIndex": 3,
+    "extraInfo": "The half-buried Statue of Liberty delivers one of the great gut-punch twist endings in sci-fi history."
+  }
+]
+

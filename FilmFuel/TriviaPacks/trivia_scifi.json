@@ -1,0 +1,302 @@
+[
+  {
+    "id": "matrix_red_pill_q1",
+    "movieTitle": "The Matrix",
+    "year": 1999,
+    "difficulty": "easy",
+    "question": "When Morpheus gives Neo the ultimate choice, what does the red pill actually promise him?",
+    "options": [
+      "The truth about reality",
+      "A return to the Matrix",
+      "A reset of his memories",
+      "Instant superhuman powers"
+    ],
+    "correctIndex": 0,
+    "extraInfo": "The red pill became such a cultural icon that its exact shade of blue and red was chosen after dozens of tests."
+  },
+  {
+    "id": "inception_spin_q1",
+    "movieTitle": "Inception",
+    "year": 2010,
+    "difficulty": "normal",
+    "question": "What object does Cobb use to determine whether he’s in a dream or not?",
+    "options": [
+      "His wedding ring",
+      "A silver coin",
+      "A spinning top",
+      "A loaded die"
+    ],
+    "correctIndex": 2,
+    "extraInfo": "Nolan never confirms if the ending is a dream—he said the real point is that Cobb no longer cares."
+  },
+  {
+    "id": "interstellar_murph_q1",
+    "movieTitle": "Interstellar",
+    "year": 2014,
+    "difficulty": "normal",
+    "question": "What message does Cooper use gravitational waves to send to Murph through the bookshelf?",
+    "options": [
+      "Coordinates to NASA",
+      "The quantum data",
+      "A goodbye message",
+      "The plan to escape Earth"
+    ],
+    "correctIndex": 1,
+    "extraInfo": "The entire scene was shot with practical dust effects—no CGI was used for the floating particles."
+  },
+  {
+    "id": "alien_chestburster_q2",
+    "movieTitle": "Alien",
+    "year": 1979,
+    "difficulty": "easy",
+    "question": "What horrifying creature erupts from Kane during the crew’s breakfast?",
+    "options": [
+      "A facehugger",
+      "A small alien larva",
+      "A parasite from LV-426",
+      "The chestburster"
+    ],
+    "correctIndex": 3,
+    "extraInfo": "Ridley Scott purposely didn’t tell the cast what the explosion would look like, so their screams are real."
+  },
+  {
+    "id": "blade_runner_tears_in_rain_q1",
+    "movieTitle": "Blade Runner",
+    "year": 1982,
+    "difficulty": "challenging",
+    "question": "In Roy Batty’s famous final monologue, what does he say his memories will be lost like?",
+    "options": [
+      "Tears in rain",
+      "Smoke in the night",
+      "Stars fading out",
+      "Dreams dissolving"
+    ],
+    "correctIndex": 0,
+    "extraInfo": "Rutger Hauer improvised the line 'tears in rain,' turning the scene into one of sci-fi’s greatest moments."
+  },
+  {
+    "id": "empire_hyperdrive_q1",
+    "movieTitle": "The Empire Strikes Back",
+    "year": 1980,
+    "difficulty": "normal",
+    "question": "In the Millennium Falcon, what crucial system keeps failing until the very end of the film?",
+    "options": [
+      "The blaster cannons",
+      "The hyperdrive",
+      "The shield generator",
+      "The life support module"
+    ],
+    "correctIndex": 1,
+    "extraInfo": "Han’s hyperdrive issues became a running joke—it's basically the Falcon’s version of a bad starter engine."
+  },
+  {
+    "id": "arrival_language_q1",
+    "movieTitle": "Arrival",
+    "year": 2016,
+    "difficulty": "challenging",
+    "question": "What breakthrough does Louise Banks realize about the alien language?",
+    "options": [
+      "It rewrites human DNA",
+      "It reveals the future",
+      "It is based on gravitational loops",
+      "It changes perception of time"
+    ],
+    "correctIndex": 3,
+    "extraInfo": "The circular symbols were inspired by coffee rings and ink droplets on glass."
+  },
+  {
+    "id": "ex_machina_test_q1",
+    "movieTitle": "Ex Machina",
+    "year": 2014,
+    "difficulty": "normal",
+    "question": "What is Caleb secretly evaluating Ava for during their sessions?",
+    "options": [
+      "A Turing test",
+      "Sentience",
+      "Autonomous deception",
+      "Emotional replication"
+    ],
+    "correctIndex": 0,
+    "extraInfo": "The entire film was shot with only 15 crew members on set—a tiny team for such a massive visual impact."
+  },
+  {
+    "id": "terminator_2_skynet_q1",
+    "movieTitle": "Terminator 2: Judgment Day",
+    "year": 1991,
+    "difficulty": "easy",
+    "question": "What becomes self-aware and triggers Judgment Day?",
+    "options": [
+      "Project Odyssey",
+      "Cyberdyne’s AI core",
+      "Skynet",
+      "The T-800 program"
+    ],
+    "correctIndex": 2,
+    "extraInfo": "Skynet becomes self-aware on August 29, a date fans now treat like an unofficial sci-fi holiday."
+  },
+  {
+    "id": "star_trek_kobayashi_q1",
+    "movieTitle": "Star Trek II: The Wrath of Khan",
+    "year": 1982,
+    "difficulty": "challenging",
+    "question": "What unbeatable Starfleet simulation does Kirk famously cheat his way through?",
+    "options": [
+      "The Starfall Protocol",
+      "The Kobayashi Maru",
+      "The Delta Run",
+      "The Orion Gauntlet"
+    ],
+    "correctIndex": 1,
+    "extraInfo": "Kirk reprogrammed the scenario to make a no-win situation winnable—a classic Kirk move."
+  },
+  {
+    "id": "matrix_dodge_bullets_q1",
+    "movieTitle": "The Matrix",
+    "year": 1999,
+    "difficulty": "normal",
+    "question": "During the rooftop fight, what impossible move does Neo pull off that shocks even the Agents?",
+    "options": [
+      "A midair freeze",
+      "Stopping bullets mid-flight",
+      "Splitting into duplicates",
+      "Dodging bullets in slow motion"
+    ],
+    "correctIndex": 3,
+    "extraInfo": "Bullet-time was groundbreaking—120 individual cameras were used to create the effect."
+  },
+  {
+    "id": "dune_spice_q1",
+    "movieTitle": "Dune",
+    "year": 2021,
+    "difficulty": "normal",
+    "question": "What vital substance on Arrakis gives the Fremen and the galaxy immense power?",
+    "options": [
+      "Sandwater",
+      "Desert sap",
+      "The spice melange",
+      "Solar powder"
+    ],
+    "correctIndex": 2,
+    "extraInfo": "Spice is so important that wars, politics, and religion all revolve around controlling it."
+  },
+  {
+    "id": "jurassic_park_chaos_q1",
+    "movieTitle": "Jurassic Park",
+    "year": 1993,
+    "difficulty": "easy",
+    "question": "What does Dr. Ian Malcolm describe as the scientific theory behind the park’s inevitable failures?",
+    "options": [
+      "Chaos theory",
+      "Quantum instability",
+      "Genetic drift",
+      "Environmental pressure"
+    ],
+    "correctIndex": 0,
+    "extraInfo": "Jeff Goldblum improvised much of Malcolm’s quirky style—including the iconic “life finds a way.”"
+  },
+  {
+    "id": "2001_monolith_q1",
+    "movieTitle": "2001: A Space Odyssey",
+    "year": 1968,
+    "difficulty": "challenging",
+    "question": "When early humans encounter the monolith, what evolutionary shift does it trigger?",
+    "options": [
+      "Language",
+      "Tool use",
+      "Fire control",
+      "Group hunting"
+    ],
+    "correctIndex": 1,
+    "extraInfo": "The monolith’s meaning is intentionally ambiguous—Kubrick wanted viewers to interpret it themselves."
+  },
+  {
+    "id": "guardian_groot_q1",
+    "movieTitle": "Guardians of the Galaxy",
+    "year": 2014,
+    "difficulty": "easy",
+    "question": "What single phrase can Groot say throughout most of the film?",
+    "options": [
+      "We are Groot",
+      "Groot protects",
+      "I am Groot",
+      "I am tree"
+    ],
+    "correctIndex": 2,
+    "extraInfo": "Vin Diesel recorded the line in multiple languages, including Mandarin and Spanish."
+  },
+  {
+    "id": "predator_heat_vision_q1",
+    "movieTitle": "Predator",
+    "year": 1987,
+    "difficulty": "normal",
+    "question": "What unique visual ability does the Predator use to track its prey?",
+    "options": [
+      "Motion scanning",
+      "Energy wave tracking",
+      "Blood-scent detection",
+      "Thermal vision"
+    ],
+    "correctIndex": 3,
+    "extraInfo": "The thermal vision effect was created using an actual infrared camera system—rare in the 80s."
+  },
+  {
+    "id": "minority_report_precrime_q1",
+    "movieTitle": "Minority Report",
+    "year": 2002,
+    "difficulty": "normal",
+    "question": "What futuristic police system lets officers arrest people before crimes happen?",
+    "options": [
+      "Precrime",
+      "TimeGuard",
+      "VisionNet",
+      "Echo Division"
+    ],
+    "correctIndex": 0,
+    "extraInfo": "Spielberg consulted 15 futurists to design technologies for the film—many ended up becoming real."
+  },
+  {
+    "id": "fifth_element_stones_q1",
+    "movieTitle": "The Fifth Element",
+    "year": 1997,
+    "difficulty": "challenging",
+    "question": "What must Korben Dallas retrieve to stop the Great Evil?",
+    "options": [
+      "Celestial runes",
+      "The four elemental stones",
+      "The Life Code",
+      "Zorg’s reactor key"
+    ],
+    "correctIndex": 1,
+    "extraInfo": "Luc Besson wrote the earliest drafts of the film when he was just 16 years old."
+  },
+  {
+    "id": "avatar_na_vi_q1",
+    "movieTitle": "Avatar",
+    "year": 2009,
+    "difficulty": "easy",
+    "question": "What is the name of the blue-skinned native species on Pandora?",
+    "options": [
+      "Oru’kai",
+      "Arunai",
+      "Na’vi",
+      "Kesh’tar"
+    ],
+    "correctIndex": 2,
+    "extraInfo": "James Cameron created an entire functional Na’vi language with linguist Paul Frommer."
+  },
+  {
+    "id": "mad_max_fury_road_q1",
+    "movieTitle": "Mad Max: Fury Road",
+    "year": 2015,
+    "difficulty": "challenging",
+    "question": "What resource are the War Boys and Immortan Joe obsessed with controlling?",
+    "options": [
+      "Gasoline",
+      "Weaponized dust",
+      "Biofuel",
+      "Fresh water"
+    ],
+    "correctIndex": 3,
+    "extraInfo": "Almost every chase scene was done with real stunts—over 150 vehicles were built for the film."
+  }
+]

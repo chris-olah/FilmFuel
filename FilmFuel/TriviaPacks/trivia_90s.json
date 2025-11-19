@@ -1,0 +1,205 @@
+[
+  {
+    "id": "matrix_mr_anderson_q1",
+    "movieTitle": "The Matrix",
+    "year": 1999,
+    "difficulty": "easy",
+    "question": "Before Neo wakes up to the real world, what everyday name does he live under?",
+    "options": ["Thomas Anderson", "Michael Preston", "John Carter", "Evan Parker"],
+    "correctIndex": 0,
+    "extraInfo": "Agent Smith spits “Mr. Anderson” so intensely that it became a meme 20 years before memes were a thing."
+  },
+  {
+    "id": "titanic_draw_me_q1",
+    "movieTitle": "Titanic",
+    "year": 1997,
+    "difficulty": "normal",
+    "question": "In one of the most iconic scenes ever, what does Rose ask Jack to draw her wearing?",
+    "options": ["The Heart of the Ocean", "A red velvet shawl", "Her silk gloves", "Nothing at all"],
+    "correctIndex": 0,
+    "extraInfo": "James Cameron himself actually drew the sketch used in the movie."
+  },
+  {
+    "id": "toy_story_little_lightbulb_q1",
+    "movieTitle": "Toy Story",
+    "year": 1995,
+    "difficulty": "easy",
+    "question": "During their first argument, what does Woody mockingly call Buzz’s 'laser'?",
+    "options": ["A little lightbulb that blinks", "A tiny spark-maker", "A toy flashlight", "A cheap red dot"],
+    "correctIndex": 0,
+    "extraInfo": "That roast moment basically defines the early Woody–Buzz rivalry."
+  },
+  {
+    "id": "fight_club_first_rule_q1",
+    "movieTitle": "Fight Club",
+    "year": 1999,
+    "difficulty": "easy",
+    "question": "During the basement meeting, what *is* the first rule of Fight Club?",
+    "options": ["You do not talk about Fight Club", "Never back down", "Respect the leader", "Always finish the fight"],
+    "correctIndex": 0,
+    "extraInfo": "The first two rules are literally the same—emphasizing the secrecy."
+  },
+  {
+    "id": "forrest_gump_running_q1",
+    "movieTitle": "Forrest Gump",
+    "year": 1994,
+    "difficulty": "easy",
+    "question": "What does Forrest do one day that leads him to accidentally run across the entire country?",
+    "options": ["He decides to go for a jog", "He runs to escape bullies", "He follows a straight road", "He chases after Jenny"],
+    "correctIndex": 0,
+    "extraInfo": "He ran for over three years in the film’s timeline."
+  },
+
+  {
+    "id": "lion_king_mufasa_scene_q1",
+    "movieTitle": "The Lion King",
+    "year": 1994,
+    "difficulty": "normal",
+    "question": "After Mufasa’s death, who is the first character to comfort young Simba?",
+    "options": ["Sarabi", "Sarafina", "Nala", "Rafiki"],
+    "correctIndex": 1,
+    "extraInfo": "Sarabi’s soft push of Simba’s head is one of the most emotional animated moments ever made."
+  },
+  {
+    "id": "jurassic_park_nedry_q1",
+    "movieTitle": "Jurassic Park",
+    "year": 1993,
+    "difficulty": "normal",
+    "question": "Who betrays the park and steals the dinosaur embryos in that iconic Barbasol can?",
+    "options": ["Dennis Nedry", "Ian Malcolm", "Robert Muldoon", "Donald Gennaro"],
+    "correctIndex": 1,
+    "extraInfo": "The Barbasol can became one of cinema’s most clever fake props."
+  },
+  {
+    "id": "good_will_hunting_apples_q1",
+    "movieTitle": "Good Will Hunting",
+    "year": 1997,
+    "difficulty": "easy",
+    "question": "After outsmarting a Harvard student, what legendary line does Will slam on the window?",
+    "options": ["How do you like them apples?", "Enjoy that number?", "Still think you’re smart?", "Who's the genius now?"],
+    "correctIndex": 1,
+    "extraInfo": "Matt Damon improvised the number-slam to give the scene more attitude."
+  },
+  {
+    "id": "saving_private_ryan_miller_q1",
+    "movieTitle": "Saving Private Ryan",
+    "year": 1998,
+    "difficulty": "normal",
+    "question": "Who leads the mission to go find Private Ryan?",
+    "options": ["Captain Miller", "Sergeant Horvath", "Private Jackson", "Corporal Upham"],
+    "correctIndex": 1,
+    "extraInfo": "Tom Hanks crafted Miller as a quiet, steady leader—making him one of cinema’s most grounded heroes."
+  },
+  {
+    "id": "the_mummy_evelyn_book_q1",
+    "movieTitle": "The Mummy",
+    "year": 1999,
+    "difficulty": "normal",
+    "question": "What does Evelyn accidentally read that awakens Imhotep?",
+    "options": ["The Book of the Dead", "A forbidden prayer", "An ancient curse", "The Black Pharaoh’s inscription"],
+    "correctIndex": 1,
+    "extraInfo": "Rachel Weisz trained her real librarian skills into Evelyn’s character quirks."
+  },
+
+  {
+    "id": "matrix_red_pill_meaning_q1",
+    "movieTitle": "The Matrix",
+    "year": 1999,
+    "difficulty": "normal",
+    "question": "When Morpheus presents Neo with the red pill, what does it represent?",
+    "options": ["Learning the truth about reality", "Freedom from the machines", "A return to his old life", "Complete mind control"],
+    "correctIndex": 2,
+    "extraInfo": "The pill scene is so iconic that philosophers still reference it in debates."
+  },
+  {
+    "id": "titanic_door_q1",
+    "movieTitle": "Titanic",
+    "year": 1997,
+    "difficulty": "challenging",
+    "question": "After the ship sinks, what object does Rose climb onto to survive the freezing water?",
+    "options": ["A floating door", "A collapsed lifeboat", "A broken piano panel", "A stack of crates"],
+    "correctIndex": 2,
+    "extraInfo": "James Cameron finally tested the door in 2022—Jack still wouldn’t have fit."
+  },
+  {
+    "id": "men_in_black_neuralyzer_q1",
+    "movieTitle": "Men in Black",
+    "year": 1997,
+    "difficulty": "easy",
+    "question": "What device do Agents J and K use to wipe civilians’ memories?",
+    "options": ["The Neuralyzer", "The FlashStick", "The Mind Wiper", "The Forget-Me Beam"],
+    "correctIndex": 2,
+    "extraInfo": "The neuralyzer sound was made by blending a camera shutter with an electric toothbrush."
+  },
+  {
+    "id": "toy_story_claw_rescue_q1",
+    "movieTitle": "Toy Story 2",
+    "year": 1999,
+    "difficulty": "challenging",
+    "question": "When Buzz and the gang get stuck at Al’s Toy Barn, who ends up 'saving' them according to the aliens?",
+    "options": ["The Claw", "Woody", "Buzz Lightyear", "Rex"],
+    "correctIndex": 2,
+    "extraInfo": "The aliens’ devotion to the Claw became one of Pixar’s funniest running gags."
+  },
+  {
+    "id": "the_sixth_sense_twist_q1",
+    "movieTitle": "The Sixth Sense",
+    "year": 1999,
+    "difficulty": "challenging",
+    "question": "In the film’s famous twist ending, what truth does Malcolm Crowe finally realize?",
+    "options": ["He has been dead the whole time", "His memories were erased", "Cole never needed his help", "His wife was lying to him"],
+    "correctIndex": 2,
+    "extraInfo": "M. Night Shyamalan hid dozens of visual clues pointing to the twist."
+  },
+
+  {
+    "id": "home_alone_angels_foul_souls_q1",
+    "movieTitle": "Home Alone",
+    "year": 1990,
+    "difficulty": "normal",
+    "question": "To scare off the pizza delivery guy, what does Kevin use to make himself sound dangerous?",
+    "options": ["Audio from a fake mobster movie", "A walkie-talkie recording", "His dad’s speaker system", "A fireworks sound clip"],
+    "correctIndex": 3,
+    "extraInfo": "The movie he uses, 'Angels with Filthy Souls,' was filmed specifically for Home Alone."
+  },
+  {
+    "id": "scream_ghostface_call_q1",
+    "movieTitle": "Scream",
+    "year": 1996,
+    "difficulty": "challenging",
+    "question": "At the start of the film, what creepy question does Ghostface first ask Casey Becker?",
+    "options": ["Do you like scary movies?", "Where are you right now?", "Who's with you tonight?", "Do you want to play a game?"],
+    "correctIndex": 3,
+    "extraInfo": "The opening scene was inspired by urban-legend phone-call stories."
+  },
+  {
+    "id": "the_truman_show_truth_q1",
+    "movieTitle": "The Truman Show",
+    "year": 1998,
+    "difficulty": "challenging",
+    "question": "What unusual object falls from the sky, giving Truman his first hint that something is wrong?",
+    "options": ["A stage light labeled 'Sirius'", "A boom mic", "A fake rain cloud", "A camera lens"],
+    "correctIndex": 3,
+    "extraInfo": "The fallen stage light is the first crack in Truman’s manufactured reality."
+  },
+  {
+    "id": "the_matrix_bullet_dodge_q1",
+    "movieTitle": "The Matrix",
+    "year": 1999,
+    "difficulty": "normal",
+    "question": "During the rooftop shootout, what impossible move does Neo pull off?",
+    "options": ["Dodging bullets in slow motion", "Catching a bullet", "Splitting into two copies", "Stopping time entirely"],
+    "correctIndex": 3,
+    "extraInfo": "Bullet-time required over 100 cameras arranged in a circle to capture the shot."
+  },
+  {
+    "id": "planet_of_the_apes_twist_q1",
+    "movieTitle": "Planet of the Apes",
+    "year": 1968,
+    "difficulty": "challenging",
+    "question": "At the very end, what ruined monument does Taylor find in the sand, revealing where he’s really been all along?",
+    "options": ["The Statue of Liberty", "The Lincoln Memorial", "The Eiffel Tower", "The White House"],
+    "correctIndex": 3,
+    "extraInfo": "The half-buried Statue of Liberty delivers one of the great gut-punch twist endings in sci-fi history."
+  }
+]

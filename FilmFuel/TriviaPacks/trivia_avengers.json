@@ -1,0 +1,302 @@
+[
+  {
+    "id": "avengers_assemble_q1",
+    "movieTitle": "Avengers: Endgame",
+    "year": 2019,
+    "difficulty": "easy",
+    "question": "What long-awaited phrase does Captain America finally say during the final battle?",
+    "options": [
+      "Avengers… assemble!",
+      "We fight as one!",
+      "This is our time!",
+      "Take the field!"
+    ],
+    "correctIndex": 0,
+    "extraInfo": "Fans waited **11 years** to hear this iconic line."
+  },
+  {
+    "id": "ironman_i_am_iron_man_q1",
+    "movieTitle": "Iron Man",
+    "year": 2008,
+    "difficulty": "easy",
+    "question": "What line does Tony Stark boldly say during his press conference?",
+    "options": [
+      "You're welcome.",
+      "I am Iron Man.",
+      "I'm the hero you need.",
+      "I never lie."
+    ],
+    "correctIndex": 1,
+    "extraInfo": "It was unscripted — Downey improvised it, and Marvel kept it."
+  },
+  {
+    "id": "thor_hammer_q1",
+    "movieTitle": "Thor",
+    "year": 2011,
+    "difficulty": "easy",
+    "question": "What is Thor's enchanted hammer called?",
+    "options": [
+      "Mjölnir",
+      "Stormbreaker",
+      "Ragnarok",
+      "Gungnir"
+    ],
+    "correctIndex": 0,
+    "extraInfo": "The name translates to 'Crusher of Evil' in Old Norse mythology."
+  },
+  {
+    "id": "captain_lift_mjolnir_q1",
+    "movieTitle": "Avengers: Endgame",
+    "year": 2019,
+    "difficulty": "normal",
+    "question": "Which Avenger finally proves worthy by lifting Mjölnir?",
+    "options": [
+      "Hulk",
+      "Star-Lord",
+      "Captain America",
+      "Black Widow"
+    ],
+    "correctIndex": 2,
+    "extraInfo": "The theater reactions worldwide were thunderous — even Chris Hemsworth loved it."
+  },
+  {
+    "id": "avengers_coulson_cards_q1",
+    "movieTitle": "The Avengers",
+    "year": 2012,
+    "difficulty": "normal",
+    "question": "What personal item does Fury use to motivate the team after Coulson's fall?",
+    "options": [
+      "A SHIELD badge",
+      "A pocket compass",
+      "Blood-stained Captain America trading cards",
+      "His lanyard"
+    ],
+    "correctIndex": 2,
+    "extraInfo": "Fury faked the blood — classic Nick Fury manipulation."
+  },
+  {
+    "id": "hawkeye_penthouse_q1",
+    "movieTitle": "Avengers: Age of Ultron",
+    "year": 2015,
+    "difficulty": "normal",
+    "question": "What surprising secret does Hawkeye reveal?",
+    "options": [
+      "He was once a SHIELD director",
+      "He has a hidden family",
+      "He’s retired",
+      "He's Hydra"
+    ],
+    "correctIndex": 1,
+    "extraInfo": "Fans were stunned — it instantly made Hawkeye one of the most grounded Avengers."
+  },
+  {
+    "id": "loki_hulk_smash_q1",
+    "movieTitle": "The Avengers",
+    "year": 2012,
+    "difficulty": "easy",
+    "question": "How does Hulk humiliate Loki during their confrontation?",
+    "options": [
+      "Punts him like a football",
+      "Slams him into the floor repeatedly",
+      "Throws him out a window",
+      "Throws him into a wall"
+    ],
+    "correctIndex": 1,
+    "extraInfo": "'Puny god' became one of the MCU’s biggest crowd-pleasers."
+  },
+  {
+    "id": "infinitywar_soulstone_q1",
+    "movieTitle": "Avengers: Infinity War",
+    "year": 2018,
+    "difficulty": "challenging",
+    "question": "What heartbreaking sacrifice is required to obtain the Soul Stone?",
+    "options": [
+      "A sworn oath",
+      "A hero’s surrender",
+      "A loved one's life",
+      "A piece of oneself"
+    ],
+    "correctIndex": 2,
+    "extraInfo": "The Soul Stone scenes were kept secret even from most of the cast."
+  },
+  {
+    "id": "close_ports_chitauri_q1",
+    "movieTitle": "The Avengers",
+    "year": 2012,
+    "difficulty": "normal",
+    "question": "What event instantly disables the Chitauri army?",
+    "options": [
+      "Thor’s lightning surge",
+      "The portal closing",
+      "Hulk destroying the mothership",
+      "A virus uploaded"
+    ],
+    "correctIndex": 1,
+    "extraInfo": "Their hive-mind collapse is the MCU’s first major alien lore clue."
+  },
+  {
+    "id": "thanos_i_am_inevitable_q1",
+    "movieTitle": "Avengers: Endgame",
+    "year": 2019,
+    "difficulty": "easy",
+    "question": "What line does Thanos say right before his final snap attempt?",
+    "options": [
+      "Everything ends now.",
+      "You can't stop destiny.",
+      "I am inevitable.",
+      "I will rise again."
+    ],
+    "correctIndex": 2,
+    "extraInfo": "The parallel between this line and Tony’s final line is MCU perfection."
+  },
+  {
+    "id": "wakanda_battle_forever_q1",
+    "movieTitle": "Avengers: Infinity War",
+    "year": 2018,
+    "difficulty": "normal",
+    "question": "What battle cry is shouted before the Wakanda charge?",
+    "options": [
+      "To the end!",
+      "Stand tall!",
+      "For the realm!",
+      "Wakanda forever!"
+    ],
+    "correctIndex": 3,
+    "extraInfo": "Chadwick Boseman's delivery turned it into a cultural movement."
+  },
+  {
+    "id": "spiderman_civilwar_q1",
+    "movieTitle": "Captain America: Civil War",
+    "year": 2016,
+    "difficulty": "normal",
+    "question": "Who personally recruits Spider-Man into the conflict?",
+    "options": [
+      "Black Widow",
+      "Hawkeye",
+      "Tony Stark",
+      "Nick Fury"
+    ],
+    "correctIndex": 2,
+    "extraInfo": "Tom Holland’s debut was kept secret from nearly everyone."
+  },
+  {
+    "id": "ultron_lift_city_q1",
+    "movieTitle": "Avengers: Age of Ultron",
+    "year": 2015,
+    "difficulty": "challenging",
+    "question": "What catastrophic plan does Ultron attempt with Sokovia?",
+    "options": [
+      "Turn it into a world engine",
+      "Sink it underwater",
+      "Use it as a meteor to wipe out humanity",
+      "Collapse it into a black hole"
+    ],
+    "correctIndex": 2,
+    "extraInfo": "Ultron’s meteor plan mirrors real extinction events — dark, even for the MCU."
+  },
+  {
+    "id": "guardians_danceoff_q1",
+    "movieTitle": "Guardians of the Galaxy",
+    "year": 2014,
+    "difficulty": "easy",
+    "question": "How does Star-Lord distract Ronan?",
+    "options": [
+      "A dance-off",
+      "Throwing his blaster",
+      "A fake surrender",
+      "A smoke bomb"
+    ],
+    "correctIndex": 0,
+    "extraInfo": "Chris Pratt improvised the dance — the crew burst out laughing."
+  },
+  {
+    "id": "blackwidow_redroom_q1",
+    "movieTitle": "Black Widow",
+    "year": 2021,
+    "difficulty": "challenging",
+    "question": "What facility does Dreykov operate that controls Widows?",
+    "options": [
+      "The Red Room",
+      "The Glass Citadel",
+      "The Widow Forge",
+      "The Shadow Cradle"
+    ],
+    "correctIndex": 0,
+    "extraInfo": "The Red Room was teased for years before finally being shown."
+  },
+  {
+    "id": "thor_ragnarok_gladiator_q1",
+    "movieTitle": "Thor: Ragnarok",
+    "year": 2017,
+    "difficulty": "easy",
+    "question": "What is Hulk’s role on Sakaar?",
+    "options": [
+      "A wandering nomad",
+      "A bounty hunter",
+      "A warlord",
+      "A gladiator champion"
+    ],
+    "correctIndex": 3,
+    "extraInfo": "Fans went wild seeing Hulk again after years away."
+  },
+  {
+    "id": "captain_falcon_shield_q1",
+    "movieTitle": "Avengers: Endgame",
+    "year": 2019,
+    "difficulty": "normal",
+    "question": "Who receives Captain America’s shield?",
+    "options": [
+      "Sam Wilson",
+      "Rhodey",
+      "Wanda",
+      "Bucky Barnes"
+    ],
+    "correctIndex": 0,
+    "extraInfo": "Sam becoming Cap pays off Steve’s trust from day one."
+  },
+  {
+    "id": "avengers_shawarma_q1",
+    "movieTitle": "The Avengers",
+    "year": 2012,
+    "difficulty": "normal",
+    "question": "After the Battle of New York, what meal do the Avengers share?",
+    "options": [
+      "Pizza",
+      "Shawarma",
+      "Burgers",
+      "Gyros"
+    ],
+    "correctIndex": 1,
+    "extraInfo": "They filmed it **after** the premiere — they're visibly exhausted."
+  },
+  {
+    "id": "infinitywar_snap_q1",
+    "movieTitle": "Avengers: Infinity War",
+    "year": 2018,
+    "difficulty": "easy",
+    "question": "What devastating act ends the movie?",
+    "options": [
+      "Thanos wipes out half the universe",
+      "The Avengers disband",
+      "Thor kills Thanos",
+      "The Infinity Stones explode"
+    ],
+    "correctIndex": 0,
+    "extraInfo": "The Snap caused stunned silence in every theater."
+  },
+  {
+    "id": "endgame_portals_q1",
+    "movieTitle": "Avengers: Endgame",
+    "year": 2019,
+    "difficulty": "normal",
+    "question": "What event marks the start of the final battle?",
+    "options": [
+      "Doctor Strange opens the portals",
+      "Thor summons a storm",
+      "Captain Marvel arrives",
+      "Hulk roars the charge"
+    ],
+    "correctIndex": 0,
+    "extraInfo": "The Portals moment is considered peak MCU cinema."
+  }
+]

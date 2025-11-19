@@ -1,0 +1,302 @@
+[
+  {
+    "id": "inception_totem_q1",
+    "movieTitle": "Inception",
+    "year": 2010,
+    "difficulty": "easy",
+    "question": "What personal object does Cobb use as his totem to test reality?",
+    "options": [
+      "A spinning top",
+      "A silver coin",
+      "A chess piece",
+      "A loaded die"
+    ],
+    "correctIndex": 0,
+    "extraInfo": "The spinning top isn’t actually Cobb’s original totem—Mal’s was."
+  },
+  {
+    "id": "dark_knight_interrogation_q1",
+    "movieTitle": "The Dark Knight",
+    "year": 2008,
+    "difficulty": "normal",
+    "question": "What does the Joker insist he and Batman are during the interrogation scene?",
+    "options": [
+      "Chaos and order",
+      "Two sides of the same coin",
+      "A bad joke",
+      "Destined enemies"
+    ],
+    "correctIndex": 1,
+    "extraInfo": "Ledger improvised much of the physical tension in the interrogation room."
+  },
+  {
+    "id": "interstellar_morse_q1",
+    "movieTitle": "Interstellar",
+    "year": 2014,
+    "difficulty": "challenging",
+    "question": "How does Cooper ultimately communicate with Murph from inside the tesseract?",
+    "options": [
+      "By controlling gravity",
+      "Through dream flashes",
+      "By altering time loops",
+      "By sending coded radio pulses"
+    ],
+    "correctIndex": 0,
+    "extraInfo": "He uses gravity to knock books and send Morse across time."
+  },
+  {
+    "id": "tenet_stepping_backward_q1",
+    "movieTitle": "Tenet",
+    "year": 2020,
+    "difficulty": "normal",
+    "question": "What strange phenomenon do inverted objects experience when moving through the world?",
+    "options": [
+      "Reverse entropy",
+      "Time dilation",
+      "Quantum splitting",
+      "Parallel overlay"
+    ],
+    "correctIndex": 0,
+    "extraInfo": "Nolan shot many scenes twice—once forward, once reversed—to sell the effect."
+  },
+  {
+    "id": "prestige_transported_man_q1",
+    "movieTitle": "The Prestige",
+    "year": 2006,
+    "difficulty": "easy",
+    "question": "What magic trick becomes the obsession at the center of the rivalry between Angier and Borden?",
+    "options": [
+      "The Vanishing Dove",
+      "The Transported Man",
+      "The Water Cage Escape",
+      "The Infinite Mirrors"
+    ],
+    "correctIndex": 1,
+    "extraInfo": "The movie is structured like a magic trick itself: pledge, turn, prestige."
+  },
+  {
+    "id": "dunkirk_timelines_q1",
+    "movieTitle": "Dunkirk",
+    "year": 2017,
+    "difficulty": "challenging",
+    "question": "How many interwoven timelines does Nolan use to tell the story?",
+    "options": [
+      "Three",
+      "Two",
+      "Four",
+      "Five"
+    ],
+    "correctIndex": 0,
+    "extraInfo": "Land = 1 week, Sea = 1 day, Air = 1 hour—then they sync at the climax."
+  },
+  {
+    "id": "memento_tattoos_q1",
+    "movieTitle": "Memento",
+    "year": 2000,
+    "difficulty": "normal",
+    "question": "What method does Leonard use to remember crucial facts about his case?",
+    "options": [
+      "Color-coded notebooks",
+      "Recorded interviews",
+      "Polaroids and tattoos",
+      "Voice memos"
+    ],
+    "correctIndex": 2,
+    "extraInfo": "Nolan wrote the original short story with his brother Jonathan."
+  },
+  {
+    "id": "oppenheimer_board_q1",
+    "movieTitle": "Oppenheimer",
+    "year": 2023,
+    "difficulty": "easy",
+    "question": "Who leads the brutal hearing that attempts to strip Oppenheimer of his clearance?",
+    "options": [
+      "Lewis Strauss",
+      "Hill",
+      "Groves",
+      "Teller"
+    ],
+    "correctIndex": 0,
+    "extraInfo": "Strauss’s vendetta drives the second half of the film’s tension."
+  },
+  {
+    "id": "dark_knight_rises_chant_q1",
+    "movieTitle": "The Dark Knight Rises",
+    "year": 2012,
+    "difficulty": "normal",
+    "question": "What phrase do the prisoners chant as Bruce attempts to climb out of the pit?",
+    "options": [
+      "Rise, rise!",
+      "Break your chains",
+      "Deshi basara",
+      "You may climb!"
+    ],
+    "correctIndex": 2,
+    "extraInfo": "The chant means 'He rises' in a rough Moroccan dialect."
+  },
+  {
+    "id": "inception_kick_q1",
+    "movieTitle": "Inception",
+    "year": 2010,
+    "difficulty": "challenging",
+    "question": "What synchronized action brings dreamers back to the previous layer?",
+    "options": [
+      "A memory shock",
+      "A timed pulse",
+      "A chemical flood",
+      "A physical 'kick'"
+    ],
+    "correctIndex": 3,
+    "extraInfo": "The hallway fight was done with a real rotating corridor set."
+  },
+  {
+    "id": "following_nolan_debut_q1",
+    "movieTitle": "Following",
+    "year": 1998,
+    "difficulty": "challenging",
+    "question": "What hobby does the main character have that pulls him into criminal chaos?",
+    "options": [
+      "Following strangers",
+      "Pickpocketing",
+      "Breaking into flats",
+      "Recording conversations"
+    ],
+    "correctIndex": 0,
+    "extraInfo": "Nolan shot the film on weekends over an entire year."
+  },
+  {
+    "id": "batman_begins_fear_toxin_q1",
+    "movieTitle": "Batman Begins",
+    "year": 2005,
+    "difficulty": "normal",
+    "question": "What weapon does Scarecrow use to create hallucinations?",
+    "options": [
+      "Fear toxin",
+      "A neuro mist",
+      "A burning powder",
+      "A gas laced spray"
+    ],
+    "correctIndex": 0,
+    "extraInfo": "The film grounded Batman in realism—no camp, all grit."
+  },
+  {
+    "id": "interstellar_watch_q1",
+    "movieTitle": "Interstellar",
+    "year": 2014,
+    "difficulty": "easy",
+    "question": "What object becomes the key to Murph solving the gravity equation?",
+    "options": [
+      "The wristwatch",
+      "A chalkboard",
+      "A video message",
+      "An old notebook"
+    ],
+    "correctIndex": 0,
+    "extraInfo": "The seconds-hand pattern communicates the quantum data."
+  },
+  {
+    "id": "prestige_twin_twist_q1",
+    "movieTitle": "The Prestige",
+    "year": 2006,
+    "difficulty": "challenging",
+    "question": "What shocking truth explains Borden’s ability to perform the perfect Transported Man?",
+    "options": [
+      "He switched body doubles",
+      "He slowed time",
+      "He used a clone",
+      "He had a twin"
+    ],
+    "correctIndex": 3,
+    "extraInfo": "The film hides the twist openly—Nolan’s favorite kind of misdirection."
+  },
+  {
+    "id": "tenet_backward_fight_q1",
+    "movieTitle": "Tenet",
+    "year": 2020,
+    "difficulty": "normal",
+    "question": "In the Freeport scene, who is the masked inverted fighter that the Protagonist battles?",
+    "options": [
+      "Neil",
+      "His future self",
+      "An inverted mercenary",
+      "A cloned operative"
+    ],
+    "correctIndex": 1,
+    "extraInfo": "The corridor fight was filmed twice in opposite directions."
+  },
+  {
+    "id": "dark_knight_pencil_q1",
+    "movieTitle": "The Dark Knight",
+    "year": 2008,
+    "difficulty": "easy",
+    "question": "What shocking trick does the Joker perform during the mob meeting?",
+    "options": [
+      "Makes a pencil disappear",
+      "Burns their money",
+      "Drops a grenade",
+      "Reveals Harvey Dent"
+    ],
+    "correctIndex": 0,
+    "extraInfo": "The stunt was carefully choreographed to avoid actual impact."
+  },
+  {
+    "id": "oppenheimer_chain_reaction_q1",
+    "movieTitle": "Oppenheimer",
+    "year": 2023,
+    "difficulty": "normal",
+    "question": "What terrifying possibility does the team discuss before Trinity detonates?",
+    "options": [
+      "Breaking gravity waves",
+      "Igniting the stratosphere",
+      "Splitting the moon",
+      "Melting Earth’s core"
+    ],
+    "correctIndex": 1,
+    "extraInfo": "For a moment, they weren’t 100% sure it wouldn’t ignite the atmosphere."
+  },
+  {
+    "id": "inception_maze_q1",
+    "movieTitle": "Inception",
+    "year": 2010,
+    "difficulty": "challenging",
+    "question": "What architectural challenge does Cobb give Ariadne during their first training session?",
+    "options": [
+      "Construct a dream within a dream",
+      "Design a perfect circle city",
+      "Create a maze in two minutes",
+      "Build a city with no gravity"
+    ],
+    "correctIndex": 2,
+    "extraInfo": "She impresses him instantly by creating a paradoxical maze."
+  },
+  {
+    "id": "batman_begins_losers_q1",
+    "movieTitle": "Batman Begins",
+    "year": 2005,
+    "difficulty": "normal",
+    "question": "What symbol does Bruce choose to strike fear after seeing it as a child?",
+    "options": [
+      "The bat",
+      "The wolf",
+      "The serpent",
+      "The raven"
+    ],
+    "correctIndex": 0,
+    "extraInfo": "His fear becomes his weapon—a core Nolan theme."
+  },
+  {
+    "id": "interstellar_library_q1",
+    "movieTitle": "Interstellar",
+    "year": 2014,
+    "difficulty": "easy",
+    "question": "Where does Cooper find himself drifting inside the fifth-dimensional tesseract?",
+    "options": [
+      "Murph’s bedroom",
+      "The NASA bunker",
+      "A frozen hallway",
+      "An endless field"
+    ],
+    "correctIndex": 0,
+    "extraInfo": "Every moment of Murph’s life exists at once inside the structure."
+  }
+]

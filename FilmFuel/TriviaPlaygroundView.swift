@@ -54,7 +54,7 @@ struct TriviaPlaygroundView: View {
         "Accuracy: \(accuracyPercent)%."
     }
 
-    // Central accent color – later this can be swapped per theme / premium
+    // Central accent color – later can be swapped per theme / premium
     private var accentColor: Color {
         Color.orange   // film-y, warm, friendly; easy to brand later
     }
@@ -183,6 +183,9 @@ struct TriviaPlaygroundView: View {
                 }
             }
             .onAppear {
+                // Make sure the triviaBank is populated from all packs
+                appModel.loadTriviaIfNeeded()
+
                 if currentQuestion == nil {
                     loadNextQuestion()
                 }
@@ -411,18 +414,8 @@ struct TriviaPlaygroundView: View {
     // MARK: - Logic
 
     private func loadNextQuestion() {
-        let pool = appModel.triviaBank
-        guard !pool.isEmpty else { return }
-
-        var candidate = pool.randomElement()!
-
-        if let current = currentQuestion, pool.count > 1 {
-            var attempts = 0
-            while candidate.id == current.id && attempts < 10 {
-                candidate = pool.randomElement()!
-                attempts += 1
-            }
-        }
+        // Use AppModel's queue-style helper so we don't repeat questions
+        guard let candidate = appModel.nextEndlessTriviaQuestion() else { return }
 
         withAnimation(.spring(response: 0.5, dampingFraction: 0.9)) {
             currentQuestion = candidate

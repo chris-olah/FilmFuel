@@ -1,0 +1,287 @@
+[
+  {
+    "id": "dark_knight_why_so_serious_q1",
+    "movieTitle": "The Dark Knight",
+    "year": 2008,
+    "difficulty": "easy",
+    "question": "During the mob meeting, what chilling question does the Joker repeatedly ask while telling his scar story?",
+    "options": [
+      "Why so serious?",
+      "Wanna know how I got these?",
+      "Do I look like I'm joking?",
+      "Do you believe in chaos?"
+    ],
+    "correctIndex": 0,
+    "extraInfo": "Heath Ledger improvised parts of the delivery, adding to the Joker’s unsettling unpredictability."
+  },
+  {
+    "id": "lotr_one_does_not_q1",
+    "movieTitle": "The Lord of the Rings: The Fellowship of the Ring",
+    "year": 2001,
+    "difficulty": "normal",
+    "question": "In the Council of Elrond, what iconic line does Boromir say about entering Mordor?",
+    "options": [
+      "It is impossible to enter Mordor",
+      "One does not simply walk into Mordor",
+      "The Ring cannot be carried there",
+      "Even Sauron fears that path"
+    ],
+    "correctIndex": 1,
+    "extraInfo": "The line became one of the most famous memes of the 2000s."
+  },
+  {
+    "id": "gladiator_name_is_maximus_q1",
+    "movieTitle": "Gladiator",
+    "year": 2000,
+    "difficulty": "easy",
+    "question": "In the arena, how does Maximus introduce himself to Commodus before removing his helmet?",
+    "options": [
+      "I am the last legionnaire",
+      "My name is Maximus Decimus Meridius",
+      "Rome will not fall today",
+      "I am a soldier of vengeance"
+    ],
+    "correctIndex": 1,
+    "extraInfo": "Russell Crowe fought producers to keep this line exactly as written—good call."
+  },
+  {
+    "id": "avatar_bond_q1",
+    "movieTitle": "Avatar",
+    "year": 2009,
+    "difficulty": "easy",
+    "question": "When connecting with Pandora’s wildlife, what do the Na’vi use to spiritually bond with creatures?",
+    "options": [
+      "Eywa crystals",
+      "Biofiber roots",
+      "Neural tendrils",
+      "Spirit vines"
+    ],
+    "correctIndex": 2,
+    "extraInfo": "James Cameron developed Na’vi bonding after studying symbiotic relationships in nature."
+  },
+  {
+    "id": "bourne_identity_red_bag_q1",
+    "movieTitle": "The Bourne Identity",
+    "year": 2002,
+    "difficulty": "normal",
+    "question": "When Jason Bourne opens the safety deposit box, what item immediately hints at his secret life?",
+    "options": [
+      "The stack of passports",
+      "A bloody watch",
+      "A foreign SIM card",
+      "A coded notebook"
+    ],
+    "correctIndex": 0,
+    "extraInfo": "The multiple passports became a visual hallmark of the entire Bourne series."
+  },
+  {
+    "id": "pirates_parley_q1",
+    "movieTitle": "Pirates of the Caribbean: The Curse of the Black Pearl",
+    "year": 2003,
+    "difficulty": "easy",
+    "question": "Elizabeth Swann invokes what pirate tradition to negotiate with Barbossa?",
+    "options": [
+      "The Truce of the Tides",
+      "Parley",
+      "First Captain’s Right",
+      "The Swann Accord"
+    ],
+    "correctIndex": 1,
+    "extraInfo": "Parley is real pirate lore—though Jack Sparrow famously says it’s more of a 'guideline.'"
+  },
+  {
+    "id": "transformers_more_than_meets_q1",
+    "movieTitle": "Transformers",
+    "year": 2007,
+    "difficulty": "normal",
+    "question": "What famous tagline does Optimus Prime use to describe the Autobots?",
+    "options": [
+      "Heroes among us",
+      "Guardians of freedom",
+      "More than meets the eye",
+      "One shall stand"
+    ],
+    "correctIndex": 2,
+    "extraInfo": "The line originated from the 1980s cartoon and carried into every adaptation."
+  },
+  {
+    "id": "spider_man_power_responsibility_q1",
+    "movieTitle": "Spider-Man",
+    "year": 2002,
+    "difficulty": "easy",
+    "question": "What famous lesson does Uncle Ben give Peter that shapes the rest of his life?",
+    "options": [
+      "A hero is made by choice",
+      "With great power comes great responsibility",
+      "Strength must be guided by heart",
+      "Always protect the innocent"
+    ],
+    "correctIndex": 1,
+    "extraInfo": "This line became the defining moral of nearly every Spider-Man reboot."
+  },
+  {
+    "id": "kill_bill_five_point_q1",
+    "movieTitle": "Kill Bill: Vol. 2",
+    "year": 2004,
+    "difficulty": "challenging",
+    "question": "What legendary technique does Pai Mei teach Beatrix that she uses in the final showdown?",
+    "options": [
+      "Silent Heart Pull",
+      "Dragon’s Breath Strike",
+      "Lotus Nerve Crush",
+      "Five Point Palm Exploding Heart Technique"
+    ],
+    "correctIndex": 3,
+    "extraInfo": "Tarantino based the move on classic martial arts myths from old kung-fu films."
+  },
+  {
+    "id": "harry_potter_patronus_q1",
+    "movieTitle": "Harry Potter and the Prisoner of Azkaban",
+    "year": 2004,
+    "difficulty": "normal",
+    "question": "What creature does Harry’s fully formed Patronus take the shape of?",
+    "options": [
+      "A phoenix",
+      "A stag",
+      "A griffin",
+      "A wolf"
+    ],
+    "correctIndex": 1,
+    "extraInfo": "Harry’s Patronus mirrors his father James, whose Animagus form was also a stag."
+  },
+  {
+    "id": "iron_man_jericho_q1",
+    "movieTitle": "Iron Man",
+    "year": 2008,
+    "difficulty": "normal",
+    "question": "What powerful missile does Tony Stark demonstrate in the snowy desert at the start of the film?",
+    "options": [
+      "The Patriot",
+      "The Thunderstrike",
+      "The Jericho",
+      "The Mark I"
+    ],
+    "correctIndex": 2,
+    "extraInfo": "The Jericho blast wave scene helped define Tony’s flashy, showman personality from the start."
+  },
+  {
+    "id": "the_departed_rat_q1",
+    "movieTitle": "The Departed",
+    "year": 2006,
+    "difficulty": "challenging",
+    "question": "What animal symbol appears in the final shot of the film as a visual metaphor?",
+    "options": [
+      "A pigeon",
+      "A crow",
+      "A stray cat",
+      "A rat"
+    ],
+    "correctIndex": 3,
+    "extraInfo": "Scorsese’s use of the rat sparked years of debate—and even fan edits removing it."
+  },
+  {
+    "id": "the_prestige_tesla_q1",
+    "movieTitle": "The Prestige",
+    "year": 2006,
+    "difficulty": "challenging",
+    "question": "Who does Angier visit to create the impossible machine that changes the entire rivalry?",
+    "options": [
+      "Edison",
+      "Borden’s twin",
+      "Tesla",
+      "Cutter"
+    ],
+    "correctIndex": 2,
+    "extraInfo": "David Bowie played Tesla with such mystique that Nolan called it one of his favorite casting choices ever."
+  },
+  {
+    "id": "bourne_supremacy_car_chase_q1",
+    "movieTitle": "The Bourne Supremacy",
+    "year": 2004,
+    "difficulty": "normal",
+    "question": "In the climactic Moscow sequence, what type of vehicle does Bourne use in the intense car chase?",
+    "options": [
+      "A taxi",
+      "A stolen police car",
+      "A Jeep Grand Cherokee",
+      "A motorcycle"
+    ],
+    "correctIndex": 0,
+    "extraInfo": "The chase was largely practical, with stunt drivers performing real collisions."
+  },
+  {
+    "id": "avatar_home_tree_q1",
+    "movieTitle": "Avatar",
+    "year": 2009,
+    "difficulty": "normal",
+    "question": "What sacred Na’vi site is destroyed by the RDA, pushing Jake to fully join the clan?",
+    "options": [
+      "The Floating Hallelujah Mountains",
+      "The Soul Well",
+      "Hometree",
+      "The Ritual Grounds"
+    ],
+    "correctIndex": 2,
+    "extraInfo": "The destruction of Hometree required over a year of work from Weta’s effects team."
+  },
+  {
+    "id": "superbad_fogell_id_q1",
+    "movieTitle": "Superbad",
+    "year": 2007,
+    "difficulty": "easy",
+    "question": "What ridiculous one-name alias does Fogell proudly pick for his fake ID?",
+    "options": [
+      "McLovin",
+      "Big Poppa",
+      "Fogey",
+      "Master F"
+    ],
+    "correctIndex": 0,
+    "extraInfo": "The name 'McLovin' became one of the most quoted comedy lines of the decade."
+  },
+  {
+    "id": "no_country_call_it_q1",
+    "movieTitle": "No Country for Old Men",
+    "year": 2007,
+    "difficulty": "challenging",
+    "question": "What does Anton Chigurh demand a gas station clerk do to decide his fate?",
+    "options": [
+      "Call the coin toss",
+      "Draw a card",
+      "Say a secret word",
+      "Pick a hand"
+    ],
+    "correctIndex": 0,
+    "extraInfo": "The coin toss scene is praised as one of the most tense moments in Coen brothers history."
+  },
+  {
+    "id": "lord_rings_towers_helm_q1",
+    "movieTitle": "The Lord of the Rings: The Two Towers",
+    "year": 2002,
+    "difficulty": "normal",
+    "question": "What fortress becomes the centerpiece of one of the greatest cinematic battles of all time?",
+    "options": [
+      "Osgiliath",
+      "Minas Tirith",
+      "The Black Gate",
+      "Helm’s Deep"
+    ],
+    "correctIndex": 3,
+    "extraInfo": "The battle took four months of night shoots to film."
+  },
+  {
+    "id": "the_hangover_tiger_q1",
+    "movieTitle": "The Hangover",
+    "year": 2009,
+    "difficulty": "normal",
+    "question": "When the guys wake up after their wild night, what huge surprise do they find in their bathroom?",
+    "options": [
+      "A police officer",
+      "A random baby",
+      "A chicken wearing sunglasses",
+      "A full-grown tiger"
+    ],
+    "correctIndex": 3,
+    "extraInfo": "The real tiger belonged to Mike Tyson, who loved the script so much he cameoed."
+  }
+]

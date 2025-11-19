@@ -1,0 +1,302 @@
+[
+  {
+    "id": "oppenheimer_milkshake_q1",
+    "movieTitle": "Oppenheimer",
+    "year": 2023,
+    "difficulty": "normal",
+    "question": "After Oppenheimer's security hearing, what phrase does he repeat that echoes through the final montage?",
+    "options": [
+      "I believe we did.",
+      "I thought we controlled it.",
+      "They won't listen.",
+      "I never meant for this."
+    ],
+    "correctIndex": 0,
+    "extraInfo": "His quiet line “I believe we did” reframes the entire film’s moral weight in one moment."
+  },
+  {
+    "id": "barbie_kenergy_q1",
+    "movieTitle": "Barbie",
+    "year": 2023,
+    "difficulty": "easy",
+    "question": "In Barbie Land, what does Ken proudly claim he’s full of?",
+    "options": [
+      "Pure beach energy",
+      "Kenergy",
+      "Endless ambition",
+      "Patriarchal power"
+    ],
+    "correctIndex": 1,
+    "extraInfo": "Ryan Gosling said he channeled boy-band vibes and 80s himbos to craft Ken’s personality."
+  },
+  {
+    "id": "dune_fear_mindkiller_q1",
+    "movieTitle": "Dune",
+    "year": 2021,
+    "difficulty": "normal",
+    "question": "What mantra does Paul recite to steady himself during moments of terror?",
+    "options": [
+      "Only strength remains",
+      "I must not falter",
+      "Fear is the mind-killer",
+      "The path is mine to walk"
+    ],
+    "correctIndex": 2,
+    "extraInfo": "The line comes from Frank Herbert’s original 1965 novel and became a cultural touchstone."
+  },
+  {
+    "id": "top_gun_maverick_test_q1",
+    "movieTitle": "Top Gun: Maverick",
+    "year": 2022,
+    "difficulty": "easy",
+    "question": "At the start of the film, what impossible speed does Maverick push the Darkstar toward?",
+    "options": [
+      "Mach 12",
+      "Mach 9",
+      "Mach 10",
+      "Mach 8"
+    ],
+    "correctIndex": 2,
+    "extraInfo": "Tom Cruise insisted on filming with real cockpits to keep the G-force reactions authentic."
+  },
+  {
+    "id": "everything_everywhere_bagel_q1",
+    "movieTitle": "Everything Everywhere All at Once",
+    "year": 2022,
+    "difficulty": "normal",
+    "question": "What absurd object becomes the symbol of Jobu Tupaki’s universe-ending nihilism?",
+    "options": [
+      "The Black Donut",
+      "The Vortex Circle",
+      "The Everything Pizza",
+      "The Everything Bagel"
+    ],
+    "correctIndex": 3,
+    "extraInfo": "The bagel is a metaphor for overwhelming pressure, chaos, and the feeling that everything spirals inward."
+  },
+  {
+    "id": "joker_dance_steps_q1",
+    "movieTitle": "Joker",
+    "year": 2019,
+    "difficulty": "easy",
+    "question": "Arthur Fleck’s transformation is symbolized by what unforgettable moment on the Bronx stairs?",
+    "options": [
+      "A jazz swing dance",
+      "A frenzied laugh attack",
+      "A slow, broken shuffle",
+      "His chaotic victory dance"
+    ],
+    "correctIndex": 3,
+    "extraInfo": "That staircase became a real tourist spot almost overnight."
+  },
+  {
+    "id": "parasite_scholar_rock_q1",
+    "movieTitle": "Parasite",
+    "year": 2019,
+    "difficulty": "challenging",
+    "question": "What symbolic gift does Min give the Kim family that becomes a recurring motif?",
+    "options": [
+      "A scholar’s stone",
+      "A jade bracelet",
+      "A silver coin",
+      "A wooden mask"
+    ],
+    "correctIndex": 0,
+    "extraInfo": "Bong Joon-ho used the stone as a metaphor for hope, pressure, and generational burden."
+  },
+  {
+    "id": "spiderverse_glitch_q1",
+    "movieTitle": "Spider-Man: Into the Spider-Verse",
+    "year": 2018,
+    "difficulty": "normal",
+    "question": "When alternate Spider-People start appearing in Miles’s world, what symptom reveals they’re out of place?",
+    "options": [
+      "Their colors invert",
+      "They glitch",
+      "Their webbing misfires",
+      "They float slightly"
+    ],
+    "correctIndex": 1,
+    "extraInfo": "The glitch effect was animated on 2s to give it a jarring comic-book feel."
+  },
+  {
+    "id": "knives_out_donut_q1",
+    "movieTitle": "Knives Out",
+    "year": 2019,
+    "difficulty": "easy",
+    "question": "Detective Benoit Blanc describes the mystery as what bizarre shape?",
+    "options": [
+      "A donut hole inside a donut",
+      "A spiraling ribbon",
+      "A crooked compass",
+      "A Möbius twist"
+    ],
+    "correctIndex": 0,
+    "extraInfo": "Blanc’s donut analogy became an instant cult quote thanks to Daniel Craig’s delivery."
+  },
+  {
+    "id": "a_star_is_born_look_q1",
+    "movieTitle": "A Star Is Born",
+    "year": 2018,
+    "difficulty": "normal",
+    "question": "What line does Jackson Maine say repeatedly when complimenting Ally for the first time?",
+    "options": [
+      "Your voice is magic",
+      "You’re the real deal",
+      "I knew you had something special",
+      "I just wanna take another look at you"
+    ],
+    "correctIndex": 3,
+    "extraInfo": "Bradley Cooper based the voice and cadence on real country musicians he studied."
+  },
+  {
+    "id": "black_panther_wakanda_q1",
+    "movieTitle": "Black Panther",
+    "year": 2018,
+    "difficulty": "easy",
+    "question": "What fictional African nation is T’Challa the king of?",
+    "options": [
+      "Wakanda",
+      "Nabutu",
+      "Korunda",
+      "M’Bara"
+    ],
+    "correctIndex": 0,
+    "extraInfo": "Wakanda’s visual design pulled from over 15 African cultures and architecture styles."
+  },
+  {
+    "id": "interstellar_tesseract_q1",
+    "movieTitle": "Interstellar",
+    "year": 2014,
+    "difficulty": "challenging",
+    "question": "Inside the black hole, Cooper finds himself inside what mind-bending structure?",
+    "options": [
+      "A gravity loop",
+      "A tesseract",
+      "A multi-time vault",
+      "A frozen wormhole"
+    ],
+    "correctIndex": 1,
+    "extraInfo": "The tesseract represents five-dimensional space—something humans can barely visualize."
+  },
+  {
+    "id": "mad_max_fuel_q1",
+    "movieTitle": "Mad Max: Fury Road",
+    "year": 2015,
+    "difficulty": "normal",
+    "question": "At the Citadel, what critical resource are Immortan Joe’s people desperate to control?",
+    "options": [
+      "Fuel cells",
+      "Red gas",
+      "Water",
+      "Weapon oil"
+    ],
+    "correctIndex": 2,
+    "extraInfo": "Nearly every chase scene was shot with real vehicles, giving the film its gritty realism."
+  },
+  {
+    "id": "la_la_land_audition_q1",
+    "movieTitle": "La La Land",
+    "year": 2016,
+    "difficulty": "challenging",
+    "question": "During Mia’s final audition, what does she sing about that shapes the emotional core of the film?",
+    "options": [
+      "Lovers who dream",
+      "Chasing impossible stars",
+      "Hope and heartbreak",
+      "The city’s magic"
+    ],
+    "correctIndex": 0,
+    "extraInfo": "Emma Stone performed the entire audition scene live in one take."
+  },
+  {
+    "id": "logan_last_stand_q1",
+    "movieTitle": "Logan",
+    "year": 2017,
+    "difficulty": "normal",
+    "question": "In his final act, what does Logan sacrifice himself to protect?",
+    "options": [
+      "Professor X",
+      "The destroyed lab evidence",
+      "The sanctuary wall",
+      "Laura and the other mutant children"
+    ],
+    "correctIndex": 3,
+    "extraInfo": "Logan’s ending mirrors the Western 'Shane,' which is quoted directly in the film."
+  },
+  {
+    "id": "free_guy_npc_q1",
+    "movieTitle": "Free Guy",
+    "year": 2021,
+    "difficulty": "easy",
+    "question": "What surprising realization does Guy come to about himself?",
+    "options": [
+      "He’s the game’s villain",
+      "He’s a respawn glitch",
+      "He’s a non-player character",
+      "He’s a failed experiment"
+    ],
+    "correctIndex": 2,
+    "extraInfo": "Ryan Reynolds said the movie was inspired by NPC memes and GTA chaos."
+  },
+  {
+    "id": "dont_look_up_comet_q1",
+    "movieTitle": "Don’t Look Up",
+    "year": 2021,
+    "difficulty": "normal",
+    "question": "What catastrophic object do the astronomers discover heading toward Earth?",
+    "options": [
+      "A rogue moon",
+      "A planet-sized asteroid",
+      "An ice giant shard",
+      "A comet"
+    ],
+    "correctIndex": 3,
+    "extraInfo": "The movie was intended as satire—but felt eerily close to real-world events."
+  },
+  {
+    "id": "the_menu_breadless_q1",
+    "movieTitle": "The Menu",
+    "year": 2022,
+    "difficulty": "challenging",
+    "question": "At Hawthorn, what shocking decision does Chef Slowik make for the 'bread course'?",
+    "options": [
+      "He serves no bread at all",
+      "He removes all salt",
+      "He forces guests to bake it",
+      "He burns the bread"
+    ],
+    "correctIndex": 0,
+    "extraInfo": "The breadless bread plate is a satire of pretentious fine dining culture."
+  },
+  {
+    "id": "the_batman_riddle_q1",
+    "movieTitle": "The Batman",
+    "year": 2022,
+    "difficulty": "challenging",
+    "question": "In one of the Riddler’s puzzles, what does the Spanish phrase 'El rata alada' translate to?",
+    "options": [
+      "The winged mouse",
+      "The flying villain",
+      "The shadowed bat",
+      "The winged rat"
+    ],
+    "correctIndex": 3,
+    "extraInfo": "Batman even mis-translates it—showing that not all detectives speak perfect Spanish."
+  },
+  {
+    "id": "nope_cloud_q1",
+    "movieTitle": "Nope",
+    "year": 2022,
+    "difficulty": "challenging",
+    "question": "What unsettling detail does OJ notice about the sky that exposes the creature’s hiding spot?",
+    "options": [
+      "A hole forming in the sky",
+      "A cloud that never moves",
+      "A flashing star",
+      "A shifting rainbow halo"
+    ],
+    "correctIndex": 1,
+    "extraInfo": "The 'standing cloud' became one of Jordan Peele’s creepiest slow-burn reveals."
+  }
+]

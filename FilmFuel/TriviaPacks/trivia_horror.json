@@ -1,0 +1,287 @@
+[
+  {
+    "id": "scream_do_you_like_scary_q1",
+    "movieTitle": "Scream",
+    "year": 1996,
+    "difficulty": "easy",
+    "question": "In the chilling opening scene, what question does Ghostface ask Casey that instantly sets the tone?",
+    "options": [
+      "Do you like scary movies?",
+      "Where are you hiding?",
+      "Want to play a game?",
+      "Who's with you tonight?"
+    ],
+    "correctIndex": 0,
+    "extraInfo": "The line became so iconic it practically resurrected the slasher genre."
+  },
+  {
+    "id": "the_shining_heres_johnny_q1",
+    "movieTitle": "The Shining",
+    "year": 1980,
+    "difficulty": "easy",
+    "question": "What famous line does Jack Nicholson yell while bursting through the bathroom door?",
+    "options": [
+      "I’m home!",
+      "Here’s Johnny!",
+      "Found you!",
+      "Open up!"
+    ],
+    "correctIndex": 1,
+    "extraInfo": "Nicholson improvised it—Kubrick loved it so much he kept the first take."
+  },
+  {
+    "id": "it_red_balloon_q1",
+    "movieTitle": "It",
+    "year": 2017,
+    "difficulty": "easy",
+    "question": "What object is Pennywise most associated with when luring children?",
+    "options": [
+      "A yellow raincoat",
+      "A paper boat",
+      "A red balloon",
+      "A carnival ticket"
+    ],
+    "correctIndex": 2,
+    "extraInfo": "Red balloons became so tied to the movie that cities banned them during promotions."
+  },
+  {
+    "id": "halloween_mask_q1",
+    "movieTitle": "Halloween",
+    "year": 1978,
+    "difficulty": "normal",
+    "question": "What is Michael Myers’s iconic white mask originally made from?",
+    "options": [
+      "A mannequin head",
+      "A clay mold",
+      "A Halloween skull mask",
+      "A repainted Captain Kirk mask"
+    ],
+    "correctIndex": 3,
+    "extraInfo": "It was a cheap William Shatner mask painted white—a last-minute budget decision that became horror legend."
+  },
+  {
+    "id": "hereditary_cluck_q1",
+    "movieTitle": "Hereditary",
+    "year": 2018,
+    "difficulty": "challenging",
+    "question": "What sound does Charlie constantly make that becomes one of the film’s most chilling cues?",
+    "options": [
+      "A clicking tongue sound",
+      "A whispered hum",
+      "A wheezing inhale",
+      "A slow giggle"
+    ],
+    "correctIndex": 0,
+    "extraInfo": "The tongue click became so famous that audiences would mimic it just to scare each other."
+  },
+  {
+    "id": "nightmare_elm_street_glove_q1",
+    "movieTitle": "A Nightmare on Elm Street",
+    "year": 1984,
+    "difficulty": "normal",
+    "question": "What weapon does Freddy Krueger craft to terrorize his victims?",
+    "options": [
+      "A barbed wire whip",
+      "A bladed glove",
+      "A razor chain",
+      "A burning brand"
+    ],
+    "correctIndex": 1,
+    "extraInfo": "Wes Craven designed the glove specifically to trigger primal fear."
+  },
+  {
+    "id": "the_ring_tape_q1",
+    "movieTitle": "The Ring",
+    "year": 2002,
+    "difficulty": "normal",
+    "question": "What object do people watch that seals their fate within seven days?",
+    "options": [
+      "A cursed website",
+      "A blank DVD",
+      "A strange VHS tape",
+      "An old broadcast reel"
+    ],
+    "correctIndex": 2,
+    "extraInfo": "Marketing left VHS tapes in public places with no labels—just the Ring footage."
+  },
+  {
+    "id": "conjuring_clap_game_q1",
+    "movieTitle": "The Conjuring",
+    "year": 2013,
+    "difficulty": "easy",
+    "question": "In the Perron house, what children’s game becomes terrifying when something unseen joins in?",
+    "options": [
+      "Hide-and-seek",
+      "Peekaboo",
+      "Tag",
+      "Clap Clap"
+    ],
+    "correctIndex": 3,
+    "extraInfo": "The hands emerging from the wardrobe in total darkness became one of the trailer’s biggest viral scares."
+  },
+  {
+    "id": "get_out_sunken_place_q1",
+    "movieTitle": "Get Out",
+    "year": 2017,
+    "difficulty": "normal",
+    "question": "What horrifying mental state is Chris forced into during hypnosis?",
+    "options": [
+      "The Sunken Place",
+      "The Black Void",
+      "The Quiet Room",
+      "The Hollow Mind"
+    ],
+    "correctIndex": 0,
+    "extraInfo": "Jordan Peele described the Sunken Place as a metaphor for marginalized voices being silenced."
+  },
+  {
+    "id": "blair_witch_map_q1",
+    "movieTitle": "The Blair Witch Project",
+    "year": 1999,
+    "difficulty": "challenging",
+    "question": "What crucial item does the group lose in the woods, making them hopelessly lost?",
+    "options": [
+      "The compass",
+      "The map",
+      "The flashlight",
+      "The trail markers"
+    ],
+    "correctIndex": 1,
+    "extraInfo": "The cast really didn’t know where they were being led—directors left clues by GPS at night."
+  },
+  {
+    "id": "friday13th_jason_mask_q1",
+    "movieTitle": "Friday the 13th Part III",
+    "year": 1982,
+    "difficulty": "easy",
+    "question": "In the third film, what mask does Jason wear for the first time?",
+    "options": [
+      "A burlap sack",
+      "A skull mask",
+      "A hockey mask",
+      "A cracked porcelain mask"
+    ],
+    "correctIndex": 2,
+    "extraInfo": "The hockey mask was borrowed from a crew member’s gear—accidentally creating a horror icon."
+  },
+  {
+    "id": "midsommar_ritual_q1",
+    "movieTitle": "Midsommar",
+    "year": 2019,
+    "difficulty": "challenging",
+    "question": "What traditional festival do Dani and her friends travel to in Sweden—only to find it’s not what it seems?",
+    "options": [
+      "The Sun Celebration",
+      "The Solstice Rite",
+      "The White Harvest",
+      "The Midsummer festival"
+    ],
+    "correctIndex": 3,
+    "extraInfo": "The film used real Swedish folklore mixed with fabricated rituals to keep viewers uneasy."
+  },
+  {
+    "id": "texas_chainsaw_meat_hook_q1",
+    "movieTitle": "The Texas Chain Saw Massacre",
+    "year": 1974,
+    "difficulty": "challenging",
+    "question": "Leatherface is known for dragging victims into his workshop—what infamous object does he impale one of them on?",
+    "options": [
+      "A meat hook",
+      "A rusted blade",
+      "A steel spike",
+      "A barbed chain"
+    ],
+    "correctIndex": 0,
+    "extraInfo": "The scene is shot so suggestively that viewers swear they saw more gore than was actually shown."
+  },
+  {
+    "id": "a_quiet_place_silence_q1",
+    "movieTitle": "A Quiet Place",
+    "year": 2018,
+    "difficulty": "normal",
+    "question": "What must the Abbott family avoid at all costs to stay alive?",
+    "options": [
+      "Open spaces",
+      "Making noise",
+      "Bright lights",
+      "Moving water"
+    ],
+    "correctIndex": 1,
+    "extraInfo": "The sound design team used over 30 kinds of silence to make every noise terrifying."
+  },
+  {
+    "id": "paranormal_footsteps_q1",
+    "movieTitle": "Paranormal Activity",
+    "year": 2007,
+    "difficulty": "normal",
+    "question": "In the couple’s bedroom footage, what is often heard approaching before anything happens?",
+    "options": [
+      "Slow whispering",
+      "Heavy breathing",
+      "Loud footsteps",
+      "Furniture scraping"
+    ],
+    "correctIndex": 2,
+    "extraInfo": "The movie’s $15,000 budget turned into nearly $200 million at the box office."
+  },
+  {
+    "id": "the_exorcist_head_spin_q1",
+    "movieTitle": "The Exorcist",
+    "year": 1973,
+    "difficulty": "challenging",
+    "question": "During the exorcism, what shocking physical movement does Regan perform that stunned the world?",
+    "options": [
+      "Her arm twists backwards",
+      "Her spine bends in half",
+      "Her legs fold upside down",
+      "Her head rotates fully around"
+    ],
+    "correctIndex": 3,
+    "extraInfo": "The effect was done with an animatronic dummy so convincing it terrified even the crew."
+  },
+  {
+    "id": "us_hands_across_q1",
+    "movieTitle": "Us",
+    "year": 2019,
+    "difficulty": "challenging",
+    "question": "What eerie human chain do the Tethered form toward the end of the film?",
+    "options": [
+      "Hands Across America",
+      "The Red Link",
+      "The Golden Circle",
+      "The Line of Shadows"
+    ],
+    "correctIndex": 0,
+    "extraInfo": "Jordan Peele based it on the real 1986 event—a symbolic gesture turned sinister."
+  },
+  {
+    "id": "the_grudge_croak_q1",
+    "movieTitle": "The Grudge",
+    "year": 2004,
+    "difficulty": "easy",
+    "question": "What unsettling sound does the ghost Kayako make that signals she’s near?",
+    "options": [
+      "A rattling breath",
+      "A low croaking noise",
+      "A whispering laugh",
+      "A dripping echo"
+    ],
+    "correctIndex": 1,
+    "extraInfo": "The sound was made by the actress herself dragging air through her throat."
+  },
+  {
+    "id": "it_followed_monster_q1",
+    "movieTitle": "It Follows",
+    "year": 2014,
+    "difficulty": "challenging",
+    "question": "What terrifying rule defines the creature in 'It Follows'?",
+    "options": [
+      "It hunts only in darkness",
+      "It can mimic voices perfectly",
+      "It always moves toward you—slowly, without stopping",
+      "It can only be hurt by fire"
+    ],
+    "correctIndex": 2,
+    "extraInfo": "The monster’s slow, constant walking pace creates dread unlike anything else in modern horror."
+  }
+]

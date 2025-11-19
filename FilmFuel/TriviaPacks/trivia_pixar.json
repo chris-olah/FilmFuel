@@ -1,0 +1,227 @@
+[
+  {
+    "id": "toy_story_falling_with_style_q1",
+    "movieTitle": "Toy Story",
+    "year": 1995,
+    "difficulty": "easy",
+    "question": "When Buzz shows off in front of Woody for the first time, what phrase does he proudly use to describe his jump?",
+    "options": [
+      "Falling with style",
+      "A space-ranger dive",
+      "A controlled landing",
+      "No-gravity gliding"
+    ],
+    "correctIndex": 0,
+    "extraInfo": "Buzz’s line became so iconic that Pixar reused it decades later in Lightyear."
+  },
+  {
+    "id": "monsters_inc_scare_canisters_q1",
+    "movieTitle": "Monsters, Inc.",
+    "year": 2001,
+    "difficulty": "normal",
+    "question": "In the monster world’s energy crisis, what do the yellow canisters actually store?",
+    "options": [
+      "Nightmare fumes",
+      "Scream energy",
+      "Fear vapor",
+      "Laugh charges"
+    ],
+    "correctIndex": 1,
+    "extraInfo": "Pixar designed the scream canisters after scuba tanks and old vacuum tubes."
+  },
+  {
+    "id": "finding_nemo_touch_butt_q1",
+    "movieTitle": "Finding Nemo",
+    "year": 2003,
+    "difficulty": "easy",
+    "question": "Out by the drop-off, what forbidden object does Nemo defiantly swim up to and touch?",
+    "options": [
+      "The shark cage",
+      "A jellyfish bloom",
+      "The boat",
+      "A scuba mask"
+    ],
+    "correctIndex": 2,
+    "extraInfo": "“He touched the butt!” became one of Pixar’s most quoted kid-movie lines ever."
+  },
+  {
+    "id": "incredibles_no_capes_q1",
+    "movieTitle": "The Incredibles",
+    "year": 2004,
+    "difficulty": "normal",
+    "question": "According to Edna Mode’s golden rule, what should superheroes absolutely never have?",
+    "options": [
+      "Jet boots",
+      "Masks",
+      "Loose belts",
+      "Capes"
+    ],
+    "correctIndex": 3,
+    "extraInfo": "Edna lists every tragic cape accident in hysterical detail—one of Pixar’s funniest scenes."
+  },
+  {
+    "id": "ratatouille_anyone_can_cook_q1",
+    "movieTitle": "Ratatouille",
+    "year": 2007,
+    "difficulty": "easy",
+    "question": "Chef Gusteau’s motto inspires Remy throughout the film—what is it?",
+    "options": [
+      "Anyone can cook",
+      "Follow your flavor",
+      "Recipes are magic",
+      "Cook with your heart"
+    ],
+    "correctIndex": 0,
+    "extraInfo": "Anton Ego’s final review redefines the motto and makes half the audience cry."
+  },
+  {
+    "id": "toy_story_claw_aliens_q1",
+    "movieTitle": "Toy Story",
+    "year": 1995,
+    "difficulty": "normal",
+    "question": "Inside the Pizza Planet machine, what do the green aliens worship like a divine force?",
+    "options": [
+      "The Star Light",
+      "The Claw",
+      "The Chosen Toy",
+      "The Red Button"
+    ],
+    "correctIndex": 1,
+    "extraInfo": "Their chant 'The Claw chooses who will go and who will stay' became a cult favorite."
+  },
+  {
+    "id": "up_adventure_book_q1",
+    "movieTitle": "Up",
+    "year": 2009,
+    "difficulty": "normal",
+    "question": "In Ellie’s old Adventure Book, what page title devastates Carl when he sees it?",
+    "options": [
+      "The Journey Begins",
+      "Our Big Adventure",
+      "Stuff I’m Going To Do",
+      "Paradise Falls Or Bust"
+    ],
+    "correctIndex": 2,
+    "extraInfo": "Many fans say the Adventure Book scene is Pixar’s hardest emotional punch ever."
+  },
+  {
+    "id": "wall_e_directive_q1",
+    "movieTitle": "WALL-E",
+    "year": 2008,
+    "difficulty": "challenging",
+    "question": "What secret directive is the Axiom’s autopilot following that conflicts with WALL-E’s mission?",
+    "options": [
+      "AUTO-02: Destroy all plants",
+      "Find Earth 2",
+      "Deactivate rogue bots",
+      "Directive A113"
+    ],
+    "correctIndex": 3,
+    "extraInfo": "A113 is an inside joke referencing a CalArts classroom used by Disney and Pixar legends."
+  },
+  {
+    "id": "coco_memory_photo_q1",
+    "movieTitle": "Coco",
+    "year": 2017,
+    "difficulty": "normal",
+    "question": "In the Land of the Dead, what must remain on the family ofrenda for a spirit to visit the living world?",
+    "options": [
+      "Their photo",
+      "Their instrument",
+      "A candle lit for them",
+      "Their favorite food"
+    ],
+    "correctIndex": 0,
+    "extraInfo": "Coco’s emotional punch comes from how memories keep people alive across generations."
+  },
+  {
+    "id": "inside_out_bing_bong_q1",
+    "movieTitle": "Inside Out",
+    "year": 2015,
+    "difficulty": "challenging",
+    "question": "What does Bing Bong sacrifice to help Joy escape from the Memory Dump?",
+    "options": [
+      "His flower cart",
+      "His imaginary rocket",
+      "His candy tears",
+      "His playground"
+    ],
+    "correctIndex": 1,
+    "extraInfo": "Bing Bong’s final words—'Take her to the moon for me'—crushed millions of viewers."
+  },
+  {
+    "id": "cars_mater_tow_q1",
+    "movieTitle": "Cars",
+    "year": 2006,
+    "difficulty": "easy",
+    "question": "What kind of vehicle is Mater, Lightning McQueen’s lovable best friend?",
+    "options": [
+      "A rusty sedan",
+      "A farm tractor",
+      "A tow truck",
+      "A retired racer"
+    ],
+    "correctIndex": 2,
+    "extraInfo": "Mater became so popular he got his own spin-off shorts."
+  },
+  {
+    "id": "monsters_inc_laugh_energy_q2",
+    "movieTitle": "Monsters, Inc.",
+    "year": 2001,
+    "difficulty": "normal",
+    "question": "By the end of the film, what surprising discovery do Mike and Sulley make about children?",
+    "options": [
+      "They produce more dreams than screams",
+      "Fear can be converted to energy faster",
+      "Monsters don't need doors at all",
+      "Laughter is far more powerful than screams"
+    ],
+    "correctIndex": 3,
+    "extraInfo": "This twist flips the whole monster economy overnight—Mike even becomes the top comedian."
+  },
+  {
+    "id": "finding_dory_shells_q1",
+    "movieTitle": "Finding Dory",
+    "year": 2016,
+    "difficulty": "easy",
+    "question": "What trail does little Dory learn to follow so she can always find her way home?",
+    "options": [
+      "Shells",
+      "Floating kelp",
+      "Ripple patterns",
+      "Glowing plankton"
+    ],
+    "correctIndex": 0,
+    "extraInfo": "The shell path becomes one of the film’s most emotional full-circle moments."
+  },
+  {
+    "id": "incredibles_elastigirl_plane_q1",
+    "movieTitle": "The Incredibles",
+    "year": 2004,
+    "difficulty": "challenging",
+    "question": "While flying with her kids, what shocking message does Elastigirl overhear from Syndrome’s missiles?",
+    "options": [
+      "Target acquired",
+      "There are children onboard",
+      "Abort mission",
+      "Split the formation"
+    ],
+    "correctIndex": 1,
+    "extraInfo": "The raw panic in her voice during that scene is one of Pixar’s most intense moments."
+  },
+  {
+    "id": "coco_remember_me_q1",
+    "movieTitle": "Coco",
+    "year": 2017,
+    "difficulty": "easy",
+    "question": "What song does Miguel sing to help Coco remember her father?",
+    "options": [
+      "Un Poco Loco",
+      "La Llorona",
+      "Remember Me",
+      "Proud Corazón"
+    ],
+    "correctIndex": 2,
+    "extraInfo": "Pixar storyboard artists cried during the first pitch of the 'Remember Me' scene."
+  }
+]
