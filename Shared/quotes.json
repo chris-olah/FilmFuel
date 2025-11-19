@@ -1,1013 +1,1458 @@
 [
-  {
-    "date": "2025-11-01",
-    "quote": "Hope is a good thing, maybe the best of things.",
-    "movie": "The Shawshank Redemption",
-    "year": 1994,
-    "triviaQuestion": "What crime is Andy Dufresne wrongly convicted of at the start of the film?",
-    "choices": ["Tax fraud", "Armed burglary", "Murdering his wife and her lover", "Bank robbery"],
-    "correctIndex": 2,
-    "funFact": "In Stephen King’s original novella, Red is written as a white Irishman; in the film, Morgan Freeman jokes, “Maybe it’s because I’m Irish,” nodding to that change."
-  },
-  {
-    "date": "2025-11-02",
-    "quote": "Why so serious?",
-    "movie": "The Dark Knight",
-    "year": 2008,
-    "triviaQuestion": "Which actor delivers the Joker’s chilling performance in this film?",
-    "choices": ["Jared Leto", "Heath Ledger", "Jack Nicholson", "Joaquin Phoenix"],
-    "correctIndex": 1,
-    "funFact": "During the hospital explosion scene, when the detonator seems to stall, Heath Ledger’s in-character fumbling was largely improvised while a real building was demolished in one take."
-  },
-  {
-    "date": "2025-11-03",
-    "quote": "May the Force be with you.",
-    "movie": "Star Wars: A New Hope",
-    "year": 1977,
-    "triviaQuestion": "What is the name of the young farm boy who becomes a Jedi in this film?",
-    "choices": ["Luke Skywalker", "Han Solo", "Obi-Wan Kenobi", "Anakin Skywalker"],
-    "correctIndex": 0,
-    "funFact": "Luke’s surname was originally written as “Starkiller” in early drafts before being changed to “Skywalker,” which sounded less harsh and more heroic."
-  },
-  {
-    "date": "2025-11-04",
-    "quote": "Life finds a way.",
-    "movie": "Jurassic Park",
-    "year": 1993,
-    "triviaQuestion": "Who directed the dinosaur blockbuster 'Jurassic Park'?",
-    "choices": ["Robert Zemeckis", "Steven Spielberg", "Ridley Scott", "James Cameron"],
-    "correctIndex": 1,
-    "funFact": "The iconic water ripple in the cup was created by plucking a guitar string attached under the dashboard, giving the T. rex’s footsteps a simple but unforgettable visual cue."
-  },
-  {
-    "date": "2025-11-05",
-    "quote": "I'm king of the world!",
-    "movie": "Titanic",
-    "year": 1997,
-    "triviaQuestion": "Who directed the epic romance-disaster film 'Titanic'?",
-    "choices": ["Peter Jackson", "James Cameron", "Ron Howard", "Steven Spielberg"],
-    "correctIndex": 1,
-    "funFact": "A massive ocean tank and near–full-scale ship sets were built in Mexico so the crew could film huge water sequences and the famous bow shot with the actors on a real deck."
-  },
-  {
-    "date": "2025-11-06",
-    "quote": "Just keep swimming.",
-    "movie": "Finding Nemo",
-    "year": 2003,
-    "triviaQuestion": "What kind of fish is Nemo?",
-    "choices": ["Butterflyfish", "Clownfish", "Angelfish", "Goldfish"],
-    "correctIndex": 1,
-    "funFact": "Ellen DeGeneres, who voices Dory, improvised many of her funniest lines, and her forgetful, upbeat character ended up reshaping whole scenes in the film."
-  },
-  {
-    "date": "2025-11-07",
-    "quote": "I'm gonna make him an offer he can't refuse.",
-    "movie": "The Godfather",
-    "year": 1972,
-    "triviaQuestion": "What is the surname of the powerful crime family at the center of the story?",
-    "choices": ["Corleone", "Corazon", "Soprano", "Corvino"],
-    "correctIndex": 0,
-    "funFact": "The cat on Vito Corleone’s lap in the opening scene was a stray found on set; it purred so loudly that it reportedly caused issues with the original sound recording."
-  },
-  {
-    "date": "2025-11-08",
-    "quote": "You have to see the matrix for yourself.",
-    "movie": "The Matrix",
-    "year": 1999,
-    "triviaQuestion": "What color pill does Neo choose to learn the truth about the Matrix?",
-    "choices": ["White", "Blue", "Green", "Red"],
-    "correctIndex": 3,
-    "funFact": "The Matrix’s signature green code was inspired by characters from a sushi cookbook, giving the digital rain its now-iconic look."
-  },
-  {
-    "date": "2025-11-09",
-    "quote": "There's no place like home.",
-    "movie": "The Wizard of Oz",
-    "year": 1939,
-    "triviaQuestion": "What color is the road Dorothy follows to reach the Emerald City?",
-    "choices": ["Blue", "Yellow", "Red", "White"],
-    "correctIndex": 1,
-    "funFact": "In L. Frank Baum’s original novel, Dorothy’s shoes are silver; they were changed to ruby slippers in the film to pop dramatically in Technicolor."
-  },
-  {
-    "date": "2025-11-10",
-    "quote": "To infinity and beyond!",
-    "movie": "Toy Story",
-    "year": 1995,
-    "triviaQuestion": "Who voices Woody, Andy’s favorite cowboy toy?",
-    "choices": ["Tom Hanks", "Robin Williams", "Billy Crystal", "Tim Allen"],
-    "correctIndex": 0,
-    "funFact": "Toy Story was the first fully computer-animated feature film ever released, launching a new era of animation and putting Pixar on the map."
-  },
-
-  {
-    "date": "2025-11-11",
-    "quote": "It’s not who I am underneath, but what I do that defines me.",
-    "movie": "Batman Begins",
-    "year": 2005,
-    "triviaQuestion": "Which actor plays Bruce Wayne / Batman in 'Batman Begins'?",
-    "choices": ["Michael Keaton", "Christian Bale", "Ben Affleck", "Val Kilmer"],
-    "correctIndex": 1,
-    "funFact": "The Tumbler Batmobile was a fully drivable vehicle capable of real jumps and stunts, making Batman’s car feel heavy, grounded, and tangible on screen."
-  },
-  {
-    "date": "2025-11-12",
-    "quote": "Carpe diem. Seize the day, boys.",
-    "movie": "Dead Poets Society",
-    "year": 1989,
-    "triviaQuestion": "Which actor plays the inspirational English teacher John Keating?",
-    "choices": ["Robin Williams", "Kevin Kline", "Dustin Hoffman", "Tom Hanks"],
-    "correctIndex": 0,
-    "funFact": "Filming took place at St. Andrew’s School in Delaware, which doubled as Welton Academy and helped give the movie its authentically old-fashioned boarding school atmosphere."
-  },
-  {
-    "date": "2025-11-13",
-    "quote": "Our lives are defined by opportunities, even the ones we miss.",
-    "movie": "The Curious Case of Benjamin Button",
-    "year": 2008,
-    "triviaQuestion": "Which actor stars as the age-reversing Benjamin Button?",
-    "choices": ["George Clooney", "Leonardo DiCaprio", "Brad Pitt", "Matt Damon"],
-    "correctIndex": 2,
-    "funFact": "Cutting-edge facial-aging visual effects were created so Brad Pitt could convincingly play Benjamin across a lifetime, from elderly to young."
-  },
-  {
-    "date": "2025-11-14",
-    "quote": "After all, tomorrow is another day!",
-    "movie": "Gone with the Wind",
-    "year": 1939,
-    "triviaQuestion": "During which war is 'Gone with the Wind' primarily set?",
-    "choices": ["World War I", "The Mexican–American War", "The American Civil War", "The Revolutionary War"],
-    "correctIndex": 2,
-    "funFact": "Hattie McDaniel won an Academy Award for her performance as Mammy, becoming the first Black actor ever to win an Oscar."
-  },
-
-  {
-    "date": "2025-11-15",
-    "quote": "Do, or do not. There is no try.",
-    "movie": "Star Wars: The Empire Strikes Back",
-    "year": 1980,
-    "triviaQuestion": "What is the name of the swampy planet where Luke trains with Yoda?",
-    "choices": ["Dagobah", "Hoth", "Endor", "Tatooine"],
-    "correctIndex": 0,
-    "funFact": "The movie’s big twist was kept so secret that alternate lines were written for the script and only a handful of people knew the real reveal during filming."
-  },
-  {
-    "date": "2025-11-16",
-    "quote": "It’s supposed to be hard. If it wasn’t hard, everyone would do it. The hard is what makes it great.",
-    "movie": "A League of Their Own",
-    "year": 1992,
-    "triviaQuestion": "Which character famously shouts, “There’s no crying in baseball!”?",
-    "choices": ["Jimmy Dugan", "Mae Mordabito", "Kit Keller", "Dottie Hinson"],
-    "correctIndex": 0,
-    "funFact": "Real All-American Girls Professional Baseball League players appear in the closing credits, playing a game and giving the film a poignant, real-world epilogue."
-  },
-  {
-    "date": "2025-11-17",
-    "quote": "Keep moving forward.",
-    "movie": "Meet the Robinsons",
-    "year": 2007,
-    "triviaQuestion": "What is Lewis especially passionate about doing in the film?",
-    "choices": ["Inventing", "Drawing comics", "Cooking", "Baseball"],
-    "correctIndex": 0,
-    "funFact": "The movie ends with an on-screen quote from Walt Disney—“Keep Moving Forward”—tying the film’s theme of resilience directly to Disney’s own motto."
-  },
-  {
-    "date": "2025-11-18",
-    "quote": "What we do in life echoes in eternity.",
-    "movie": "Gladiator",
-    "year": 2000,
-    "triviaQuestion": "What is Maximus’s role at the beginning of the film?",
-    "choices": ["Roman general", "Senator", "Gladiator slave", "Emperor’s bodyguard"],
-    "correctIndex": 0,
-    "funFact": "Russell Crowe’s line “Are you not entertained?” was partly improvised, becoming one of the most quoted moments in the film."
-  },
-  {
-    "date": "2025-11-19",
-    "quote": "To see the world, things dangerous to come to, to see behind walls, to draw closer, to find each other, and to feel.",
-    "movie": "The Secret Life of Walter Mitty",
-    "year": 2013,
-    "triviaQuestion": "Which actor both directs and stars as Walter Mitty?",
-    "choices": ["Steve Carell", "Jim Carrey", "Ben Stiller", "Adam Sandler"],
-    "correctIndex": 2,
-    "funFact": "Many of the film’s sweeping travel sequences were shot on location in Iceland, standing in for several of Walter’s far-flung adventures."
-  },
-  {
-    "date": "2025-11-20",
-    "quote": "It is not our abilities that show what we truly are… it is our choices.",
-    "movie": "Harry Potter and the Chamber of Secrets",
-    "year": 2002,
-    "triviaQuestion": "Which giant serpent lurks within the Chamber of Secrets?",
-    "choices": ["A Basilisk", "A Hungarian Horntail", "A Niffler", "An Acromantula"],
-    "correctIndex": 0,
-    "funFact": "The production created dozens of unique wand props for the cast; actors reportedly went through many during stunt-heavy scenes and rehearsals."
-  },
-  {
-    "date": "2025-11-21",
-    "quote": "Why do we fall? So we can learn to pick ourselves up.",
-    "movie": "Batman Begins",
-    "year": 2005,
-    "triviaQuestion": "Which villainous psychiatrist uses fear toxin against Gotham in the film?",
-    "choices": ["Dr. Jonathan Crane (Scarecrow)", "The Joker", "Ra’s al Ghul", "Bane"],
-    "correctIndex": 0,
-    "funFact": "Christian Bale’s gravelly Batman voice became a defining—and heavily parodied—take on the character, helping separate Bruce Wayne from his vigilante persona."
-  },
-  {
-    "date": "2025-11-22",
-    "quote": "Never give up, never surrender!",
-    "movie": "Galaxy Quest",
-    "year": 1999,
-    "triviaQuestion": "Which classic sci-fi TV series is 'Galaxy Quest' mainly parodying and celebrating?",
-    "choices": ["Doctor Who", "Star Trek", "Battlestar Galactica", "Stargate SG-1"],
-    "correctIndex": 1,
-    "funFact": "A 2013 poll of Star Trek fans famously ranked 'Galaxy Quest' among the best 'Star Trek' movies ever made, despite it being a loving parody."
-  },
-  {
-    "date": "2025-11-23",
-    "quote": "There is no secret ingredient.",
-    "movie": "Kung Fu Panda",
-    "year": 2008,
-    "triviaQuestion": "What is the name of the elite warrior team Po idolizes?",
-    "choices": ["The Jade Seven", "The Temple Five", "The Furious Five", "The Dragon Guard"],
-    "correctIndex": 2,
-    "funFact": "Jack Black’s ad-libbed catchphrase “Skadoosh” became so popular that it turned into a signature line for the entire franchise."
-  },
-  {
-    "date": "2025-11-24",
-    "quote": "Sometimes it is the people no one imagines anything of who do the things that no one can imagine.",
-    "movie": "The Imitation Game",
-    "year": 2014,
-    "triviaQuestion": "What nickname does Turing’s team give the cipher-breaking machine in the film?",
-    "choices": ["Colossus", "Christopher", "Bombe", "Enigma"],
-    "correctIndex": 1,
-    "funFact": "The production recreated Bletchley Park’s huts with meticulous period detail, immersing viewers in the secretive world of WWII codebreaking."
-  },
-  {
-    "date": "2025-11-25",
-    "quote": "Just because someone stumbles and loses their path, doesn’t mean they’re lost forever.",
-    "movie": "X-Men: Days of Future Past",
-    "year": 2014,
-    "triviaQuestion": "Which speedy mutant steals the show in the Pentagon kitchen sequence?",
-    "choices": ["Quicksilver", "Beast", "Blink", "Nightcrawler"],
-    "correctIndex": 0,
-    "funFact": "The Quicksilver kitchen scene used ultra–high-speed photography and practical elements to create the feeling that time had almost completely frozen."
-  },
     {
-      "date": "2025-11-26",
-      "quote": "You mustn’t be afraid to dream a little bigger, darling.",
-      "movie": "Inception",
-      "year": 2010,
-      "triviaQuestion": "What spinning object does Cobb use as his personal totem?",
-      "choices": ["A coin", "A chess piece", "A top", "A die"],
-      "correctIndex": 2,
-      "funFact": "A rotating hallway set was built so the zero-gravity fight scene could be filmed with actors tumbling for real instead of relying only on CGI."
-    },
-    {
-      "date": "2025-11-27",
-      "quote": "All we have to decide is what to do with the time that is given to us.",
-      "movie": "The Lord of the Rings: The Fellowship of the Ring",
-      "year": 2001,
-      "triviaQuestion": "What fiery creature does Gandalf confront on the Bridge of Khazad-dûm?",
-      "choices": ["A Cave Troll", "Shelob", "A Balrog", "A Nazgûl"],
-      "correctIndex": 2,
-      "funFact": "Weta Workshop built enormous 'bigatures'—miniatures so large they filled entire rooms—to create detailed shots of locations like Isengard and Rivendell."
-    },
-    {
-      "date": "2025-11-28",
-      "quote": "Adventure is out there!",
-      "movie": "Up",
-      "year": 2009,
-      "triviaQuestion": "What is the name of the South American destination Carl dreams of visiting?",
-      "choices": ["Angel Crest", "Paradise Falls", "Serranía del Viento", "Tepui Rosario"],
-      "correctIndex": 1,
-      "funFact": "Paradise Falls was inspired by Venezuela’s Angel Falls and the surrounding tepui mesas, giving the film its dramatic, otherworldly cliffs."
-    },
-    {
-      "date": "2025-11-29",
-      "quote": "The flower that blooms in adversity is the most rare and beautiful of all.",
-      "movie": "Mulan",
-      "year": 1998,
-      "triviaQuestion": "What is the name of the small dragon who becomes Mulan’s guardian?",
-      "choices": ["Cri-Kee", "Mulan", "Mushu", "Shang"],
-      "correctIndex": 2,
-      "funFact": "Ming-Na Wen voiced Mulan’s speaking role, while Lea Salonga provided the character’s singing voice, combining two performances into one heroine."
-    },
-    {
-      "date": "2025-11-30",
-      "quote": "You control your destiny—you don’t need magic to do it.",
-      "movie": "Brave",
-      "year": 2012,
-      "triviaQuestion": "Which weapon is Merida most skilled with?",
-      "choices": ["Sword", "Spear", "Slingshot", "Bow and arrow"],
-      "correctIndex": 3,
-      "funFact": "Merida is Pixar’s first female lead protagonist, marking a big shift for the studio’s lineup of heroes."
-    },
-    {
-      "date": "2025-12-01",
-      "quote": "Get busy living, or get busy dying.",
-      "movie": "The Shawshank Redemption",
-      "year": 1994,
-      "triviaQuestion": "Which poster ultimately hides the tunnel in Andy’s cell?",
-      "choices": ["Rita Hayworth", "Marilyn Monroe in 'The Seven Year Itch'", "Audrey Hepburn in 'Breakfast at Tiffany’s'", "Raquel Welch in 'One Million Years B.C.'"],
-      "correctIndex": 3,
-      "funFact": "Shawshank underperformed at the box office but exploded in popularity on cable and home video, eventually topping many 'greatest films of all time' lists."
-    },
-    {
-      "date": "2025-12-02",
-      "quote": "It’s not about how hard you hit. It’s about how hard you can get hit and keep moving forward.",
-      "movie": "Rocky Balboa",
-      "year": 2006,
-      "triviaQuestion": "Which sports network hosts the simulated fight that brings Rocky out of retirement?",
-      "choices": ["Fox Sports", "ESPN Classic", "HBO", "Showtime"],
-      "correctIndex": 1,
-      "funFact": "Stallone returned to the role of Rocky after 16 years away, training intensely to step back into the ring on screen at around 60 years old."
-    },
-    {
-      "date": "2025-12-03",
-      "quote": "Just because something works doesn’t mean it can’t be improved.",
-      "movie": "Black Panther",
-      "year": 2018,
-      "triviaQuestion": "What is the fictional metal that powers Wakanda’s advanced technology?",
-      "choices": ["Vibranium", "Adamantium", "Uru", "Nth Metal"],
-      "correctIndex": 0,
-      "funFact": "The film’s costumes blend Afro-futurist design with real African textiles and even 3D-printed elements, creating a unique visual style for Wakanda."
-    },
-    {
-      "date": "2025-12-04",
-      "quote": "Sometimes the right path is not the easiest one.",
-      "movie": "Pocahontas",
-      "year": 1995,
-      "triviaQuestion": "Which song from the movie won the Oscar for Best Original Song?",
-      "choices": ["Just Around the Riverbend", "If I Never Knew You", "Savages", "Colors of the Wind"],
-      "correctIndex": 3,
-      "funFact": "Many of Disney’s top animators were assigned to 'Pocahontas' because the studio expected it to be its next big prestige, award-winning project."
-    },
-    {
-      "date": "2025-12-05",
-      "quote": "The only limit is your soul.",
-      "movie": "Ratatouille",
-      "year": 2007,
-      "triviaQuestion": "Which exacting food critic is central to the film’s climax?",
-      "choices": ["Anton Ego", "François Lemaire", "Jean Gusteau", "Colette Tatou"],
-      "correctIndex": 0,
-      "funFact": "Chef Thomas Keller consulted on the film; Remy’s take on ratatouille was inspired by Keller’s real-life dish 'confit byaldi.'"
-    },
-    {
-      "date": "2025-12-06",
-      "quote": "Fear is the mind-killer.",
-      "movie": "Dune",
-      "year": 2021,
-      "triviaQuestion": "To which Great House does Paul belong?",
-      "choices": ["House Corrino", "House Harkonnen", "House Atreides", "House Richese"],
-      "correctIndex": 2,
-      "funFact": "Desert exteriors were shot in Jordan and Abu Dhabi to capture the vast, harsh feel of Arrakis’s landscape."
-    },
-    {
-      "date": "2025-12-07",
-      "quote": "There’s some good in this world, and it’s worth fighting for.",
-      "movie": "The Lord of the Rings: The Two Towers",
-      "year": 2002,
-      "triviaQuestion": "Name the fortress where the climactic nighttime siege takes place.",
-      "choices": ["Minas Tirith", "Isengard", "Helm’s Deep (Hornburg)", "Amon Hen"],
-      "correctIndex": 2,
-      "funFact": "Gollum became a landmark in performance capture, combining Andy Serkis’s physical acting with groundbreaking digital animation."
-    },
-    {
-      "date": "2025-12-08",
-      "quote": "You are who you choose to be.",
-      "movie": "The Iron Giant",
-      "year": 1999,
-      "triviaQuestion": "Which comic-book hero does the Giant look up to?",
-      "choices": ["Batman", "The Flash", "Superman", "Green Lantern"],
-      "correctIndex": 2,
-      "funFact": "Based on Ted Hughes’ book, the film weaves Cold War paranoia together with a heartfelt Superman homage, turning a giant weapon into a self-chosen hero."
-    },
-    {
-      "date": "2025-12-09",
-      "quote": "With great power comes great responsibility.",
-      "movie": "Spider-Man",
-      "year": 2002,
-      "triviaQuestion": "What is the name of the newspaper Peter Parker works for as a photographer?",
-      "choices": ["The Daily Planet", "The New York Chronicle", "The City Gazette", "The Daily Bugle"],
-      "correctIndex": 3,
-      "funFact": "The upside-down kiss in the rain became one of the most iconic superhero movie moments, but it was notoriously uncomfortable for Tobey Maguire to film."
-    },
-    {
-      "date": "2025-12-10",
-      "quote": "Everything is possible, even the impossible.",
-      "movie": "Mary Poppins Returns",
-      "year": 2018,
-      "triviaQuestion": "What is the term used for the lamplighters in the film?",
-      "choices": ["Leeries", "Linkboys", "Lucifers", "Lampwrights"],
-      "correctIndex": 0,
-      "funFact": "Dick Van Dyke returned for a dancing cameo at age 92, delighting fans of the original film."
-    },
-    {
-      "date": "2025-12-11",
-      "quote": "A million dollars isn’t cool. You know what’s cool? A billion dollars.",
-      "movie": "The Social Network",
-      "year": 2010,
-      "triviaQuestion": "Who composed the film’s Oscar-winning score?",
-      "choices": ["Hans Zimmer", "Trent Reznor & Atticus Ross", "Alexandre Desplat", "Clint Mansell"],
-      "correctIndex": 1,
-      "funFact": "Most 'Harvard' scenes were filmed at other campuses, including Johns Hopkins University, after Harvard declined to let the production shoot on its grounds."
-    },
-    {
-      "date": "2025-12-12",
-      "quote": "Not quite my tempo.",
-      "movie": "Whiplash",
-      "year": 2014,
-      "triviaQuestion": "Which instrument does Andrew practice obsessively?",
-      "choices": ["Saxophone", "Piano", "Drums", "Trumpet"],
-      "correctIndex": 2,
-      "funFact": "The feature film expanded from Damien Chazelle’s 18-minute short, which he made first to secure financing for the full story."
-    },
-    {
-      "date": "2025-12-13",
-      "quote": "Mankind was born on Earth. It was never meant to die here.",
-      "movie": "Interstellar",
-      "year": 2014,
-      "triviaQuestion": "Which theoretical physicist advised on the film’s black hole visuals?",
-      "choices": ["Brian Greene", "Kip Thorne", "Michio Kaku", "Stephen Hawking"],
-      "correctIndex": 1,
-      "funFact": "The VFX team’s black hole simulations were so detailed that they led to academic insights about how light bends around massive objects."
-    },
-    {
-      "date": "2025-12-14",
-      "quote": "Seize your moment.",
-      "movie": "Coco",
-      "year": 2017,
-      "triviaQuestion": "What is the name of the land Miguel visits during Día de los Muertos?",
-      "choices": ["Xibalba", "Mictlan", "Land of the Dead", "La Ofrenda"],
-      "correctIndex": 2,
-      "funFact": "Research trips across Mexico inspired everything from the film’s music to its colorful alebrijes and marigold bridge."
-    },
-    {
-      "date": "2025-12-15",
-      "quote": "You got a dream, you gotta protect it.",
-      "movie": "The Pursuit of Happyness",
-      "year": 2006,
-      "triviaQuestion": "Which real entrepreneur is Will Smith portraying?",
-      "choices": ["Daymond John", "Chris Gardner", "Reginald Lewis", "Robert Smith"],
-      "correctIndex": 1,
-      "funFact": "The real Chris Gardner makes a cameo at the end of the film, briefly crossing paths with Will Smith’s character on the street."
-    },
-    {
-      "date": "2025-12-16",
-      "quote": "Remember who you are.",
-      "movie": "The Lion King",
-      "year": 1994,
-      "triviaQuestion": "What is the name of Simba’s homeland?",
-      "choices": ["The Pride Lands", "Hakuna Plains", "Mufasa’s Reach", "The Elephant Graveyard"],
-      "correctIndex": 0,
-      "funFact": "The wildebeest stampede sequence combined hand-drawn artistry with pioneering computer crowd simulation to create its overwhelming scale."
-    },
-    {
-      "date": "2025-12-17",
-      "quote": "Once you’ve met someone, you never really forget them.",
-      "movie": "Spirited Away",
-      "year": 2001,
-      "triviaQuestion": "Which studio produced this Academy Award–winning film?",
-      "choices": ["Studio Ghibli", "Madhouse", "Toei Animation", "Production I.G"],
-      "correctIndex": 0,
-      "funFact": "Spirited Away became the first non-English animated film to win the Oscar for Best Animated Feature, bringing Studio Ghibli global recognition."
-    },
-    {
-      "date": "2025-12-18",
-      "quote": "I never look back, darling. It distracts from the now.",
-      "movie": "The Incredibles",
-      "year": 2004,
-      "triviaQuestion": "Which fashion-obsessed character says “No capes!”?",
-      "choices": ["Edna Mode", "Violet Parr", "Mirage", "Evelyn Deavor"],
-      "correctIndex": 0,
-      "funFact": "Edna Mode is voiced by director Brad Bird himself, giving the character her sharp, unforgettable delivery."
-    },
-    {
-      "date": "2025-12-19",
-      "quote": "One step at a time. One punch at a time. One round at a time.",
-      "movie": "Creed",
-      "year": 2015,
-      "triviaQuestion": "Who plays Adonis Creed?",
-      "choices": ["John Boyega", "Michael B. Jordan", "Jonathan Majors", "Anthony Mackie"],
-      "correctIndex": 1,
-      "funFact": "Several fight scenes use long takes, including a standout two-round bout filmed as a single continuous shot to heighten realism."
-    },
-    {
-      "date": "2025-12-20",
-      "quote": "I’m going to have to science the shit out of this.",
-      "movie": "The Martian",
-      "year": 2015,
-      "triviaQuestion": "Which space agency is central to the rescue effort?",
-      "choices": ["ESA", "Roscosmos", "ISRO", "NASA"],
-      "correctIndex": 3,
-      "funFact": "NASA advised on mission details, and the production filmed Martian landscapes in Wadi Rum, Jordan, to mimic the look of the Red Planet."
-    },
-      {
-        "date": "2025-12-21",
-        "quote": "You talking to me?",
-        "movie": "Taxi Driver",
-        "year": 1976,
-        "triviaQuestion": "Who directed this gritty psychological drama?",
-        "choices": ["Francis Ford Coppola", "Martin Scorsese", "Brian De Palma", "Sidney Lumet"],
-        "correctIndex": 1,
-        "funFact": "Robert De Niro improvised much of the famous mirror scene, including the iconic line."
-      },
-      {
-        "date": "2025-12-22",
-        "quote": "Here's looking at you, kid.",
-        "movie": "Casablanca",
-        "year": 1942,
-        "triviaQuestion": "What is Rick’s nightclub called?",
-        "choices": ["Rick’s Place", "Rick’s Café Américain", "The Casablanca Club", "Café du Desert"],
-        "correctIndex": 1,
-        "funFact": "Many cast members were real refugees fleeing World War II, making the story emotionally resonant on set."
-      },
-      {
-        "date": "2025-12-23",
-        "quote": "Say hello to my little friend!",
-        "movie": "Scarface",
-        "year": 1983,
-        "triviaQuestion": "Who plays Tony Montana?",
-        "choices": ["Al Pacino", "Robert De Niro", "Andy García", "Dustin Hoffman"],
+        "date": "2025-11-01",
+        "quote": "Hope is a good thing, maybe the best of things.",
+        "movie": "The Shawshank Redemption",
+        "year": 1994,
+        "triviaQuestion": "Which author wrote the novella that inspired The Shawshank Redemption?",
+        "choices": ["Stephen King", "Dean Koontz", "Clive Barker", "James Patterson"],
         "correctIndex": 0,
-        "funFact": "Pacino burned his hand on a real gun barrel during filming the iconic mansion shootout."
-      },
-      {
-        "date": "2025-12-24",
-        "quote": "You can't handle the truth!",
-        "movie": "A Few Good Men",
-        "year": 1992,
-        "triviaQuestion": "Which actor delivers the famous courtroom monologue?",
-        "choices": ["Jack Nicholson", "Tom Cruise", "Gene Hackman", "Ed Harris"],
-        "correctIndex": 0,
-        "funFact": "Nicholson filmed his explosive monologue so well that even unused takes impressed the crew."
-      },
-      {
-        "date": "2025-12-25",
-        "quote": "Just when I thought I was out, they pull me back in.",
-        "movie": "The Godfather Part III",
-        "year": 1990,
-        "triviaQuestion": "What is Michael Corleone trying to make his family become?",
-        "choices": ["More powerful", "Legitimate", "International", "Untouchable"],
-        "correctIndex": 1,
-        "funFact": "Pacino’s famous line wasn’t in the book—it became a defining quote of the entire franchise."
-      },
-      {
-        "date": "2025-12-26",
-        "quote": "Houston, we have a problem.",
-        "movie": "Apollo 13",
-        "year": 1995,
-        "triviaQuestion": "Who directed this real-life NASA mission film?",
-        "choices": ["James Cameron", "Ron Howard", "Steven Spielberg", "Christopher Nolan"],
-        "correctIndex": 1,
-        "funFact": "Much of the movie was filmed during actual zero-gravity parabolic flights to achieve weightlessness."
-      },
-      {
-        "date": "2025-12-27",
-        "quote": "There's a snake in my boot!",
-        "movie": "Toy Story 2",
-        "year": 1999,
-        "triviaQuestion": "What toy collector kidnaps Woody?",
-        "choices": ["Stinky Pete", "Sid Phillips", "Al McWhiggin", "Zurg"],
-        "correctIndex": 2,
-        "funFact": "A near-fatal deletion of the movie’s files occurred when someone accidentally wiped assets—saved only by a backup on a new mother’s home computer."
-      },
-      {
-        "date": "2025-12-28",
-        "quote": "To me, you are perfect.",
-        "movie": "Love Actually",
-        "year": 2003,
-        "triviaQuestion": "What holiday is the film set around?",
-        "choices": ["New Year’s Eve", "Valentine’s Day", "Christmas", "Easter"],
-        "correctIndex": 2,
-        "funFact": "The cue-card confession scene became one of the most parodied romantic moments in film history."
-      },
-      {
-        "date": "2025-12-29",
-        "quote": "Why'd it have to be snakes?",
-        "movie": "Raiders of the Lost Ark",
-        "year": 1981,
-        "triviaQuestion": "Who plays Indiana Jones?",
-        "choices": ["Harrison Ford", "Tom Selleck", "Mel Gibson", "Kurt Russell"],
-        "correctIndex": 0,
-        "funFact": "Tom Selleck was originally offered the role but couldn’t take it due to TV commitments."
-      },
-      {
-        "date": "2025-12-30",
-        "quote": "You're gonna need a bigger boat.",
-        "movie": "Jaws",
-        "year": 1975,
-        "triviaQuestion": "Which director launched the modern summer blockbuster with this film?",
-        "choices": ["Steven Spielberg", "George Lucas", "Ridley Scott", "John Carpenter"],
-        "correctIndex": 0,
-        "funFact": "The line was improvised by Roy Scheider after the mechanical shark malfunctioned repeatedly."
-      },
-
-      {
-        "date": "2025-12-31",
-        "quote": "I'm the king of the world!",
-        "movie": "Titanic",
-        "year": 1997,
-        "triviaQuestion": "What is Jack’s last name?",
-        "choices": ["Dawson", "Dalton", "Daniels", "Dixon"],
-        "correctIndex": 0,
-        "funFact": "The bow-standing ‘king of the world’ line was improvised by Leonardo DiCaprio on set."
-      },
-      {
-        "date": "2026-01-01",
-        "quote": "I wish I knew how to quit you.",
-        "movie": "Brokeback Mountain",
-        "year": 2005,
-        "triviaQuestion": "Which two actors play the lead roles?",
-        "choices": ["Jake Gyllenhaal & Heath Ledger", "Brad Pitt & Matt Damon", "Joaquin Phoenix & Jude Law", "Ben Affleck & Casey Affleck"],
-        "correctIndex": 0,
-        "funFact": "The film became a cultural milestone and won Ang Lee the Oscar for Best Director."
-      },
-      {
-        "date": "2026-01-02",
+        "funFact": "The prison in the film is a real decommissioned penitentiary in Ohio that now runs Shawshank tours where fans can walk through Andy’s escape route."
+    },
+    {
+        "date": "2025-11-02",
         "quote": "Why so serious?",
         "movie": "The Dark Knight",
         "year": 2008,
-        "triviaQuestion": "What bank does the Joker rob in the opening scene?",
-        "choices": ["Gotham National Bank", "First City Bank", "Bank of Gotham", "Gotham Trust"],
-        "correctIndex": 2,
-        "funFact": "The bank heist was shot with IMAX cameras, setting a precedent for large-format action filming."
-      },
-      {
-        "date": "2026-01-03",
-        "quote": "Great Scott!",
-        "movie": "Back to the Future",
-        "year": 1985,
-        "triviaQuestion": "What is Marty McFly’s time machine built from?",
-        "choices": ["A Mustang", "A Corvette", "A DeLorean", "A Porsche"],
-        "correctIndex": 2,
-        "funFact": "The DeLorean was chosen partly for its futuristic look and its iconic gull-wing doors."
-      },
-      {
-        "date": "2026-01-04",
-        "quote": "You either die a hero or live long enough to see yourself become the villain.",
-        "movie": "The Dark Knight",
-        "year": 2008,
-        "triviaQuestion": "Which actor plays Harvey Dent?",
-        "choices": ["Guy Pearce", "Aaron Eckhart", "Colin Farrell", "Matthew McConaughey"],
+        "triviaQuestion": "Most of Gotham City in The Dark Knight was filmed on location in which real-world city?",
+        "choices": ["New York City", "Chicago", "Hong Kong", "Vancouver"],
         "correctIndex": 1,
-        "funFact": "Eckhart’s transformation into Two-Face combined prosthetics with digital VFX to create his burned appearance."
-      },
-      {
-        "date": "2026-01-05",
-        "quote": "I feel the need—the need for speed!",
-        "movie": "Top Gun",
-        "year": 1986,
-        "triviaQuestion": "What is Maverick’s real first name?",
-        "choices": ["Nick", "Pete", "Tom", "Jake"],
-        "correctIndex": 1,
-        "funFact": "Real Navy pilots trained the actors and helped choreograph the film’s iconic dogfights."
-      },
-      {
-        "date": "2026-01-06",
-        "quote": "Life is like a box of chocolates; you never know what you're gonna get.",
-        "movie": "Forrest Gump",
-        "year": 1994,
-        "triviaQuestion": "Where does Forrest first meet Jenny?",
-        "choices": ["On the bus", "At school", "At church", "In the park"],
+        "funFact": "Heath Ledger reportedly locked himself in a hotel room for weeks to craft the Joker’s voice, laugh, and mannerisms, filling a notebook with twisted ideas."
+    },
+    {
+        "date": "2025-11-03",
+        "quote": "May the Force be with you.",
+        "movie": "Star Wars: A New Hope",
+        "year": 1977,
+        "triviaQuestion": "Which studio originally released Star Wars: A New Hope in 1977?",
+        "choices": ["Paramount Pictures", "Universal Pictures", "20th Century Fox", "Warner Bros."],
+        "correctIndex": 2,
+        "funFact": "The original script had Luke’s last name as Starkiller, but it was changed to Skywalker late in development for a more heroic, less harsh sound."
+    },
+    {
+        "date": "2025-11-04",
+        "quote": "Life finds a way.",
+        "movie": "Jurassic Park",
+        "year": 1993,
+        "triviaQuestion": "Who composed Jurassic Park’s iconic sweeping musical score?",
+        "choices": ["Hans Zimmer", "Alan Silvestri", "James Horner", "John Williams"],
+        "correctIndex": 3,
+        "funFact": "The massive T. rex animatronic would sometimes randomly move when soaked with water, scaring the crew when it seemed to ‘wake up’ between takes."
+    },
+    {
+        "date": "2025-11-05",
+        "quote": "I'm king of the world!",
+        "movie": "Titanic",
+        "year": 1997,
+        "triviaQuestion": "Which Celine Dion song became Titanic’s signature theme?",
+        "choices": ["My Heart Will Go On", "Because You Loved Me", "It’s All Coming Back to Me Now", "All by Myself"],
         "correctIndex": 0,
-        "funFact": "The iconic bench scenes were filmed in Savannah, Georgia—though the bench itself is now in a museum."
-      },
-      {
-        "date": "2026-01-07",
+        "funFact": "James Cameron had a near full-scale ship set built on a huge water tank in Mexico so the cast could run, lean over the bow, and sink with a physical ship."
+    },
+    {
+        "date": "2025-11-06",
         "quote": "Just keep swimming.",
         "movie": "Finding Nemo",
         "year": 2003,
-        "triviaQuestion": "What kind of fish is Dory?",
-        "choices": ["Clownfish", "Blue tang", "Butterflyfish", "Damselfish"],
+        "triviaQuestion": "Most of Finding Nemo’s ocean journey takes place in which ocean?",
+        "choices": ["Atlantic Ocean", "Pacific Ocean", "Indian Ocean", "Arctic Ocean"],
         "correctIndex": 1,
-        "funFact": "Dory’s forgetfulness was inspired by Ellen DeGeneres’s rapid-fire comedic delivery."
-      },
-      {
-        "date": "2026-01-08",
-        "quote": "This is Sparta!",
-        "movie": "300",
-        "year": 2006,
-        "triviaQuestion": "Who plays King Leonidas?",
-        "choices": ["Hugh Jackman", "Gerard Butler", "Russell Crowe", "Eric Bana"],
-        "correctIndex": 1,
-        "funFact": "The movie’s stylized visuals mimic the look of the original Frank Miller graphic novel."
-      },
-      {
-        "date": "2026-01-09",
-        "quote": "I'm always angry.",
-        "movie": "The Avengers",
-        "year": 2012,
-        "triviaQuestion": "Who plays Bruce Banner in this film?",
-        "choices": ["Mark Ruffalo", "Edward Norton", "Eric Bana", "Ben Affleck"],
-        "correctIndex": 0,
-        "funFact": "Ruffalo performed both Banner and Hulk through motion capture for the first time in the MCU."
-      },
-
-      {
-        "date": "2026-01-10",
-        "quote": "You're breathtaking!",
-        "movie": "Cyberpunk 2077: Edgerunners",
-        "year": 2022,
-        "triviaQuestion": "Which animation studio produced the series?",
-        "choices": ["Bones", "Trigger", "MAPPA", "Ufotable"],
-        "correctIndex": 1,
-        "funFact": "The series boosted Cyberpunk 2077 game sales dramatically after release."
-      },
-      {
-        "date": "2026-01-11",
-        "quote": "I am Groot.",
-        "movie": "Guardians of the Galaxy",
-        "year": 2014,
-        "triviaQuestion": "Which actor voices Groot?",
-        "choices": ["Vin Diesel", "Bradley Cooper", "Dave Bautista", "Chris Pratt"],
-        "correctIndex": 0,
-        "funFact": "Vin Diesel recorded the line 'I am Groot' in multiple languages for international releases."
-      },
-      {
-        "date": "2026-01-12",
-        "quote": "We are Groot.",
-        "movie": "Guardians of the Galaxy",
-        "year": 2014,
-        "triviaQuestion": "What color is the Power Stone featured in the film?",
-        "choices": ["Purple", "Blue", "Green", "Red"],
-        "correctIndex": 0,
-        "funFact": "The film revitalized several obscure Marvel characters who were barely known before its release."
-      },
-      {
-        "date": "2026-01-13",
-        "quote": "To infinity… and beyond!",
-        "movie": "Toy Story 3",
-        "year": 2010,
-        "triviaQuestion": "Who voices Buzz Lightyear?",
-        "choices": ["Tim Allen", "Tom Hanks", "Billy Crystal", "Chris Evans"],
-        "correctIndex": 0,
-        "funFact": "Toy Story 3 received a Best Picture nomination—very rare for animated films."
-      },
-      {
-        "date": "2026-01-14",
-        "quote": "Roads? Where we're going, we don't need roads.",
-        "movie": "Back to the Future Part II",
-        "year": 1989,
-        "triviaQuestion": "What futuristic year does Marty travel to?",
-        "choices": ["2020", "2015", "2030", "2045"],
-        "correctIndex": 1,
-        "funFact": "The film’s 2015 predictions—hoverboards and self-lacing shoes—became pop-culture obsessions."
-      },
-
-      {
-        "date": "2026-01-15",
-        "quote": "I drink your milkshake!",
-        "movie": "There Will Be Blood",
-        "year": 2007,
-        "triviaQuestion": "Who won an Oscar for playing Daniel Plainview?",
-        "choices": ["Daniel Day-Lewis", "Philip Seymour Hoffman", "Javier Bardem", "Russell Crowe"],
-        "correctIndex": 0,
-        "funFact": "The milkshake line was inspired by real 1920s Senate testimony about oil drilling rights."
-      },
-      {
-        "date": "2026-01-16",
-        "quote": "I'll be back.",
-        "movie": "The Terminator",
-        "year": 1984,
-        "triviaQuestion": "Who directed this sci-fi classic?",
-        "choices": ["James Cameron", "Ridley Scott", "Paul Verhoeven", "John McTiernan"],
-        "correctIndex": 0,
-        "funFact": "Schwarzenegger originally read the line as 'I will be back' before Cameron pushed for the iconic phrasing."
-      },
-      {
-        "date": "2026-01-17",
-        "quote": "Hasta la vista, baby.",
-        "movie": "Terminator 2: Judgment Day",
-        "year": 1991,
-        "triviaQuestion": "What is the name of the liquid metal villain?",
-        "choices": ["T-2000", "T-1000", "TX", "X-7"],
-        "correctIndex": 1,
-        "funFact": "T2’s groundbreaking CGI made the T-1000 one of cinema’s most memorable villains."
-      },
-      {
-        "date": "2026-01-18",
-        "quote": "I'm the Dude, so that's what you call me.",
-        "movie": "The Big Lebowski",
-        "year": 1998,
-        "triviaQuestion": "Who directed this cult comedy?",
-        "choices": ["The Coen Brothers", "Wes Anderson", "David Lynch", "Guy Ritchie"],
-        "correctIndex": 0,
-        "funFact": "Jeff Bridges would ask the Coens before takes, 'Did the Dude burn one before this scene?' helping him stay in character."
-      },
-      {
-        "date": "2026-01-19",
-        "quote": "It's a trap!",
-        "movie": "Star Wars: Return of the Jedi",
-        "year": 1983,
-        "triviaQuestion": "Which character shouts this iconic warning?",
-        "choices": ["Han Solo", "Chewbacca", "Admiral Ackbar", "Lando Calrissian"],
+        "funFact": "After the movie’s release, demand for pet clownfish exploded so much that marine biologists worried people would over-collect them from coral reefs."
+    },
+    {
+        "date": "2025-11-07",
+        "quote": "I'm gonna make him an offer he can't refuse.",
+        "movie": "The Godfather",
+        "year": 1972,
+        "triviaQuestion": "What is the surname of the powerful crime family at the center of The Godfather?",
+        "choices": ["Soprano", "Corzano", "Corleone", "Vitelli"],
         "correctIndex": 2,
-        "funFact": "Ackbar’s line became one of the biggest memes in Star Wars fandom decades later."
-      },
-
-      {
-        "date": "2026-01-20",
-        "quote": "Keep your friends close, but your enemies closer.",
-        "movie": "The Godfather Part II",
-        "year": 1974,
-        "triviaQuestion": "Which actor plays the young Vito Corleone?",
-        "choices": ["Robert De Niro", "Al Pacino", "Marlon Brando", "Harvey Keitel"],
-        "correctIndex": 0,
-        "funFact": "Robert De Niro won an Oscar for playing young Vito, making him one of few actors to win for portraying the same character as another actor."
-      },
-      {
-        "date": "2026-01-21",
-        "quote": "I am inevitable.",
-        "movie": "Avengers: Endgame",
-        "year": 2019,
-        "triviaQuestion": "Who plays Thanos?",
-        "choices": ["Josh Brolin", "Dave Bautista", "Oscar Isaac", "Jude Law"],
-        "correctIndex": 0,
-        "funFact": "Thanos’s expressions blend Brolin’s performance with advanced facial-capture tech."
-      },
-      {
-        "date": "2026-01-22",
-        "quote": "I see dead people.",
-        "movie": "The Sixth Sense",
+        "funFact": "The cat in Vito Corleone’s lap during the opening scene was a stray found on set that purred so loudly it nearly ruined the original sound recording."
+    },
+    {
+        "date": "2025-11-08",
+        "quote": "You have to see the matrix for yourself.",
+        "movie": "The Matrix",
         "year": 1999,
-        "triviaQuestion": "Who directed the film?",
-        "choices": ["M. Night Shyamalan", "David Fincher", "Bryan Singer", "Sam Mendes"],
+        "triviaQuestion": "What color pill does Neo take to learn the truth about the Matrix?",
+        "choices": ["White", "Blue", "Green", "Red"],
+        "correctIndex": 3,
+        "funFact": "The iconic green digital rain code was inspired by characters from a sushi cookbook, scanned and stylized into the Matrix’s signature look."
+    },
+    {
+        "date": "2025-11-09",
+        "quote": "There's no place like home.",
+        "movie": "The Wizard of Oz",
+        "year": 1939,
+        "triviaQuestion": "What kind of storm transports Dorothy from Kansas to the Land of Oz?",
+        "choices": ["Tornado", "Blizzard", "Hurricane", "Dust storm"],
         "correctIndex": 0,
-        "funFact": "The film’s twist ending became one of the most famous in modern cinema."
-      },
-      {
-        "date": "2026-01-23",
-        "quote": "Why so serious?",
-        "movie": "The Dark Knight",
-        "year": 2008,
-        "triviaQuestion": "Which of these is NOT one of the Joker’s disguises?",
-        "choices": ["Nurse", "SWAT Officer", "School Teacher", "Bank Robber"],
-        "correctIndex": 2,
-        "funFact": "Heath Ledger kept a Joker diary filled with disturbing inspirations to stay in character."
-      },
-      {
-        "date": "2026-01-24",
-        "quote": "You shall not pass!",
-        "movie": "The Lord of the Rings: The Fellowship of the Ring",
-        "year": 2001,
-        "triviaQuestion": "Who portrays Gandalf?",
-        "choices": ["Ian McKellen", "Christopher Lee", "Peter O’Toole", "John Hurt"],
-        "correctIndex": 0,
-        "funFact": "McKellen accidentally knocked his head on Bilbo’s ceiling beam—kept in the final cut because it fit the character perfectly."
-      },
-
-      {
-        "date": "2026-01-25",
-        "quote": "I'm flying!",
-        "movie": "Titanic",
-        "year": 1997,
-        "triviaQuestion": "What is Rose’s last name?",
-        "choices": ["Calvert", "Dawson", "Bukater", "DeWitt"],
-        "correctIndex": 2,
-        "funFact": "Kate Winslet’s scream during the icy water scenes was real—it was freezing on set."
-      },
-      {
-        "date": "2026-01-26",
-        "quote": "Why did it have to be snakes?",
-        "movie": "Indiana Jones and the Last Crusade",
-        "year": 1989,
-        "triviaQuestion": "Who plays Indy’s father?",
-        "choices": ["Sean Connery", "Ian McKellen", "Max von Sydow", "Gene Hackman"],
-        "correctIndex": 0,
-        "funFact": "Connery was only 12 years older than Harrison Ford in real life."
-      },
-      {
-        "date": "2026-01-27",
-        "quote": "You're a wizard, Harry.",
-        "movie": "Harry Potter and the Sorcerer’s Stone",
-        "year": 2001,
-        "triviaQuestion": "Who gives Harry his first wand?",
-        "choices": ["Ollivander", "Dumbledore", "Hagrid", "McGonagall"],
-        "correctIndex": 0,
-        "funFact": "Many young actors genuinely gasped during the Diagon Alley reveal—filmed on their first day."
-      },
-      {
-        "date": "2026-01-28",
-        "quote": "As you wish.",
-        "movie": "The Princess Bride",
-        "year": 1987,
-        "triviaQuestion": "Who plays Westley?",
-        "choices": ["Cary Elwes", "Val Kilmer", "Kevin Kline", "Rob Lowe"],
-        "correctIndex": 0,
-        "funFact": "Mandy Patinkin bruised a rib trying to hold in laughter during Billy Crystal’s scenes."
-      },
-      {
-        "date": "2026-01-29",
+        "funFact": "Dorothy’s shoes were silver in the original book, but the film changed them to ruby slippers so they’d pop dramatically in Technicolor."
+    },
+    {
+        "date": "2025-11-10",
         "quote": "To infinity and beyond!",
         "movie": "Toy Story",
         "year": 1995,
-        "triviaQuestion": "What is Andy’s last name?",
-        "choices": ["Davis", "Anderson", "Mitchell", "Smith"],
-        "correctIndex": 0,
-        "funFact": "Andy's last name is not spoken in the film but appears on his school papers."
-      },
-
-      {
-        "date": "2026-01-30",
-        "quote": "You ain't heard nothin' yet!",
-        "movie": "The Jazz Singer",
-        "year": 1927,
-        "triviaQuestion": "Why is the film historically important?",
-        "choices": ["First sound film", "First color film", "First animated feature", "First movie with CGI"],
-        "correctIndex": 0,
-        "funFact": "It ushered in the era of ‘talkies,’ changing cinema forever."
-      },
-      {
-        "date": "2026-01-31",
-        "quote": "Bond. James Bond.",
-        "movie": "Dr. No",
-        "year": 1962,
-        "triviaQuestion": "Which actor first portrayed James Bond on film?",
-        "choices": ["Sean Connery", "Roger Moore", "George Lazenby", "Timothy Dalton"],
-        "correctIndex": 0,
-        "funFact": "The scene where Bond introduces himself became the franchise’s signature line."
-      },
-      {
-        "date": "2026-02-01",
-        "quote": "You’re gonna need a bigger boat.",
-        "movie": "Jaws",
-        "year": 1975,
-        "triviaQuestion": "What’s the shark’s nickname on set?",
-        "choices": ["Gus", "Bruce", "Sam", "Captain"],
+        "triviaQuestion": "Which animation studio produced Toy Story, the first fully computer-animated feature film?",
+        "choices": ["DreamWorks Animation", "Pixar Animation Studios", "Blue Sky Studios", "Illumination Entertainment"],
         "correctIndex": 1,
-        "funFact": "The mechanical shark malfunctioned so often that Spielberg shifted toward suspense instead of showing it."
-      },
-      {
-        "date": "2026-02-02",
-        "quote": "I volunteer as tribute!",
-        "movie": "The Hunger Games",
-        "year": 2012,
-        "triviaQuestion": "Who plays Katniss Everdeen?",
-        "choices": ["Jennifer Lawrence", "Emma Stone", "Shailene Woodley", "Anne Hathaway"],
-        "correctIndex": 0,
-        "funFact": "Jennifer Lawrence trained with an Olympic archer to master her bow skills."
-      },
-      {
-        "date": "2026-02-03",
-        "quote": "I'm the king of the world!",
-        "movie": "Titanic",
-        "year": 1997,
-        "triviaQuestion": "Who plays Rose?",
-        "choices": ["Kate Winslet", "Nicole Kidman", "Jennifer Connelly", "Meg Ryan"],
-        "correctIndex": 0,
-        "funFact": "Winslet was only 21 when filming Titanic, yet delivered one of her most iconic roles."
-      },
-
-      {
-        "date": "2026-02-04",
-        "quote": "You either die a hero...",
-        "movie": "The Dark Knight",
+        "funFact": "Toy Story was the first feature-length film made entirely with computer animation, launching Pixar and changing the future of animated movies."
+    },
+    {
+        "date": "2025-11-11",
+        "quote": "It’s not who I am underneath, but what I do that defines me.",
+        "movie": "Batman Begins",
+        "year": 2005,
+        "triviaQuestion": "Who directed Batman Begins, the film that rebooted Batman on the big screen?",
+        "choices": ["Tim Burton", "Zack Snyder", "Christopher Nolan", "Joel Schumacher"],
+        "correctIndex": 2,
+        "funFact": "Christian Bale’s Batman voice was so aggressive in early takes that the sound team had to rein it in to keep dialogue understandable."
+    },
+    {
+        "date": "2025-11-12",
+        "quote": "Carpe diem. Seize the day, boys.",
+        "movie": "Dead Poets Society",
+        "year": 1989,
+        "triviaQuestion": "Dead Poets Society is primarily set at what kind of school?",
+        "choices": ["Public high school", "Military academy", "Community college", "Elite boys’ boarding school"],
+        "correctIndex": 3,
+        "funFact": "Many of the students’ reactions to Robin Williams’ improvised classroom antics were genuine, because he often went off-script to surprise them."
+    },
+    {
+        "date": "2025-11-13",
+        "quote": "Our lives are defined by opportunities, even the ones we miss.",
+        "movie": "The Curious Case of Benjamin Button",
         "year": 2008,
-        "triviaQuestion": "Who directed The Dark Knight?",
-        "choices": ["Christopher Nolan", "Zack Snyder", "David Fincher", "James Wan"],
+        "triviaQuestion": "Who directed The Curious Case of Benjamin Button?",
+        "choices": ["David Fincher", "Ron Howard", "Clint Eastwood", "Sam Mendes"],
         "correctIndex": 0,
-        "funFact": "Nolan used real IMAX cameras for major action sequences, a groundbreaking choice at the time."
-      },
-      {
-        "date": "2026-02-05",
-        "quote": "Are you not entertained?",
+        "funFact": "The film’s aging effects were so advanced that they helped push the industry toward more realistic digital de-aging in later movies."
+    },
+    {
+        "date": "2025-11-14",
+        "quote": "After all, tomorrow is another day!",
+        "movie": "Gone with the Wind",
+        "year": 1939,
+        "triviaQuestion": "Gone with the Wind is primarily set in which region of the United States?",
+        "choices": ["New England", "The American South", "Pacific Northwest", "Midwest"],
+        "correctIndex": 1,
+        "funFact": "Hattie McDaniel became the first Black performer to win an Academy Award for her role as Mammy, breaking a massive barrier in Hollywood history."
+    },
+    {
+        "date": "2025-11-15",
+        "quote": "Do, or do not. There is no try.",
+        "movie": "Star Wars: The Empire Strikes Back",
+        "year": 1980,
+        "triviaQuestion": "Which character delivers the shocking reveal 'No, I am your father' in The Empire Strikes Back?",
+        "choices": ["Obi-Wan Kenobi", "Darth Sidious", "Darth Vader", "Lando Calrissian"],
+        "correctIndex": 2,
+        "funFact": "The 'I am your father' twist was kept so secret that even cast members were given a fake line in the script until very late in production."
+    },
+    {
+        "date": "2025-11-16",
+        "quote": "It’s supposed to be hard. If it wasn’t hard, everyone would do it. The hard is what makes it great.",
+        "movie": "A League of Their Own",
+        "year": 1992,
+        "triviaQuestion": "Which actor plays the grumpy, washed-up coach Jimmy Dugan?",
+        "choices": ["Kevin Costner", "Bill Pullman", "Robin Williams", "Tom Hanks"],
+        "correctIndex": 3,
+        "funFact": "Real players from the All-American Girls Professional Baseball League appear in the closing scenes, turning the film’s ending into a mini documentary."
+    },
+    {
+        "date": "2025-11-17",
+        "quote": "Keep moving forward.",
+        "movie": "Meet the Robinsons",
+        "year": 2007,
+        "triviaQuestion": "What is Lewis obsessed with doing throughout Meet the Robinsons?",
+        "choices": ["Inventing", "Dancing", "Cooking", "Performing magic tricks"],
+        "correctIndex": 0,
+        "funFact": "The film ends with an on-screen quote from Walt Disney—'Keep Moving Forward'—making the movie’s mantra literally the studio’s own motto."
+    },
+    {
+        "date": "2025-11-18",
+        "quote": "What we do in life echoes in eternity.",
         "movie": "Gladiator",
         "year": 2000,
-        "triviaQuestion": "Who plays Maximus?",
-        "choices": ["Russell Crowe", "Mel Gibson", "Clive Owen", "Brad Pitt"],
-        "correctIndex": 0,
-        "funFact": "Crowe improvised the line during a chaotic take, and Ridley Scott kept it."
+        "triviaQuestion": "Which Roman emperor serves as Gladiator’s main antagonist?",
+        "choices": ["Nero", "Commodus", "Augustus", "Hadrian"],
+        "correctIndex": 1,
+        "funFact": "Oliver Reed died before filming wrapped, so some of his scenes were completed using body doubles and early CGI face replacement, which was rare at the time."
+    },
+    {
+        "date": "2025-11-19",
+        "quote": "To see the world, things dangerous to come to, to see behind walls, to draw closer, to find each other, and to feel.",
+        "movie": "The Secret Life of Walter Mitty",
+        "year": 2013,
+        "triviaQuestion": "Walter Mitty works in the photo department of which iconic magazine?",
+        "choices": ["Time", "National Geographic", "LIFE", "Rolling Stone"],
+        "correctIndex": 2,
+        "funFact": "Many of Walter’s far-flung adventures were filmed in Iceland, with its landscapes doubling as multiple different countries in the story."
+    },
+    {
+        "date": "2025-11-20",
+        "quote": "It is not our abilities that show what we truly are… it is our choices.",
+        "movie": "Harry Potter and the Chamber of Secrets",
+        "year": 2002,
+        "triviaQuestion": "Who directed Harry Potter and the Chamber of Secrets?",
+        "choices": ["Alfonso Cuarón", "Mike Newell", "David Yates", "Chris Columbus"],
+        "correctIndex": 3,
+        "funFact": "The Basilisk’s eerie whispers in the walls were mixed to be just barely audible in theaters, so audiences felt like they might be imagining them too."
+    },
+      {
+        "date": "2025-11-21",
+        "quote": "Why do we fall? So we can learn to pick ourselves up.",
+        "movie": "Batman Begins",
+        "year": 2005,
+        "triviaQuestion": "Which villain uses a fear-inducing toxin in Batman Begins?",
+        "choices": ["Carmine Falcone", "Ra’s al Ghul", "Dr. Jonathan Crane (Scarecrow)", "Victor Zsasz"],
+        "correctIndex": 2,
+        "funFact": "Christian Bale reportedly auditioned for the role of Batman wearing Val Kilmer’s old Batsuit because a new one wasn’t built yet."
       },
       {
-        "date": "2026-02-06",
-        "quote": "Just keep swimming.",
-        "movie": "Finding Dory",
-        "year": 2016,
-        "triviaQuestion": "Which character is Dory searching for?",
-        "choices": ["Her parents", "Marlin", "Nemo", "Hank"],
+        "date": "2025-11-22",
+        "quote": "Never give up, never surrender!",
+        "movie": "Galaxy Quest",
+        "year": 1999,
+        "triviaQuestion": "Galaxy Quest lovingly parodies which iconic sci-fi series?",
+        "choices": ["Star Trek", "Doctor Who", "Babylon 5", "Firefly"],
         "correctIndex": 0,
-        "funFact": "The film expands on Dory’s backstory, which was originally much smaller in Finding Nemo."
+        "funFact": "A real Star Trek convention voted Galaxy Quest one of the best Star Trek movies ever made—even though it’s technically not one."
       },
       {
-        "date": "2026-02-07",
-        "quote": "You shall not pass!",
+        "date": "2025-11-23",
+        "quote": "There is no secret ingredient.",
+        "movie": "Kung Fu Panda",
+        "year": 2008,
+        "triviaQuestion": "What is the name of the elite martial arts team Po idolizes?",
+        "choices": ["The Dragon Guard", "The Furious Five", "The Jade Seven", "The Temple Five"],
+        "correctIndex": 1,
+        "funFact": "Jack Black improvised the famous 'Skadoosh!' line, which became a recurring catchphrase in the franchise."
+      },
+      {
+        "date": "2025-11-24",
+        "quote": "Sometimes it is the people no one imagines anything of who do the things that no one can imagine.",
+        "movie": "The Imitation Game",
+        "year": 2014,
+        "triviaQuestion": "What nickname does Turing's team give the cipher-breaking machine?",
+        "choices": ["Christopher", "Colossus", "Enigma", "Bombe"],
+        "correctIndex": 0,
+        "funFact": "Benedict Cumberbatch’s performance was praised for capturing Turing’s brilliance and social struggles with striking authenticity."
+      },
+      {
+        "date": "2025-11-25",
+        "quote": "Just because someone stumbles and loses their path, doesn’t mean they’re lost forever.",
+        "movie": "X-Men: Days of Future Past",
+        "year": 2014,
+        "triviaQuestion": "Which speedy mutant stars in the famous Pentagon kitchen scene?",
+        "choices": ["Quicksilver", "Beast", "Blink", "Nightcrawler"],
+        "correctIndex": 0,
+        "funFact": "The Quicksilver slow-motion kitchen scene was shot using hundreds of practical rigs and ultra–high-speed cameras."
+      },
+      {
+        "date": "2025-11-26",
+        "quote": "You mustn’t be afraid to dream a little bigger, darling.",
+        "movie": "Inception",
+        "year": 2010,
+        "triviaQuestion": "What object does Cobb use as his personal totem?",
+        "choices": ["A die", "A poker chip", "A spinning top", "A coin"],
+        "correctIndex": 2,
+        "funFact": "The rotating hallway fight scene used a massive spinning set that physically tumbled the actors in real time."
+      },
+      {
+        "date": "2025-11-27",
+        "quote": "All we have to decide is what to do with the time that is given to us.",
         "movie": "The Lord of the Rings: The Fellowship of the Ring",
         "year": 2001,
-        "triviaQuestion": "What creature does Gandalf fight on the bridge?",
-        "choices": ["Troll", "Nazgûl", "Balrog", "Orc Chief"],
-        "correctIndex": 2,
-        "funFact": "McKellen’s delivery of the line became one of the most iconic moments in fantasy cinema."
+        "triviaQuestion": "What fiery creature does Gandalf confront on the Bridge of Khazad-dûm?",
+        "choices": ["Balrog", "Cave Troll", "Nazgûl", "Watcher in the Water"],
+        "correctIndex": 0,
+        "funFact": "The Fellowship’s iconic bridge scene became one of the most quoted and referenced moments in fantasy cinema."
       },
       {
-        "date": "2026-02-08",
-        "quote": "I’m going to make him an offer he can’t refuse.",
-        "movie": "The Godfather",
-        "year": 1972,
-        "triviaQuestion": "Who plays Vito Corleone?",
-        "choices": ["Marlon Brando", "Al Pacino", "Robert De Niro", "James Caan"],
+        "date": "2025-11-28",
+        "quote": "Adventure is out there!",
+        "movie": "Up",
+        "year": 2009,
+        "triviaQuestion": "What is the destination Carl and Ellie dream of visiting?",
+        "choices": ["Angel Crest", "Paradise Falls", "Rosario Cliffs", "Venezuela Mesa"],
+        "correctIndex": 1,
+        "funFact": "Paradise Falls was inspired by Venezuela’s Angel Falls, one of the tallest waterfalls on Earth."
+      },
+      {
+        "date": "2025-11-29",
+        "quote": "The flower that blooms in adversity is the most rare and beautiful of all.",
+        "movie": "Mulan",
+        "year": 1998,
+        "triviaQuestion": "Which small dragon becomes Mulan’s guardian throughout the film?",
+        "choices": ["Shang", "Mushu", "Chi-Fu", "Ling"],
+        "correctIndex": 1,
+        "funFact": "Eddie Murphy recorded many of Mushu’s lines during breaks from filming Dr. Dolittle."
+      },
+      {
+        "date": "2025-11-30",
+        "quote": "You control your destiny—you don’t need magic to do it.",
+        "movie": "Brave",
+        "year": 2012,
+        "triviaQuestion": "What weapon is Merida famously skilled with?",
+        "choices": ["Slingshot", "Bow and Arrow", "Spear", "Sword"],
+        "correctIndex": 1,
+        "funFact": "Merida is Pixar’s first female protagonist, breaking a long streak of male-led stories at the studio."
+      },
+      {
+        "date": "2025-12-01",
+        "quote": "Get busy living, or get busy dying.",
+        "movie": "The Shawshank Redemption",
+        "year": 1994,
+        "triviaQuestion": "Which poster ultimately hides Andy’s tunnel?",
+        "choices": ["Audrey Hepburn", "Rita Hayworth", "Raquel Welch", "Marilyn Monroe"],
+        "correctIndex": 2,
+        "funFact": "The film underperformed in theaters but became a cultural titan through cable TV and home rental."
+      },
+      {
+        "date": "2025-12-02",
+        "quote": "It’s not about how hard you hit. It’s about how hard you can get hit and keep moving forward.",
+        "movie": "Rocky Balboa",
+        "year": 2006,
+        "triviaQuestion": "Which sports network hosts the simulation that lures Rocky out of retirement?",
+        "choices": ["ESPN Classic", "HBO", "Fox Sports", "Showtime"],
         "correctIndex": 0,
-        "funFact": "Brando used cue cards hidden around the set to maintain his famously effortless delivery."
-      }
-    ]
+        "funFact": "Stallone trained intensely to portray Rocky at around 60 years old—his real-life fitness shocked many fans."
+      },
+      {
+        "date": "2025-12-03",
+        "quote": "Just because something works doesn’t mean it can’t be improved.",
+        "movie": "Black Panther",
+        "year": 2018,
+        "triviaQuestion": "Which metal powers Wakanda’s advanced technology?",
+        "choices": ["Uru", "Adamantium", "Vibranium", "Quantum Alloy"],
+        "correctIndex": 2,
+        "funFact": "Black Panther’s costume design blended real African textiles, Afrofuturism, and cutting-edge 3D-printed elements."
+      },
+      {
+        "date": "2025-12-04",
+        "quote": "Sometimes the right path is not the easiest one.",
+        "movie": "Pocahontas",
+        "year": 1995,
+        "triviaQuestion": "Which song from Pocahontas won the Academy Award for Best Original Song?",
+        "choices": ["Savages", "If I Never Knew You", "Just Around the Riverbend", "Colors of the Wind"],
+        "correctIndex": 3,
+        "funFact": "Disney assigned many of its top animators to Pocahontas expecting it to be their next prestige hit."
+      },
+      {
+        "date": "2025-12-05",
+        "quote": "The only limit is your soul.",
+        "movie": "Ratatouille",
+        "year": 2007,
+        "triviaQuestion": "Which food critic becomes central to the film’s emotional climax?",
+        "choices": ["Colette Tatou", "Anton Ego", "Chef Skinner", "Linguini"],
+        "correctIndex": 1,
+        "funFact": "Anton Ego's typewriter was designed to mimic the shape of a skull, subtly reinforcing his intimidating presence."
+      },
+      {
+        "date": "2025-12-06",
+        "quote": "Fear is the mind-killer.",
+        "movie": "Dune",
+        "year": 2021,
+        "triviaQuestion": "What noble house does Paul Atreides belong to?",
+        "choices": ["House Harkonnen", "House Atreides", "House Corrino", "House Vernius"],
+        "correctIndex": 1,
+        "funFact": "The sandworm effects used practical sand displacement rigs to simulate massive tunneling beneath the actors."
+      },
+      {
+        "date": "2025-12-07",
+        "quote": "There’s some good in this world, and it’s worth fighting for.",
+        "movie": "The Lord of the Rings: The Two Towers",
+        "year": 2002,
+        "triviaQuestion": "Which fortress hosts the climactic battle of The Two Towers?",
+        "choices": ["Helm’s Deep", "Minas Tirith", "Isengard", "Dunharrow"],
+        "correctIndex": 0,
+        "funFact": "The Helm’s Deep battle took over 90 consecutive nights to film, leaving the cast exhausted but proud."
+      },
+      {
+        "date": "2025-12-08",
+        "quote": "You are who you choose to be.",
+        "movie": "The Iron Giant",
+        "year": 1999,
+        "triviaQuestion": "Which comic-book hero does the Giant admire most?",
+        "choices": ["The Flash", "Batman", "Superman", "Green Lantern"],
+        "correctIndex": 2,
+        "funFact": "The Iron Giant bombed theatrically due to poor marketing but later became a cult classic adored by animators."
+      },
+      {
+        "date": "2025-12-09",
+        "quote": "With great power comes great responsibility.",
+        "movie": "Spider-Man",
+        "year": 2002,
+        "triviaQuestion": "Which newspaper does Peter Parker famously work for?",
+        "choices": ["The New York Chronicle", "The Daily Bugle", "The Daily Globe", "The City Gazette"],
+        "correctIndex": 1,
+        "funFact": "Tobey Maguire performed parts of the upside-down kiss scene while water poured directly up his nose."
+      },
+      {
+        "date": "2025-12-10",
+        "quote": "Everything is possible, even the impossible.",
+        "movie": "Mary Poppins Returns",
+        "year": 2018,
+        "triviaQuestion": "What is the term used for the lamplighters in the film?",
+        "choices": ["Leeries", "Lighters", "Linkboys", "Glowmen"],
+        "correctIndex": 0,
+        "funFact": "Dick Van Dyke returned at 92 years old to perform a dance number without body doubles."
+      },
+        {
+          "date": "2025-12-11",
+          "quote": "A million dollars isn’t cool. You know what’s cool? A billion dollars.",
+          "movie": "The Social Network",
+          "year": 2010,
+          "triviaQuestion": "Who composed the film’s dark, pulsing, Oscar-winning score?",
+          "choices": ["Hans Zimmer", "Trent Reznor & Atticus Ross", "Max Richter", "Alexandre Desplat"],
+          "correctIndex": 1,
+          "funFact": "Reznor and Ross created much of the score before filming even started, shaping the movie’s tone from day one."
+        },
+        {
+          "date": "2025-12-12",
+          "quote": "Not quite my tempo.",
+          "movie": "Whiplash",
+          "year": 2014,
+          "triviaQuestion": "J.K. Simmons won an Oscar for playing Terrence Fletcher. What real instrument did he learn basic technique on for the role?",
+          "choices": ["Drums", "Piano", "Trumpet", "Bass"],
+          "correctIndex": 0,
+          "funFact": "Simmons improvised several of Fletcher’s most brutal lines, shocking even the crew."
+        },
+        {
+          "date": "2025-12-13",
+          "quote": "Mankind was born on Earth. It was never meant to die here.",
+          "movie": "Interstellar",
+          "year": 2014,
+          "triviaQuestion": "Who advised the visual effects team to ensure the black hole looked scientifically accurate?",
+          "choices": ["Brian Greene", "Neil deGrasse Tyson", "Kip Thorne", "Michio Kaku"],
+          "correctIndex": 2,
+          "funFact": "The black hole rendering was so detailed it generated new scientific insights about gravitational lensing."
+        },
+        {
+          "date": "2025-12-14",
+          "quote": "Seize your moment.",
+          "movie": "Coco",
+          "year": 2017,
+          "triviaQuestion": "Which real cultural celebration is central to Coco’s story and visual style?",
+          "choices": ["Carnaval", "Fiesta Nacional", "Día de los Muertos", "Cinco de Mayo"],
+          "correctIndex": 2,
+          "funFact": "Pixar’s team spent years researching Mexican traditions to build an authentic and emotionally resonant world."
+        },
+        {
+          "date": "2025-12-15",
+          "quote": "You got a dream, you gotta protect it.",
+          "movie": "The Pursuit of Happyness",
+          "year": 2006,
+          "triviaQuestion": "Which real entrepreneur does Will Smith portray in the film?",
+          "choices": ["Reginald Lewis", "Chris Gardner", "Daymond John", "Robert Smith"],
+          "correctIndex": 1,
+          "funFact": "The real Chris Gardner appears at the end of the film, smiling as Will Smith walks by."
+        },
+        {
+          "date": "2025-12-16",
+          "quote": "Remember who you are.",
+          "movie": "The Lion King",
+          "year": 1994,
+          "triviaQuestion": "What region inspired the landscapes of the Pride Lands?",
+          "choices": ["The Sahara Desert", "The Serengeti", "The Kalahari Basin", "Ngorongoro Crater"],
+          "correctIndex": 1,
+          "funFact": "The animators traveled to Africa to sketch real wildlife and landscapes for accuracy."
+        },
+        {
+          "date": "2025-12-17",
+          "quote": "Once you’ve met someone, you never really forget them.",
+          "movie": "Spirited Away",
+          "year": 2001,
+          "triviaQuestion": "Which legendary animation director created Spirited Away?",
+          "choices": ["Mamoru Hosoda", "Hayao Miyazaki", "Makoto Shinkai", "Isao Takahata"],
+          "correctIndex": 1,
+          "funFact": "Spirited Away became the first non-English animated film to win the Oscar for Best Animated Feature."
+        },
+        {
+          "date": "2025-12-18",
+          "quote": "I never look back, darling. It distracts from the now.",
+          "movie": "The Incredibles",
+          "year": 2004,
+          "triviaQuestion": "Which character famously shouts 'No capes!'?",
+          "choices": ["Violet Parr", "Edna Mode", "Mirage", "Evelyn Deavor"],
+          "correctIndex": 1,
+          "funFact": "Director Brad Bird voiced Edna Mode himself because no one else matched the character’s energy."
+        },
+        {
+          "date": "2025-12-19",
+          "quote": "One step at a time. One punch at a time. One round at a time.",
+          "movie": "Creed",
+          "year": 2015,
+          "triviaQuestion": "Which actor stars as Adonis Creed?",
+          "choices": ["Michael B. Jordan", "Jonathan Majors", "John Boyega", "Anthony Mackie"],
+          "correctIndex": 0,
+          "funFact": "An early boxing match in the film was shot in a single uninterrupted take, raising the pressure on the actors."
+        },
+        {
+          "date": "2025-12-20",
+          "quote": "I’m going to have to science the shit out of this.",
+          "movie": "The Martian",
+          "year": 2015,
+          "triviaQuestion": "Which space agency helped consult on the scientific accuracy of the movie?",
+          "choices": ["NASA", "ESA", "Roscosmos", "Blue Origin"],
+          "correctIndex": 0,
+          "funFact": "Matt Damon filmed most of his scenes alone, often talking to a GoPro to mimic Mark Watney’s isolation."
+        },
+        {
+          "date": "2025-12-21",
+          "quote": "You talking to me?",
+          "movie": "Taxi Driver",
+          "year": 1976,
+          "triviaQuestion": "Who directed Taxi Driver?",
+          "choices": ["Sidney Lumet", "Brian De Palma", "Martin Scorsese", "Francis Ford Coppola"],
+          "correctIndex": 2,
+          "funFact": "Robert De Niro improvised the entire 'You talking to me?' mirror scene while staying in character."
+        },
+        {
+          "date": "2025-12-22",
+          "quote": "Here's looking at you, kid.",
+          "movie": "Casablanca",
+          "year": 1942,
+          "triviaQuestion": "What is the name of Rick’s famous nightclub?",
+          "choices": ["Rick’s Café Américain", "The Casablanca Club", "Rick’s Place", "Americano Bar"],
+          "correctIndex": 0,
+          "funFact": "Many actors in Casablanca were real refugees fleeing World War II, adding realism to the story."
+        },
+        {
+          "date": "2025-12-23",
+          "quote": "Say hello to my little friend!",
+          "movie": "Scarface",
+          "year": 1983,
+          "triviaQuestion": "Who plays Tony Montana?",
+          "choices": ["Robert De Niro", "Andy García", "Al Pacino", "Dustin Hoffman"],
+          "correctIndex": 2,
+          "funFact": "Pacino burned his hand on a hot gun barrel during filming the famous shootout scene."
+        },
+        {
+          "date": "2025-12-24",
+          "quote": "You can't handle the truth!",
+          "movie": "A Few Good Men",
+          "year": 1992,
+          "triviaQuestion": "Who delivers the explosive courtroom speech?",
+          "choices": ["Jack Nicholson", "Tom Cruise", "Ed Harris", "Gene Hackman"],
+          "correctIndex": 0,
+          "funFact": "Nicholson’s delivery was so intense that Cruise had trouble holding a straight face during multiple takes."
+        },
+        {
+          "date": "2025-12-25",
+          "quote": "Just when I thought I was out, they pull me back in.",
+          "movie": "The Godfather Part III",
+          "year": 1990,
+          "triviaQuestion": "What is Michael Corleone trying to turn his family into?",
+          "choices": ["Untouchables", "Legitimate", "International influencers", "A political dynasty"],
+          "correctIndex": 1,
+          "funFact": "Pacino’s famous line wasn’t in the original novel but became one of the most quoted in the entire trilogy."
+        },
+          {
+            "date": "2025-12-26",
+            "quote": "Houston, we have a problem.",
+            "movie": "Apollo 13",
+            "year": 1995,
+            "triviaQuestion": "Which director brought the real-life Apollo 13 mission to the big screen?",
+            "choices": ["Christopher Nolan", "Ron Howard", "James Cameron", "Steven Spielberg"],
+            "correctIndex": 1,
+            "funFact": "To simulate zero gravity, the cast filmed scenes inside NASA aircraft that performed steep parabolic dives."
+          },
+          {
+            "date": "2025-12-27",
+            "quote": "There's a snake in my boot!",
+            "movie": "Toy Story 2",
+            "year": 1999,
+            "triviaQuestion": "Which toy collector kidnaps Woody in Toy Story 2?",
+            "choices": ["Sid Phillips", "Zurg", "Al McWhiggin", "Stinky Pete"],
+            "correctIndex": 2,
+            "funFact": "A near-fatal data loss incident once deleted almost the entire film — until a backup copy was found on a director’s home computer."
+          },
+          {
+            "date": "2025-12-28",
+            "quote": "To me, you are perfect.",
+            "movie": "Love Actually",
+            "year": 2003,
+            "triviaQuestion": "Which holiday does Love Actually revolve around?",
+            "choices": ["Valentine’s Day", "Christmas", "New Year’s Eve", "Thanksgiving"],
+            "correctIndex": 1,
+            "funFact": "The cue-card scene became one of the most parodied moments in modern romance movies."
+          },
+          {
+            "date": "2025-12-29",
+            "quote": "Why'd it have to be snakes?",
+            "movie": "Raiders of the Lost Ark",
+            "year": 1981,
+            "triviaQuestion": "Who plays Indiana Jones in the original film?",
+            "choices": ["Tom Selleck", "Mel Gibson", "Harrison Ford", "Kurt Russell"],
+            "correctIndex": 2,
+            "funFact": "Tom Selleck was originally cast as Indy but had to decline due to TV commitments, opening the door for Harrison Ford."
+          },
+          {
+            "date": "2025-12-30",
+            "quote": "You're gonna need a bigger boat.",
+            "movie": "Jaws",
+            "year": 1975,
+            "triviaQuestion": "Which director launched the modern summer blockbuster with Jaws?",
+            "choices": ["George Lucas", "Ridley Scott", "Steven Spielberg", "James Cameron"],
+            "correctIndex": 2,
+            "funFact": "The animatronic shark malfunctioned so often that Spielberg relied heavily on suspenseful shots instead of showing the creature."
+          },
+          {
+            "date": "2025-12-31",
+            "quote": "I'm the king of the world!",
+            "movie": "Titanic",
+            "year": 1997,
+            "triviaQuestion": "What is Jack Dawson’s last name?",
+            "choices": ["Dalton", "Dawson", "Daniels", "Dixon"],
+            "correctIndex": 1,
+            "funFact": "Leonardo DiCaprio improvised the legendary 'king of the world' line during filming."
+          },
+          {
+            "date": "2026-01-01",
+            "quote": "I wish I knew how to quit you.",
+            "movie": "Brokeback Mountain",
+            "year": 2005,
+            "triviaQuestion": "Which two actors play the lead roles?",
+            "choices": ["Brad Pitt & Matt Damon", "Jake Gyllenhaal & Heath Ledger", "Colin Farrell & Jude Law", "Ben Affleck & Casey Affleck"],
+            "correctIndex": 1,
+            "funFact": "Heath Ledger insisted his character would never open the postcard with two hands — a detail that showed Ennis's emotional restraint."
+          },
+          {
+            "date": "2026-01-02",
+            "quote": "Why so serious?",
+            "movie": "The Dark Knight",
+            "year": 2008,
+            "triviaQuestion": "What kind of shot was used during the opening bank heist to capture the intense scale of the city?",
+            "choices": ["Drone footage", "IMAX cameras", "Steadicam shots", "GoPro-style micro cameras"],
+            "correctIndex": 1,
+            "funFact": "The Dark Knight was one of the first major films to use full IMAX cameras for action scenes."
+          },
+          {
+            "date": "2026-01-03",
+            "quote": "Great Scott!",
+            "movie": "Back to the Future",
+            "year": 1985,
+            "triviaQuestion": "What vehicle was modified into the film’s famous time machine?",
+            "choices": ["Mustang", "Corvette", "DeLorean", "Porsche 928"],
+            "correctIndex": 2,
+            "funFact": "The DeLorean was chosen partly because of its futuristic gull-wing doors, which helped sell the idea of a homemade time machine."
+          },
+          {
+            "date": "2026-01-04",
+            "quote": "You either die a hero or live long enough to see yourself become the villain.",
+            "movie": "The Dark Knight",
+            "year": 2008,
+            "triviaQuestion": "Which actor portrayed Harvey Dent in the film?",
+            "choices": ["Matthew McConaughey", "Guy Pearce", "Colin Farrell", "Aaron Eckhart"],
+            "correctIndex": 3,
+            "funFact": "Eckhart’s transformation into Two-Face combined both makeup and cutting-edge digital VFX."
+          },
+          {
+            "date": "2026-01-05",
+            "quote": "I feel the need—the need for speed!",
+            "movie": "Top Gun",
+            "year": 1986,
+            "triviaQuestion": "What is Maverick’s real first name?",
+            "choices": ["Pete", "Tom", "Nick", "Jake"],
+            "correctIndex": 0,
+            "funFact": "Real Navy pilots took part in flight scenes, giving the dogfights unprecedented realism."
+          },
+          {
+            "date": "2026-01-06",
+            "quote": "Life is like a box of chocolates; you never know what you're gonna get.",
+            "movie": "Forrest Gump",
+            "year": 1994,
+            "triviaQuestion": "Where were the iconic bench scenes filmed?",
+            "choices": ["Savannah, Georgia", "Charleston, South Carolina", "Nashville, Tennessee", "Richmond, Virginia"],
+            "correctIndex": 0,
+            "funFact": "The bench itself wasn’t real — it was a prop later placed in a museum due to popularity."
+          },
+          {
+            "date": "2026-01-07",
+            "quote": "Just keep swimming.",
+            "movie": "Finding Nemo",
+            "year": 2003,
+            "triviaQuestion": "What species is Dory?",
+            "choices": ["Clownfish", "Butterflyfish", "Blue tang", "Surgeonfish"],
+            "correctIndex": 2,
+            "funFact": "Ellen DeGeneres improvised much of Dory's dialogue, influencing the character’s entire personality."
+          },
+          {
+            "date": "2026-01-08",
+            "quote": "This is Sparta!",
+            "movie": "300",
+            "year": 2006,
+            "triviaQuestion": "Who stars as King Leonidas?",
+            "choices": ["Gerard Butler", "Eric Bana", "Hugh Jackman", "Russell Crowe"],
+            "correctIndex": 0,
+            "funFact": "The cast trained so intensely that many actors ended up performing stunts they weren’t originally scheduled for."
+          },
+          {
+            "date": "2026-01-09",
+            "quote": "I'm always angry.",
+            "movie": "The Avengers",
+            "year": 2012,
+            "triviaQuestion": "Which actor played Bruce Banner in The Avengers?",
+            "choices": ["Eric Bana", "Mark Ruffalo", "Edward Norton", "Ben Affleck"],
+            "correctIndex": 1,
+            "funFact": "Ruffalo was the first actor to portray both Bruce Banner and the Hulk through motion capture."
+          },
+          {
+            "date": "2026-01-10",
+            "quote": "You're breathtaking!",
+            "movie": "Cyberpunk 2077: Edgerunners",
+            "year": 2022,
+            "triviaQuestion": "Which animation studio created the Edgerunners series?",
+            "choices": ["Bones", "MAPPA", "Trigger", "Ufotable"],
+            "correctIndex": 2,
+            "funFact": "After the show released, interest in the Cyberpunk 2077 game spiked dramatically worldwide."
+          },
+            {
+              "date": "2026-01-11",
+              "quote": "I am Groot.",
+              "movie": "Guardians of the Galaxy",
+              "year": 2014,
+              "triviaQuestion": "Which actor voices Groot?",
+              "choices": ["Vin Diesel", "Bradley Cooper", "Dave Bautista", "Chris Pratt"],
+              "correctIndex": 0,
+              "funFact": "Vin Diesel recorded 'I am Groot' in multiple languages, saying it individually for each version of the film."
+            },
+            {
+              "date": "2026-01-12",
+              "quote": "We are Groot.",
+              "movie": "Guardians of the Galaxy",
+              "year": 2014,
+              "triviaQuestion": "What color is the Power Stone featured in the film?",
+              "choices": ["Blue", "Red", "Purple", "Green"],
+              "correctIndex": 2,
+              "funFact": "The idea of making the Power Stone purple helped differentiate it visually from other Infinity Stones and set the MCU color coding in place."
+            },
+            {
+              "date": "2026-01-13",
+              "quote": "To infinity… and beyond!",
+              "movie": "Toy Story 3",
+              "year": 2010,
+              "triviaQuestion": "Who voices Buzz Lightyear in the Toy Story trilogy?",
+              "choices": ["Chris Evans", "Tom Hanks", "Billy Crystal", "Tim Allen"],
+              "correctIndex": 3,
+              "funFact": "Toy Story 3 became only the third animated movie ever nominated for Best Picture at the Oscars."
+            },
+            {
+              "date": "2026-01-14",
+              "quote": "Roads? Where we're going, we don't need roads.",
+              "movie": "Back to the Future Part II",
+              "year": 1989,
+              "triviaQuestion": "What future year does Marty travel to in the sequel?",
+              "choices": ["2015", "2020", "2030", "2045"],
+              "correctIndex": 0,
+              "funFact": "The movie’s predictions for 2015—hoverboards, self-lacing shoes—became pop culture obsessions and inspired real-life prototypes."
+            },
+            {
+              "date": "2026-01-15",
+              "quote": "I drink your milkshake!",
+              "movie": "There Will Be Blood",
+              "year": 2007,
+              "triviaQuestion": "Who won an Oscar for playing Daniel Plainview?",
+              "choices": ["Philip Seymour Hoffman", "Javier Bardem", "Russell Crowe", "Daniel Day-Lewis"],
+              "correctIndex": 3,
+              "funFact": "The famous 'milkshake' line was inspired by a real 1920s congressional transcript about oil drilling rights."
+            },
+            {
+              "date": "2026-01-16",
+              "quote": "I'll be back.",
+              "movie": "The Terminator",
+              "year": 1984,
+              "triviaQuestion": "Who directed The Terminator?",
+              "choices": ["Ridley Scott", "James Cameron", "Paul Verhoeven", "John McTiernan"],
+              "correctIndex": 1,
+              "funFact": "Schwarzenegger originally delivered the line as 'I will be back' before Cameron insisted on the exact phrasing."
+            },
+            {
+              "date": "2026-01-17",
+              "quote": "Hasta la vista, baby.",
+              "movie": "Terminator 2: Judgment Day",
+              "year": 1991,
+              "triviaQuestion": "What is the name of the liquid-metal villain in the film?",
+              "choices": ["T-500", "T-2000", "T-900", "T-1000"],
+              "correctIndex": 3,
+              "funFact": "The T-1000’s liquid metal effects were groundbreaking and helped usher in modern CGI techniques."
+            },
+            {
+              "date": "2026-01-18",
+              "quote": "I'm the Dude, so that's what you call me.",
+              "movie": "The Big Lebowski",
+              "year": 1998,
+              "triviaQuestion": "Which directing duo created The Big Lebowski?",
+              "choices": ["The Wachowskis", "The Coen Brothers", "The Russo Brothers", "The Duffer Brothers"],
+              "correctIndex": 1,
+              "funFact": "Jeff Bridges would ask the Coens before filming each scene, 'Did the Dude burn one before this?', helping him stay in character."
+            },
+            {
+              "date": "2026-01-19",
+              "quote": "It's a trap!",
+              "movie": "Star Wars: Return of the Jedi",
+              "year": 1983,
+              "triviaQuestion": "Which character shouts the iconic warning?",
+              "choices": ["Han Solo", "Lando Calrissian", "Admiral Ackbar", "Chewbacca"],
+              "correctIndex": 2,
+              "funFact": "The line became an early internet meme and remains one of the most quoted Star Wars moments."
+            },
+            {
+              "date": "2026-01-20",
+              "quote": "Keep your friends close, but your enemies closer.",
+              "movie": "The Godfather Part II",
+              "year": 1974,
+              "triviaQuestion": "Which actor plays young Vito Corleone in the film?",
+              "choices": ["Robert De Niro", "Al Pacino", "Harvey Keitel", "James Caan"],
+              "correctIndex": 0,
+              "funFact": "De Niro won an Oscar for the role, making him one of the few actors to win for playing the same character as another actor (Marlon Brando)."
+            },
+            {
+              "date": "2026-01-21",
+              "quote": "I am inevitable.",
+              "movie": "Avengers: Endgame",
+              "year": 2019,
+              "triviaQuestion": "Which actor portrays Thanos?",
+              "choices": ["Dave Bautista", "Josh Brolin", "Oscar Isaac", "Christian Bale"],
+              "correctIndex": 1,
+              "funFact": "Thanos’s facial expressions were built from highly detailed motion capture that blended seamlessly with Josh Brolin’s performance."
+            },
+            {
+              "date": "2026-01-22",
+              "quote": "I see dead people.",
+              "movie": "The Sixth Sense",
+              "year": 1999,
+              "triviaQuestion": "Who directed The Sixth Sense?",
+              "choices": ["David Fincher", "Bryan Singer", "M. Night Shyamalan", "Sam Mendes"],
+              "correctIndex": 2,
+              "funFact": "Shyamalan kept the twist ending extremely secret — even parts of the crew didn't know until late in production."
+            },
+            {
+              "date": "2026-01-23",
+              "quote": "Why so serious?",
+              "movie": "The Dark Knight",
+              "year": 2008,
+              "triviaQuestion": "Which of these disguises does the Joker NOT use in the film?",
+              "choices": ["School Teacher", "Nurse", "Bank Robber", "SWAT Officer"],
+              "correctIndex": 0,
+              "funFact": "Ledger kept a journal filled with disturbing inspirations — from hyenas to old playing cards — to stay mentally in character."
+            },
+            {
+              "date": "2026-01-24",
+              "quote": "You shall not pass!",
+              "movie": "The Lord of the Rings: The Fellowship of the Ring",
+              "year": 2001,
+              "triviaQuestion": "Which actor portrays Gandalf?",
+              "choices": ["Ian McKellen", "Christopher Lee", "Patrick Stewart", "John Hurt"],
+              "correctIndex": 0,
+              "funFact": "McKellen accidentally hit his head on Bilbo's ceiling beam during filming — the moment was so good they kept it in."
+            },
+            {
+              "date": "2026-01-25",
+              "quote": "I'm flying!",
+              "movie": "Titanic",
+              "year": 1997,
+              "triviaQuestion": "What is Rose’s last name in the film?",
+              "choices": ["Calvert", "Bukater", "Dawson", "DeWitt"],
+              "correctIndex": 1,
+              "funFact": "Kate Winslet shot many of her icy-water scenes in near-freezing temperatures — her shocked breaths were completely real."
+            },
+              {
+                "date": "2026-01-26",
+                "quote": "Why did it have to be snakes?",
+                "movie": "Indiana Jones and the Last Crusade",
+                "year": 1989,
+                "triviaQuestion": "Who portrays Indiana Jones’s father in the film?",
+                "choices": ["Ian McKellen", "Max von Sydow", "Sean Connery", "Gene Hackman"],
+                "correctIndex": 2,
+                "funFact": "Connery was only 12 years older than Ford in real life, but their chemistry sold the iconic father–son dynamic."
+              },
+              {
+                "date": "2026-01-27",
+                "quote": "You're a wizard, Harry.",
+                "movie": "Harry Potter and the Sorcerer’s Stone",
+                "year": 2001,
+                "triviaQuestion": "Who gives Harry his very first wand?",
+                "choices": ["Dumbledore", "McGonagall", "Hagrid", "Ollivander"],
+                "correctIndex": 3,
+                "funFact": "Daniel Radcliffe went through over 80 wand props because he kept drumming with them between takes."
+              },
+              {
+                "date": "2026-01-28",
+                "quote": "As you wish.",
+                "movie": "The Princess Bride",
+                "year": 1987,
+                "triviaQuestion": "Who plays the heroic farm boy Westley?",
+                "choices": ["Cary Elwes", "Rob Lowe", "Val Kilmer", "Kevin Kline"],
+                "correctIndex": 0,
+                "funFact": "Mandy Patinkin bruised a rib trying not to laugh during Billy Crystal’s improv-heavy Miracle Max scenes."
+              },
+              {
+                "date": "2026-01-29",
+                "quote": "To infinity and beyond!",
+                "movie": "Toy Story",
+                "year": 1995,
+                "triviaQuestion": "What is Andy’s last name, seen on his school papers?",
+                "choices": ["Davis", "Anderson", "Mitchell", "Smith"],
+                "correctIndex": 0,
+                "funFact": "Andy was animated using early digital facial rigs that influenced how Pixar built child characters for years afterward."
+              },
+              {
+                "date": "2026-01-30",
+                "quote": "You ain't heard nothin' yet!",
+                "movie": "The Jazz Singer",
+                "year": 1927,
+                "triviaQuestion": "Why is The Jazz Singer historically important?",
+                "choices": ["First color film", "First sound film ('talkie')", "First film with CGI", "First animated feature"],
+                "correctIndex": 1,
+                "funFact": "Its success changed Hollywood overnight, ushering in the era of sound films and ending silent cinema."
+              },
+              {
+                "date": "2026-01-31",
+                "quote": "Bond. James Bond.",
+                "movie": "Dr. No",
+                "year": 1962,
+                "triviaQuestion": "Who was the first actor to portray James Bond on film?",
+                "choices": ["Roger Moore", "George Lazenby", "Sean Connery", "Timothy Dalton"],
+                "correctIndex": 2,
+                "funFact": "Connery created Bond’s cool swagger partly by wearing his own tailored suits during filming."
+              },
+              {
+                "date": "2026-02-01",
+                "quote": "You’re gonna need a bigger boat.",
+                "movie": "Jaws",
+                "year": 1975,
+                "triviaQuestion": "What nickname did the crew give the mechanical shark?",
+                "choices": ["Captain", "Bruce", "Gus", "Jaws"],
+                "correctIndex": 1,
+                "funFact": "Spielberg named the shark after his lawyer, a joke that stuck throughout production."
+              },
+              {
+                "date": "2026-02-02",
+                "quote": "I volunteer as tribute!",
+                "movie": "The Hunger Games",
+                "year": 2012,
+                "triviaQuestion": "Who plays Katniss Everdeen?",
+                "choices": ["Shailene Woodley", "Jennifer Lawrence", "Emma Stone", "Anne Hathaway"],
+                "correctIndex": 1,
+                "funFact": "Jennifer Lawrence trained with an Olympic archer to perfect Katniss’s signature bow technique."
+              },
+              {
+                "date": "2026-02-03",
+                "quote": "I'm the king of the world!",
+                "movie": "Titanic",
+                "year": 1997,
+                "triviaQuestion": "Who plays Rose in Titanic?",
+                "choices": ["Nicole Kidman", "Jennifer Connelly", "Meg Ryan", "Kate Winslet"],
+                "correctIndex": 3,
+                "funFact": "Winslet intentionally avoided wearing a wetsuit under her dress to make her shivering reactions realistic."
+              },
+              {
+                "date": "2026-02-04",
+                "quote": "You either die a hero, or live long enough to see yourself become the villain",
+                "movie": "The Dark Knight",
+                "year": 2008,
+                "triviaQuestion": "Who directed The Dark Knight?",
+                "choices": ["David Fincher", "Christopher Nolan", "Zack Snyder", "James Wan"],
+                "correctIndex": 1,
+                "funFact": "Nolan pushed to film major action scenes with practical effects, leading to the iconic truck-flip stunt being done for real."
+              },
+              {
+                "date": "2026-02-05",
+                "quote": "Are you not entertained?",
+                "movie": "Gladiator",
+                "year": 2000,
+                "triviaQuestion": "Who plays Maximus in Gladiator?",
+                "choices": ["Clive Owen", "Russell Crowe", "Mel Gibson", "Brad Pitt"],
+                "correctIndex": 1,
+                "funFact": "Crowe improvised the famous line during a chaotic take, and Ridley Scott decided to keep it."
+              },
+              {
+                "date": "2026-02-06",
+                "quote": "Just keep swimming.",
+                "movie": "Finding Dory",
+                "year": 2016,
+                "triviaQuestion": "Which character is Dory trying to find throughout the film?",
+                "choices": ["Nemo", "Her parents", "Hank", "Marlin"],
+                "correctIndex": 1,
+                "funFact": "The film expanded Dory’s backstory, which was originally never intended to be explored in detail."
+              },
+              {
+                "date": "2026-02-07",
+                "quote": "You shall not pass!",
+                "movie": "The Lord of the Rings: The Fellowship of the Ring",
+                "year": 2001,
+                "triviaQuestion": "Which creature does Gandalf fight on the bridge?",
+                "choices": ["Troll", "Balrog", "Nazgûl", "Orc Chieftain"],
+                "correctIndex": 1,
+                "funFact": "Ian McKellen’s delivery of the line became instantly iconic and is still one of the most quoted lines in fantasy cinema."
+              },
+              {
+                "date": "2026-02-08",
+                "quote": "I’m going to make him an offer he can’t refuse.",
+                "movie": "The Godfather",
+                "year": 1972,
+                "triviaQuestion": "Who portrays Vito Corleone in the film?",
+                "choices": ["Marlon Brando", "Al Pacino", "James Caan", "Robert De Niro"],
+                "correctIndex": 0,
+                "funFact": "Brando famously used cue cards hidden around the set so his delivery felt more natural and instinctive."
+              },
+                {
+                  "date": "2026-02-09",
+                  "quote": "It’s what you do right now that makes a difference.",
+                  "movie": "Black Panther",
+                  "year": 2018,
+                  "triviaQuestion": "What fictional African country is home to T'Challa?",
+                  "choices": ["Genosha", "Wakanda", "Latveria", "Sokovia"],
+                  "correctIndex": 1,
+                  "funFact": "The Dora Milaje were inspired by real African warrior groups, influencing the film’s combat style and costumes."
+                },
+                {
+                  "date": "2026-02-10",
+                  "quote": "You have the chance to make your life whatever you want it to be.",
+                  "movie": "The Pursuit of Happyness",
+                  "year": 2006,
+                  "triviaQuestion": "What job does Chris Gardner fight to earn in the film?",
+                  "choices": ["Stockbroker", "Software engineer", "Real estate agent", "Car dealer"],
+                  "correctIndex": 0,
+                  "funFact": "Many scenes were filmed on the real streets Gardner once lived on during the homelessness period of his life."
+                },
+                {
+                  "date": "2026-02-11",
+                  "quote": "You still have time to make a different choice.",
+                  "movie": "Doctor Strange",
+                  "year": 2016,
+                  "triviaQuestion": "Who plays the Ancient One?",
+                  "choices": ["Cate Blanchett", "Sigourney Weaver", "Charlize Theron", "Tilda Swinton"],
+                  "correctIndex": 3,
+                  "funFact": "To create Strange’s spells, visual effects artists hand-animated intricate mandala patterns frame by frame."
+                },
+                {
+                  "date": "2026-02-12",
+                  "quote": "The only thing standing between you and your goal is the story you keep telling yourself.",
+                  "movie": "The Wolf of Wall Street",
+                  "year": 2013,
+                  "triviaQuestion": "Who directed The Wolf of Wall Street?",
+                  "choices": ["Martin Scorsese", "David Fincher", "Quentin Tarantino", "Guy Ritchie"],
+                  "correctIndex": 0,
+                  "funFact": "DiCaprio improvised several scenes, including the chest-pounding chant, which Matthew McConaughey invented during rehearsal."
+                },
+                {
+                  "date": "2026-02-13",
+                  "quote": "You change your future when you change your mindset.",
+                  "movie": "Limitless",
+                  "year": 2011,
+                  "triviaQuestion": "Who stars as Eddie Morra?",
+                  "choices": ["Bradley Cooper", "Miles Teller", "Chris Evans", "James McAvoy"],
+                  "correctIndex": 0,
+                  "funFact": "The film’s shifting color palette was designed to visually represent Eddie’s changing brain capacity."
+                },
+                {
+                  "date": "2026-02-14",
+                  "quote": "Fight and you may fail. Do not fight, and you have already lost.",
+                  "movie": "Braveheart",
+                  "year": 1995,
+                  "triviaQuestion": "Who directed Braveheart?",
+                  "choices": ["Mel Gibson", "Ridley Scott", "Ron Howard", "Peter Jackson"],
+                  "correctIndex": 0,
+                  "funFact": "Although set in Scotland, many large battle scenes were actually filmed in Ireland using real soldiers as extras."
+                },
+                {
+                  "date": "2026-02-15",
+                  "quote": "Don’t ever let someone tell you that you can’t do something.",
+                  "movie": "The Pursuit of Happyness",
+                  "year": 2006,
+                  "triviaQuestion": "The film is based on the autobiography of whom?",
+                  "choices": ["Chris Gardner", "James Prince", "Andre Norman", "Les Brown"],
+                  "correctIndex": 0,
+                  "funFact": "Will Smith trained with financial experts to understand real stock trading for authentic scenes."
+                },
+                {
+                  "date": "2026-02-16",
+                  "quote": "Great men are not born great, they grow great.",
+                  "movie": "The Godfather",
+                  "year": 1972,
+                  "triviaQuestion": "Where were the Corleone exterior house scenes filmed?",
+                  "choices": ["New Jersey", "Brooklyn", "Staten Island", "Queens"],
+                  "correctIndex": 2,
+                  "funFact": "The wedding scene took four full days to shoot and used real musicians and Italian cooks."
+                },
+                {
+                  "date": "2026-02-17",
+                  "quote": "Sometimes the smallest step in the right direction ends up being the biggest step of your life.",
+                  "movie": "About Time",
+                  "year": 2013,
+                  "triviaQuestion": "Which actor plays the time-traveling father?",
+                  "choices": ["Bill Nighy", "Colin Firth", "Hugh Grant", "Pierce Brosnan"],
+                  "correctIndex": 0,
+                  "funFact": "The film intentionally avoids complex time-travel logic to focus on emotional storytelling instead."
+                },
+                {
+                  "date": "2026-02-18",
+                  "quote": "Our lives are defined by opportunities, even the ones we miss.",
+                  "movie": "The Curious Case of Benjamin Button",
+                  "year": 2008,
+                  "triviaQuestion": "Who directed the film?",
+                  "choices": ["David Fincher", "Christopher Nolan", "Sam Mendes", "Clint Eastwood"],
+                  "correctIndex": 0,
+                  "funFact": "Brad Pitt underwent groundbreaking digital aging to portray Benjamin across nearly a full lifetime."
+                },
+                {
+                  "date": "2026-02-19",
+                  "quote": "The moment you give up is the moment someone else wins.",
+                  "movie": "Rocky IV",
+                  "year": 1985,
+                  "triviaQuestion": "What country does Rocky travel to for his training?",
+                  "choices": ["Canada", "Russia", "Poland", "Finland"],
+                  "correctIndex": 1,
+                  "funFact": "Stallone asked Dolph Lundgren to hit him for real; one punch made Stallone’s heart swell, landing him in intensive care."
+                },
+                {
+                  "date": "2026-02-20",
+                  "quote": "You don’t need permission to be phenomenal.",
+                  "movie": "Hidden Figures",
+                  "year": 2016,
+                  "triviaQuestion": "Which space program does the film focus on?",
+                  "choices": ["Mercury", "Gemini", "Apollo", "Skylab"],
+                  "correctIndex": 0,
+                  "funFact": "The film pushed NASA to highlight and publicly honor the real mathematicians who were overlooked for decades."
+                },
+                {
+                  "date": "2026-02-21",
+                  "quote": "You get what you work for, not what you wish for.",
+                  "movie": "Mulan",
+                  "year": 1998,
+                  "triviaQuestion": "What is the name of Mulan’s commanding officer?",
+                  "choices": ["Shang", "Chi-Fu", "Ling", "Yao"],
+                  "correctIndex": 0,
+                  "funFact": "Animators studied real martial arts movements to make training-camp scenes feel authentic."
+                },
+                {
+                  "date": "2026-02-22",
+                  "quote": "You mustn’t let anything stand in your way.",
+                  "movie": "Ratatouille",
+                  "year": 2007,
+                  "triviaQuestion": "Which famous critic undergoes a major transformation by the end?",
+                  "choices": ["Colette", "Linguini", "Anton Ego", "Chef Skinner"],
+                  "correctIndex": 2,
+                  "funFact": "Anton Ego’s office was shaped like a coffin to symbolize his harsh, 'death-sentence-like' reviews."
+                },
+                {
+                  "date": "2026-02-23",
+                  "quote": "When life knocks you down, you can choose to get back up.",
+                  "movie": "Creed II",
+                  "year": 2018,
+                  "triviaQuestion": "Which boxer returns as a central rival from Rocky IV?",
+                  "choices": ["Ivan Drago", "Clubber Lang", "Tommy Gunn", "Apollo Creed"],
+                  "correctIndex": 0,
+                  "funFact": "Dolph Lundgren and Florian Munteanu trained with real boxing coaches to make the father-son Drago team feel authentic."
+                },
+                  {
+                    "date": "2026-02-24",
+                    "quote": "Keep your heart open. Opportunities are always waiting.",
+                    "movie": "The Secret Life of Walter Mitty",
+                    "year": 2013,
+                    "triviaQuestion": "Which magazine does Walter work for?",
+                    "choices": ["Time", "Life", "National Geographic", "Esquire"],
+                    "correctIndex": 1,
+                    "funFact": "Ben Stiller insisted on filming real locations across Iceland instead of green screen, giving the movie its adventurous authenticity."
+                  },
+                  {
+                    "date": "2026-02-25",
+                    "quote": "Courage is not the absence of fear, but the triumph over it.",
+                    "movie": "Invictus",
+                    "year": 2009,
+                    "triviaQuestion": "Who plays Nelson Mandela?",
+                    "choices": ["Morgan Freeman", "Denzel Washington", "Forest Whitaker", "Don Cheadle"],
+                    "correctIndex": 0,
+                    "funFact": "Freeman was Mandela’s personal pick to portray him long before the film was produced."
+                  },
+                  {
+                    "date": "2026-02-26",
+                    "quote": "You'll never know how strong you are until being strong is your only choice.",
+                    "movie": "127 Hours",
+                    "year": 2010,
+                    "triviaQuestion": "Who directed the film?",
+                    "choices": ["Danny Boyle", "Sam Mendes", "Kathryn Bigelow", "David O. Russell"],
+                    "correctIndex": 0,
+                    "funFact": "James Franco filmed many solo scenes literally alone—cameras were remotely controlled to simulate Aron Ralston's isolation."
+                  },
+                  {
+                    "date": "2026-02-27",
+                    "quote": "A true hero isn’t measured by the size of his strength, but by the strength of his heart.",
+                    "movie": "Hercules",
+                    "year": 1997,
+                    "triviaQuestion": "Which studio produced this animated film?",
+                    "choices": ["DreamWorks", "Pixar", "Disney", "Sony Animation"],
+                    "correctIndex": 2,
+                    "funFact": "The Muses’ musical numbers were inspired by gospel choir performances, giving the film its unique energy."
+                  },
+                  {
+                    "date": "2026-02-28",
+                    "quote": "The flower that blooms in adversity is the most rare and beautiful of all.",
+                    "movie": "Mulan",
+                    "year": 1998,
+                    "triviaQuestion": "Who voices Mushu?",
+                    "choices": ["Chris Rock", "Eddie Murphy", "Kevin Hart", "Robin Williams"],
+                    "correctIndex": 1,
+                    "funFact": "Mushu was originally written as a pair of dragon characters before being combined into one comedic sidekick."
+                  },
+                  {
+                    "date": "2026-03-01",
+                    "quote": "Every passing minute is another chance to turn it all around.",
+                    "movie": "Vanilla Sky",
+                    "year": 2001,
+                    "triviaQuestion": "Which actor plays the lead role?",
+                    "choices": ["Brad Pitt", "Tom Cruise", "Ethan Hawke", "Christian Bale"],
+                    "correctIndex": 1,
+                    "funFact": "The Times Square scene was filmed without CGI—the city granted the crew permission to clear it at dawn."
+                  },
+                  {
+                    "date": "2026-03-02",
+                    "quote": "Happiness is only real when shared.",
+                    "movie": "Into the Wild",
+                    "year": 2007,
+                    "triviaQuestion": "Who directed the film?",
+                    "choices": ["Sean Penn", "Clint Eastwood", "Ben Affleck", "Gus Van Sant"],
+                    "correctIndex": 0,
+                    "funFact": "The real bus from the film became so dangerous for hikers that it was airlifted away by the Alaskan government."
+                  },
+                  {
+                    "date": "2026-03-03",
+                    "quote": "All we have to decide is what to do with the time that is given us.",
+                    "movie": "The Lord of the Rings: The Fellowship of the Ring",
+                    "year": 2001,
+                    "triviaQuestion": "Where was the majority of the trilogy filmed?",
+                    "choices": ["Norway", "New Zealand", "Ireland", "Scotland"],
+                    "correctIndex": 1,
+                    "funFact": "The cast trained together for weeks to build real camaraderie—sword fighting, horseback riding, and dialect coaching included."
+                  },
+                  {
+                    "date": "2026-03-04",
+                    "quote": "It’s never too late to be who you might have been.",
+                    "movie": "The Curious Case of Benjamin Button",
+                    "year": 2008,
+                    "triviaQuestion": "Which city does much of the story take place in?",
+                    "choices": ["New Orleans", "Boston", "Chicago", "Savannah"],
+                    "correctIndex": 0,
+                    "funFact": "Makeup and VFX teams spent over **two years** developing the digital aging process used on Brad Pitt."
+                  },
+                  {
+                    "date": "2026-03-05",
+                    "quote": "You can't let fear decide your fate.",
+                    "movie": "The Croods",
+                    "year": 2013,
+                    "triviaQuestion": "Which actor voices Grug, the overprotective father?",
+                    "choices": ["Nicolas Cage", "Will Ferrell", "Jack Black", "Jim Carrey"],
+                    "correctIndex": 0,
+                    "funFact": "The film took so long to produce that some cast members recorded lines years apart from their co-stars."
+                  },
+                  {
+                    "date": "2026-03-06",
+                    "quote": "Don’t ever stop. Don’t ever stop believing.",
+                    "movie": "Big Fish",
+                    "year": 2003,
+                    "triviaQuestion": "Who directed Big Fish?",
+                    "choices": ["Tim Burton", "Steven Spielberg", "Ron Howard", "Peter Jackson"],
+                    "correctIndex": 0,
+                    "funFact": "Tim Burton considered the film one of his most personal works, as it dealt with themes of fathers and storytelling."
+                  },
+                  {
+                    "date": "2026-03-07",
+                    "quote": "Our destiny is not written for us, but by us.",
+                    "movie": "Brave",
+                    "year": 2012,
+                    "triviaQuestion": "What instrument does Merida play?",
+                    "choices": ["Violin", "Harp", "Flute", "Bagpipes"],
+                    "correctIndex": 3,
+                    "funFact": "Pixar created new animation technology specifically to handle Merida’s wild, flowing curls."
+                  },
+                  {
+                    "date": "2026-03-08",
+                    "quote": "You have more power than you know.",
+                    "movie": "Wonder Woman",
+                    "year": 2017,
+                    "triviaQuestion": "Who directed the film?",
+                    "choices": ["Patty Jenkins", "Chloé Zhao", "Ava DuVernay", "Catherine Hardwicke"],
+                    "correctIndex": 0,
+                    "funFact": "Gal Gadot filmed several action scenes while pregnant, and her armor was modified with a green-screen belly plate."
+                  },
+                  {
+                    "date": "2026-03-09",
+                    "quote": "You’re braver than you believe, stronger than you seem.",
+                    "movie": "Christopher Robin",
+                    "year": 2018,
+                    "triviaQuestion": "Which actor voices Winnie the Pooh?",
+                    "choices": ["Jim Cummings", "Tom Kenny", "Bill Farmer", "Frank Welker"],
+                    "correctIndex": 0,
+                    "funFact": "Jim Cummings has voiced Winnie the Pooh for over 30 years, continuing the role across generations."
+                  },
+                  {
+                    "date": "2026-03-10",
+                    "quote": "You can’t lose hope. When you lose hope, you lose everything.",
+                    "movie": "The Best of Me",
+                    "year": 2014,
+                    "triviaQuestion": "Based on a novel by which author?",
+                    "choices": ["John Green", "Nicholas Sparks", "Jojo Moyes", "Stephen Chbosky"],
+                    "correctIndex": 1,
+                    "funFact": "The film was shot in Louisiana, where many Sparks adaptations choose for atmospheric small-town backdrops."
+                  },
+                    {
+                      "date": "2026-03-11",
+                      "quote": "Great men are not born great, they grow great.",
+                      "movie": "The Godfather",
+                      "year": 1972,
+                      "triviaQuestion": "What is Vito Corleone's original first name?",
+                      "choices": ["Vito", "Salvatore", "Marco", "Antonio"],
+                      "correctIndex": 0,
+                      "funFact": "Marlon Brando stuffed cotton balls in his cheeks for his audition—creators later made a custom mouthpiece to maintain the iconic look."
+                    },
+                    {
+                      "date": "2026-03-12",
+                      "quote": "Hope is a powerful thing. It inspires us to keep going even in the darkest times.",
+                      "movie": "The Green Mile",
+                      "year": 1999,
+                      "triviaQuestion": "Who plays John Coffey?",
+                      "choices": ["Denzel Washington", "Michael Clarke Duncan", "Forest Whitaker", "Ving Rhames"],
+                      "correctIndex": 1,
+                      "funFact": "Stephen King said Michael Clarke Duncan delivered one of the best performances of any adaptation of his work."
+                    },
+                    {
+                      "date": "2026-03-13",
+                      "quote": "Reach for the skies, because they're waiting for you.",
+                      "movie": "October Sky",
+                      "year": 1999,
+                      "triviaQuestion": "What inspires Homer Hickam to pursue rocketry?",
+                      "choices": ["A teacher", "A NASA film", "Sputnik", "A science fair"],
+                      "correctIndex": 2,
+                      "funFact": "The real Homer Hickam served as a technical consultant during filming and even trained astronauts later in life."
+                    },
+                    {
+                      "date": "2026-03-14",
+                      "quote": "You have to do the best you can. That’s your duty.",
+                      "movie": "Little Women",
+                      "year": 2019,
+                      "triviaQuestion": "Who directed this adaptation?",
+                      "choices": ["Greta Gerwig", "Sofia Coppola", "Patty Jenkins", "Ava DuVernay"],
+                      "correctIndex": 3,
+                      "funFact": "Gerwig wrote the script with Saoirse Ronan in mind before the actress was even attached to the project."
+                    },
+                    {
+                      "date": "2026-03-15",
+                      "quote": "Only those who dare to fail greatly can ever achieve greatly.",
+                      "movie": "Freedom Writers",
+                      "year": 2007,
+                      "triviaQuestion": "Erin Gruwell teaches at what type of school?",
+                      "choices": ["A high school", "A private academy", "A middle school", "A continuation school"],
+                      "correctIndex": 0,
+                      "funFact": "The real Erin Gruwell appears in the film in a cameo during the teacher conference scene."
+                    },
+                    {
+                      "date": "2026-03-16",
+                      "quote": "Sometimes it takes losing everything to finally appreciate what you had.",
+                      "movie": "The Pursuit of Happyness",
+                      "year": 2006,
+                      "triviaQuestion": "What profession does Chris Gardner pursue?",
+                      "choices": ["Law", "Investment banking", "Medical sales", "Stockbroking"],
+                      "correctIndex": 1,
+                      "funFact": "The film’s ending features the real Chris Gardner walking past Will Smith in the final scene."
+                    },
+                    {
+                      "date": "2026-03-17",
+                      "quote": "You can't let anyone define you. You define yourself.",
+                      "movie": "Billy Elliot",
+                      "year": 2000,
+                      "triviaQuestion": "What skill does Billy discover he loves?",
+                      "choices": ["Boxing", "Soccer", "Ballet", "Acting"],
+                      "correctIndex": 2,
+                      "funFact": "The three original actors who played Billy on stage all won a shared Tony Award for their performance."
+                    },
+                    {
+                      "date": "2026-03-18",
+                      "quote": "Even miracles take a little time.",
+                      "movie": "Cinderella",
+                      "year": 1950,
+                      "triviaQuestion": "What object transforms into a carriage?",
+                      "choices": ["A pumpkin", "A barrel", "A chest", "A vase"],
+                      "correctIndex": 3,
+                      "funFact": "Cinderella’s sparkling dress transformation is considered one of Disney’s most iconic animation moments."
+                    },
+                    {
+                      "date": "2026-03-19",
+                      "quote": "Sometimes you have to take a leap first. The trust comes later.",
+                      "movie": "Man of Steel",
+                      "year": 2013,
+                      "triviaQuestion": "What is Clark Kent’s Kryptonian name?",
+                      "choices": ["Kal-El", "Zod", "Jor-El", "Lor-Zod"],
+                      "correctIndex": 0,
+                      "funFact": "Henry Cavill refused to use CGI muscles—his suit fittings were delayed because he kept growing from training."
+                    },
+                    {
+                      "date": "2026-03-20",
+                      "quote": "You mustn’t be afraid to dream a little bigger.",
+                      "movie": "Inception",
+                      "year": 2010,
+                      "triviaQuestion": "Who composed the film’s score?",
+                      "choices": ["John Williams", "Hans Zimmer", "Howard Shore", "James Newton Howard"],
+                      "correctIndex": 1,
+                      "funFact": "The iconic “BRAAAM” sound was created partially using a slowed-down version of the song used inside the film’s plot."
+                    },
+                    {
+                      "date": "2026-03-21",
+                      "quote": "Find your voice. It’s the most powerful thing you have.",
+                      "movie": "The King’s Speech",
+                      "year": 2010,
+                      "triviaQuestion": "What disability does King George VI struggle with?",
+                      "choices": ["Deafness", "Stutter", "Memory loss", "Blindness"],
+                      "correctIndex": 2,
+                      "funFact": "Colin Firth worked with real speech coaches to portray stuttering accurately for the camera."
+                    },
+                    {
+                      "date": "2026-03-22",
+                      "quote": "Sometimes the smallest act of kindness can change a life.",
+                      "movie": "Pay It Forward",
+                      "year": 2000,
+                      "triviaQuestion": "What grade is the main character, Trevor, in?",
+                      "choices": ["5th", "6th", "7th", "8th"],
+                      "correctIndex": 3,
+                      "funFact": "The film popularized the real-world 'pay it forward' movement, inspiring widespread acts of kindness."
+                    },
+                    {
+                      "date": "2026-03-23",
+                      "quote": "We can be heroes, just for one day.",
+                      "movie": "The Perks of Being a Wallflower",
+                      "year": 2012,
+                      "triviaQuestion": "Which tunnel song scene became iconic?",
+                      "choices": ["Heroes", "Come As You Are", "Africa", "Landslide"],
+                      "correctIndex": 0,
+                      "funFact": "The author of the book, Stephen Chbosky, also directed the film—rare for a novelist’s adaptation."
+                    },
+                    {
+                      "date": "2026-03-24",
+                      "quote": "You change your life by changing your heart.",
+                      "movie": "A Beautiful Day in the Neighborhood",
+                      "year": 2019,
+                      "triviaQuestion": "Who stars as Fred Rogers?",
+                      "choices": ["Bill Murray", "Paul Rudd", "Tom Hanks", "Steve Carell"],
+                      "correctIndex": 2,
+                      "funFact": "Tom Hanks discovered he is a distant cousin of the real Fred Rogers while preparing for the role."
+                    },
+                    {
+                      "date": "2026-03-25",
+                      "quote": "Sometimes the right path is the one you never planned to take.",
+                      "movie": "Soul",
+                      "year": 2020,
+                      "triviaQuestion": "What is Joe Gardner’s passion?",
+                      "choices": ["Painting", "Jazz", "Writing", "Cooking"],
+                      "correctIndex": 1,
+                      "funFact": "Pixar’s animators studied real jazz musicians’ finger movements to animate Joe playing the piano accurately."
+                    }
+                  ]
+
+
+
+
 
 

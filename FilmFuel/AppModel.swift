@@ -376,14 +376,48 @@ final class AppModel: ObservableObject {
     }
 
     func ensureTodayTrivia() {
+        // Always make sure the bank is ready for endless mode
         loadTriviaIfNeeded()
-        guard !triviaBank.isEmpty else { return }
 
         let today = DailyClock.currentDayKey()
+
+        // 1) Primary source: today's quote's embedded trivia (quotes.json)
+        let quoteTrivia = todayQuote.trivia
+        let trimmedQuestion = quoteTrivia.question
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        let hasValidQuoteTrivia =
+            !trimmedQuestion.isEmpty &&
+            !quoteTrivia.choices.isEmpty &&
+            quoteTrivia.correctIndex >= 0 &&
+            quoteTrivia.correctIndex < quoteTrivia.choices.count
+
+        if hasValidQuoteTrivia {
+            // Stable ID based on the quote's date so we can reuse it if needed
+            let id = "quote-\(todayQuote.date)"
+
+            let fromQuote = TriviaQuestion(
+                id: id,
+                movieTitle: todayQuote.movie,
+                year: todayQuote.year,
+                genre: "Daily",
+                difficulty: "mixed",  // ok even though comment says easy/medium/hard
+                question: quoteTrivia.question,
+                options: quoteTrivia.choices,
+                correctIndex: quoteTrivia.correctIndex,
+                extraInfo: nil
+            )
+
+            todayTrivia = fromQuote
+            defaults.set(today, forKey: kTriviaLastDate)
+            defaults.set(id, forKey: kTriviaLastQuestionID)
+            return
+        }
+
+        // 2) Fallback: reuse trivia.json-based question if already chosen for today
         let storedDate = defaults.string(forKey: kTriviaLastDate)
         let storedID = defaults.string(forKey: kTriviaLastQuestionID)
 
-        // If we already picked a question for today, reuse it
         if storedDate == today,
            let id = storedID,
            let existing = triviaBank.first(where: { $0.id == id }) {
@@ -391,10 +425,13 @@ final class AppModel: ObservableObject {
             return
         }
 
-        // Otherwise pick a new one
-        guard let new = triviaBank.randomElement() else { return }
-        todayTrivia = new
+        // 3) Fallback: pick a fresh random question from trivia.json
+        guard !triviaBank.isEmpty,
+              let new = triviaBank.randomElement() else {
+            return
+        }
 
+        todayTrivia = new
         defaults.set(today, forKey: kTriviaLastDate)
         defaults.set(new.id, forKey: kTriviaLastQuestionID)
     }

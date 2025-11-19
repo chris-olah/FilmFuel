@@ -57,6 +57,10 @@ final class DiscoverVM: ObservableObject {
     // endless feed extension guard
     private var isExtending = false
 
+    // paging config
+    private let initialPageSize = 60
+    private let extraPageSize = 30
+
     init(provider: MovieMetaProvider, repo: QuotesRepository) {
         self.provider = provider
         self.repo = repo
@@ -65,11 +69,14 @@ final class DiscoverVM: ObservableObject {
     func load(seed: Quote?) {
         let all = repo.quotes
         if !all.isEmpty {
-            quotes = all.shuffled()
+            // Start with a shuffled "page" instead of the entire deck
+            let sliceCount = min(initialPageSize, all.count)
+            quotes = Array(all.shuffled().prefix(sliceCount))
         } else if let seed {
             quotes = [seed]
         }
 
+        // Prime meta placeholders for initially visible quotes
         var changed = false
         for q in quotes {
             let id = key(for: q)
@@ -111,7 +118,7 @@ final class DiscoverVM: ObservableObject {
         let meta = await provider.meta(
             for: q.movie,
             year: q.year,
-            fallbackFunFact: ""
+            fallbackFunFact: q.funFact ?? ""
         )
 
         metas[id] = meta
@@ -144,15 +151,24 @@ final class DiscoverVM: ObservableObject {
     /// When the user scrolls near the end, append another shuffled batch
     func extendIfNeeded(currentIndex: Int) {
         guard !quotes.isEmpty else { return }
-        let thresholdIndex = max(quotes.count - 3, 0)
-        guard currentIndex >= thresholdIndex else { return }
-        guard !isExtending else { return }
         guard !repo.quotes.isEmpty else { return }
+        guard !isExtending else { return }
+
+        // When user is within the last ~4 cards, extend the deck
+        let thresholdIndex = max(quotes.count - 4, 0)
+        guard currentIndex >= thresholdIndex else { return }
 
         isExtending = true
-        let extra = repo.quotes.shuffled()
+        defer { isExtending = false }
+
+        // Pull another chunk from a reshuffled repo
+        let all = repo.quotes
+        guard !all.isEmpty else { return }
+
+        let sliceCount = min(extraPageSize, all.count)
+        let extra = Array(all.shuffled().prefix(sliceCount))
+
         quotes.append(contentsOf: extra)
-        isExtending = false
     }
 
     // MARK: - Helpers
@@ -184,10 +200,65 @@ struct DiscoverView: View {
     @State private var lastHapticIndex: Int? = nil
 
     var body: some View {
+        // All feed items
         let items: [(key: String, quote: Quote)] = vm.quotes.map { (vm.key(for: $0), $0) }
+
+        // Spotlight = today's quote
+        let spotlightQuote = appModel.todayQuote
+        let spotlightKey = vm.key(for: spotlightQuote)
+        let spotlightMeta = vm.metas[spotlightKey]
+
+        // Archive pick = first non-today quote (by movie/year/text)
+        let archiveQuote: Quote? = vm.quotes.first {
+            $0.movie != spotlightQuote.movie ||
+            $0.year  != spotlightQuote.year  ||
+            $0.text  != spotlightQuote.text
+        }
 
         ScrollView(.vertical) {
             LazyVStack(spacing: 0) {
+                // MARK: - PAGE 0: Spotlight + Archive Fun Fact
+                ZStack {
+                    LinearGradient(
+                        colors: [
+                            Color(red: 0.10, green: 0.10, blue: 0.18),
+                            Color(red: 0.04, green: 0.04, blue: 0.08)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                    .ignoresSafeArea()
+
+                    VStack(spacing: 20) {
+                        // Spotlight = today’s quote & movie
+                        SpotlightCard(
+                            quote: spotlightQuote,
+                            meta: spotlightMeta
+                        )
+
+                        // Secondary “archive” fun fact card, if available
+                        if let archiveQuote {
+                            FunFactCard(
+                                quote: archiveQuote,
+                                meta: vm.metas[vm.key(for: archiveQuote)]
+                            ) {
+                                // share for archive card
+                                share(archiveQuote, meta: vm.metas[vm.key(for: archiveQuote)])
+                            }
+                        }
+                    }
+                    .padding(.vertical, 24)
+                }
+                .containerRelativeFrame(.vertical)
+                .id("discover-header")
+                .onAppear {
+                    Task { await vm.ensureMeta(for: spotlightQuote) }
+                    if let archiveQuote {
+                        Task { await vm.ensureMeta(for: archiveQuote) }
+                    }
+                }
+
+                // MARK: - MAIN PAGED FEED
                 ForEach(Array(items.enumerated()), id: \.element.key) { idx, item in
                     let key = item.key
                     let q   = item.quote
@@ -365,10 +436,10 @@ private struct DiscoverCard: View {
         meta?.title ?? quote.movie
     }
 
-    /// Always use fun fact from JSON, never from meta
+    /// Use fun fact from JSON (quotes), with a fallback line
     private var funFactText: String {
-        if let raw = quote.funFact?.trimmingCharacters(in: .whitespacesAndNewlines),
-           !raw.isEmpty {
+        let raw = (quote.funFact ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        if !raw.isEmpty {
             return raw
         }
         return "Cinema tidbit coming soon."
@@ -430,12 +501,9 @@ private struct DiscoverCard: View {
 
     /// Full OMDb genre string, e.g. "Action, Crime, Drama"
     private var genreText: String? {
-        guard let g = meta?.genre?
-            .trimmingCharacters(in: .whitespacesAndNewlines),
-              !g.isEmpty,
-              g != "N/A" else {
-            return nil
-        }
+        guard let raw = meta?.genre else { return nil }
+        let g = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !g.isEmpty, g != "N/A" else { return nil }
         return g
     }
 
