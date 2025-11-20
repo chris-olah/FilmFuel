@@ -22,7 +22,7 @@
     {
         "date": "2025-11-03",
         "quote": "May the Force be with you.",
-        "movie": "Star Wars: A New Hope",
+        "movie": "Star Wars: Episode IV - A New Hope",
         "year": 1977,
         "triviaQuestion": "Which studio originally released Star Wars: A New Hope in 1977?",
         "choices": ["Paramount Pictures", "Universal Pictures", "20th Century Fox", "Warner Bros."],
@@ -142,7 +142,7 @@
     {
         "date": "2025-11-15",
         "quote": "Do, or do not. There is no try.",
-        "movie": "Star Wars: The Empire Strikes Back",
+        "movie": "Star Wars: Episode V - The Empire Strikes Back",
         "year": 1980,
         "triviaQuestion": "Which character delivers the shocking reveal 'No, I am your father' in The Empire Strikes Back?",
         "choices": ["Obi-Wan Kenobi", "Darth Sidious", "Darth Vader", "Lando Calrissian"],
@@ -792,7 +792,7 @@
             {
               "date": "2026-01-19",
               "quote": "It's a trap!",
-              "movie": "Star Wars: Return of the Jedi",
+              "movie": "Star Wars: Episode VI - Return of the Jedi",
               "year": 1983,
               "triviaQuestion": "Which character shouts the iconic warning?",
               "choices": ["Han Solo", "Lando Calrissian", "Admiral Ackbar", "Chewbacca"],

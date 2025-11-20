@@ -259,7 +259,7 @@ struct DiscoverView: View {
                 }
 
                 // MARK: - MAIN PAGED FEED
-                ForEach(Array(items.enumerated()), id: \.element.key) { idx, item in
+                ForEach(Array(items.enumerated()), id: \.offset) { idx, item in
                     let key = item.key
                     let q   = item.quote
 
@@ -566,6 +566,7 @@ private struct DiscoverCard: View {
     }
 
     /// Rotten Tomatoes search URL for this movie
+    /// Rotten Tomatoes search URL for this movie
     private var rtURL: URL? {
         let query = displayTitle
         guard let encoded = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
@@ -573,6 +574,7 @@ private struct DiscoverCard: View {
         }
         return URL(string: "https://www.rottentomatoes.com/search?search=\(encoded)")
     }
+
 
     var body: some View {
         GeometryReader { geo in
