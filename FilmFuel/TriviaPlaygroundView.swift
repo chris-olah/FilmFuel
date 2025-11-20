@@ -441,6 +441,18 @@ struct TriviaPlaygroundView: View {
 
         // Update stats
         questionsAnswered += 1
+        
+        // Stats: track endless trivia answers
+        StatsManager.shared.trackEndlessTriviaAnswer(correct: correct)
+
+
+        // 🎯 Only treat certain session milestones as "review-worthy" events.
+        // RateManager still enforces global rules (days since install, cooldown, etc.).
+        let milestoneCounts = [5, 10, 20, 30]
+        if milestoneCounts.contains(questionsAnswered) {
+            RateManager.shared.trackTriviaCompleted()
+        }
+
         if correct {
             correctAnswers += 1
             sessionStreak += 1

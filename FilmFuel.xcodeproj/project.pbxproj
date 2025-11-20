@@ -66,6 +66,14 @@
 			);
 			target = 9FC904F92EB3E3F700399DE2 /* FilmFuelWidgetExtension */;
 		};
+		9F9576652ECF9A0E00277D3F /* Exceptions for "FilmFuel" folder in "FilmFuel" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Docs/FILMFUEL_ROADMAP.md,
+				Docs/PRIVACY_POLICY.md,
+			);
+			target = 9FC904DB2EB27C6100399DE2 /* FilmFuel */;
+		};
 		9FC905142EB3E3F800399DE2 /* Exceptions for "FilmFuelWidget" folder in "FilmFuelWidgetExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -79,6 +87,7 @@
 		9FC904DE2EB27C6100399DE2 /* FilmFuel */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
+				9F9576652ECF9A0E00277D3F /* Exceptions for "FilmFuel" folder in "FilmFuel" target */,
 				9F46EA5A2EC6836A00AB296D /* Exceptions for "FilmFuel" folder in "FilmFuelWidgetExtension" target */,
 			);
 			path = FilmFuel;

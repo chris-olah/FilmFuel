@@ -1,5 +1,4 @@
 import SwiftUI
-import UserNotifications
 
 struct SettingsView: View {
     @EnvironmentObject var appModel: AppModel
@@ -36,6 +35,20 @@ struct SettingsView: View {
                         FavoritesScreen()
                     } label: {
                         Label("Saved Quotes", systemImage: "heart.fill")
+                    }
+                }
+
+                // Insights / Stats
+                Section(
+                    header: Text("Insights"),
+                    footer: Text("See your trivia accuracy, streaks, and how often you’ve been using FilmFuel.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                ) {
+                    NavigationLink {
+                        StatsView()
+                    } label: {
+                        Label("Your Stats", systemImage: "chart.bar.xaxis")
                     }
                 }
 

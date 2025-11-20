@@ -6,13 +6,22 @@ struct FilmFuelApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @StateObject private var appModel = AppModel()
 
+    init() {
+        // Count launches + unique days used
+        StatsManager.shared.trackAppLaunched()
+    }
+
     var body: some Scene {
         WindowGroup {
             AppRootView()
                 .environmentObject(appModel)
-                .preferredColorScheme(.dark) // 👈 Force Dark Mode for the entire app
+                .preferredColorScheme(.dark)
+                .onAppear {
+                    StatsManager.shared.trackAppLaunched()
+                }
         }
     }
+
 }
 
 final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {

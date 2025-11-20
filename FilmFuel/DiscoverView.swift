@@ -288,6 +288,10 @@ struct DiscoverView: View {
                             // Show toast only on save
                             if isSaving {
                                 showSavedToast = true
+
+                                // 🔔 Let RateManager decide if it's a good moment to ask for a review
+                                RateManager.shared.trackQuoteFavorited()
+
                                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
                                     withAnimation(.easeOut) {
                                         showSavedToast = false
@@ -298,6 +302,9 @@ struct DiscoverView: View {
                         onShare: { share(q, meta: vm.metas[key]) }
                     )
                     .onAppear {
+                        // 📊 Local analytics: card actually came into view
+                        StatsManager.shared.trackDiscoverCardViewed()
+
                         // prefetch meta for this + next
                         Task { await vm.ensureMeta(for: q) }
                         if idx + 1 < items.count {
@@ -316,6 +323,7 @@ struct DiscoverView: View {
                         }
                         #endif
                     }
+
                     .containerRelativeFrame(.vertical)  // full-screen page
                     .id(key)
                 }
@@ -565,7 +573,6 @@ private struct DiscoverCard: View {
         return URL(string: "https://www.imdb.com/find/?q=\(encoded)&s=tt")
     }
 
-    /// Rotten Tomatoes search URL for this movie
     /// Rotten Tomatoes search URL for this movie
     private var rtURL: URL? {
         let query = displayTitle

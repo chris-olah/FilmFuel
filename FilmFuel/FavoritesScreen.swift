@@ -88,8 +88,14 @@ struct FavoritesScreen: View {
             ShareSheet(activityItems: [pendingShareText])
         }
         .onAppear {
+            // Reload from disk + repo
             allQuotes = repo.quotes
             favoriteKeys = FavoritesStore.load()
+
+            // Only treat this as a rating moment once they have 5+ saved quotes
+            if favoriteQuotes.count >= 5 {
+                RateManager.shared.trackFavoritesOpened()
+            }
         }
     }
 
@@ -124,11 +130,10 @@ struct FavoritesScreen: View {
         favoriteKeys.remove(key)
         FavoritesStore.save(favoriteKeys)
 
-        // Immediate UI update
-        allQuotes = repo.quotes
+        // Immediate UI update using current allQuotes
+        allQuotes.removeAll { favoriteKey(for: $0) == key }
     }
 }
-
 // MARK: - Quote Card
 
 private struct FavoriteQuoteCard: View {
