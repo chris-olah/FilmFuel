@@ -102,12 +102,14 @@ struct QuizView: View {
                 }
             }
         }
+        // Share sheet (keep as sheet)
         .sheet(isPresented: $showShare) {
             ShareSheet(activityItems: [
                 shareMessage()
             ])
         }
-        .sheet(isPresented: $showMoreTriviaSheet) {
+        // Endless trivia -> full-screen cover so it uses whole iPad screen
+        .fullScreenCover(isPresented: $showMoreTriviaSheet) {
             TriviaPlaygroundView()
                 .environmentObject(appModel)
         }
