@@ -1,4 +1,13 @@
+//
+//  StatsManager.swift
+//  FilmFuel
+//
+
 import Foundation
+import StoreKit
+#if canImport(UIKit)
+import UIKit
+#endif
 
 final class StatsManager {
 
@@ -17,6 +26,9 @@ final class StatsManager {
     private let lastLaunchDateKey                 = "ff.stats.lastLaunchDate"
     private let discoverCardsViewedKey            = "ff.stats.discoverCardsViewed"
     private let totalQuotesFavoritedKey           = "ff.stats.totalQuotesFavorited"
+
+    // NEW: Remember which version we already prompted for a rating
+    private let lastVersionPromptedForReviewKey   = "ff.lastVersionPromptedForReview"
 
     private init() {
         ensureFirstLaunchDate()
@@ -39,14 +51,13 @@ final class StatsManager {
         return cal.dateComponents([.day], from: s, to: e).day ?? 0
     }
 
-    // MARK: - Public read-only stats (used by SettingsView / StatsView)
+    // MARK: - Public read-only stats
 
-    /// Total trivia questions answered (any mode)
     var totalTriviaQuestionsAnswered: Int {
         defaults.integer(forKey: totalTriviaQuestionsAnsweredKey)
     }
 
-    /// Alias so any `totalTriviaAnswered` references compile
+    /// Alias compatibility property
     var totalTriviaAnswered: Int {
         totalTriviaQuestionsAnswered
     }
@@ -55,14 +66,12 @@ final class StatsManager {
         defaults.integer(forKey: totalTriviaCorrectKey)
     }
 
-    /// Main accuracy calculation
     var triviaAccuracy: Int {
         let total = totalTriviaQuestionsAnswered
         guard total > 0 else { return 0 }
         return Int((Double(totalTriviaCorrect) / Double(total)) * 100)
     }
 
-    /// Alias so anything expecting `overallAccuracyPercent` compiles
     var overallAccuracyPercent: Int {
         triviaAccuracy
     }
@@ -87,7 +96,6 @@ final class StatsManager {
         defaults.integer(forKey: discoverCardsViewedKey)
     }
 
-    /// Lifetime count of times the user has favorited a quote
     var totalQuotesFavorited: Int {
         defaults.integer(forKey: totalQuotesFavoritedKey)
     }
@@ -100,14 +108,14 @@ final class StatsManager {
         defaults.object(forKey: lastLaunchDateKey) as? Date
     }
 
-    /// Rough “unique days used” = days between first + last launch + 1
+    /// Rough “unique days used”
     var uniqueDaysUsed: Int {
         guard let first = firstLaunchDate else { return 0 }
         let last = lastLaunchDate ?? Date()
         return daysBetween(first, last) + 1
     }
 
-    // MARK: - Tracking hooks (called from other files)
+    // MARK: - Tracking Hooks
 
     func trackAppLaunched() {
         let newCount = appLaunchCount + 1
@@ -115,7 +123,6 @@ final class StatsManager {
         defaults.set(Date(), forKey: lastLaunchDateKey)
     }
 
-    /// Generic trivia answer tracker (any mode)
     func trackTriviaQuestionAnswered(correct: Bool) {
         let newTotal = totalTriviaQuestionsAnswered + 1
         defaults.set(newTotal, forKey: totalTriviaQuestionsAnsweredKey)
@@ -124,22 +131,21 @@ final class StatsManager {
             let newCorrect = totalTriviaCorrect + 1
             defaults.set(newCorrect, forKey: totalTriviaCorrectKey)
         }
+
+        // NEW — Check if it's time to ask for an app review
+        maybeRequestReviewIfNeeded()
     }
 
-    /// Specifically record that a **daily** trivia session finished
     func trackDailyTriviaSessionCompleted() {
         let newValue = dailyTriviaSessionsCompleted + 1
         defaults.set(newValue, forKey: dailyTriviaSessionsCompletedKey)
     }
 
-    /// Specifically record that an **endless** trivia session finished
     func trackEndlessTriviaSessionCompleted() {
         let newValue = endlessTriviaSessionsCompleted + 1
         defaults.set(newValue, forKey: endlessTriviaSessionsCompletedKey)
     }
 
-    /// Specifically record each **endless trivia** answer;
-    /// this just delegates to the generic trivia tracker.
     func trackEndlessTriviaAnswer(correct: Bool) {
         trackTriviaQuestionAnswered(correct: correct)
     }
@@ -149,15 +155,46 @@ final class StatsManager {
         defaults.set(newValue, forKey: favoritesOpenedCountKey)
     }
 
-    /// Count how many Discover cards have actually appeared on screen
     func trackDiscoverCardViewed() {
         let newValue = discoverCardsViewed + 1
         defaults.set(newValue, forKey: discoverCardsViewedKey)
     }
 
-    /// Lifetime counter: each time user successfully adds a favorite
     func trackQuoteFavorited() {
         let newValue = totalQuotesFavorited + 1
         defaults.set(newValue, forKey: totalQuotesFavoritedKey)
+    }
+
+    // MARK: - Rating Prompt Logic
+
+    private func maybeRequestReviewIfNeeded() {
+        // Only consider asking after the user has engaged enough
+        let minimumTriviaToAsk = 20
+        guard totalTriviaQuestionsAnswered >= minimumTriviaToAsk else { return }
+
+        // Only once per app version
+        let currentVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
+        guard !currentVersion.isEmpty else { return }
+
+        let lastVersionPrompted = defaults.string(forKey: lastVersionPromptedForReviewKey)
+        guard lastVersionPrompted != currentVersion else {
+            return // already asked this version
+        }
+
+        #if canImport(UIKit)
+        if let scene = UIApplication.shared.connectedScenes
+            .compactMap({ $0 as? UIWindowScene })
+            .first {
+
+            // iOS 18+ uses new API, older OS stays on SKStoreReviewController
+            if #available(iOS 18.0, *) {
+                AppStore.requestReview(in: scene)
+            } else {
+                SKStoreReviewController.requestReview(in: scene)
+            }
+
+            defaults.set(currentVersion, forKey: lastVersionPromptedForReviewKey)
+        }
+        #endif
     }
 }

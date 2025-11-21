@@ -30,7 +30,8 @@ struct StatsView: View {
             .ignoresSafeArea()
 
             List {
-                // Overall
+
+                // MARK: — Overview
                 Section("Overview") {
                     StatRow(
                         icon: "gamecontroller.fill",
@@ -49,9 +50,16 @@ struct StatsView: View {
                         title: "Overall accuracy",
                         value: "\(stats.overallAccuracyPercent)%"
                     )
+
+                    // NEW: Days Used
+                    StatRow(
+                        icon: "sun.max.fill",
+                        title: "Days used",
+                        value: "\(stats.uniqueDaysUsed)"
+                    )
                 }
 
-                // Trivia breakdown
+                // MARK: — Trivia Modes
                 Section("Trivia Modes") {
                     StatRow(
                         icon: "calendar",
@@ -66,7 +74,7 @@ struct StatsView: View {
                     )
                 }
 
-                // Discover-specific stats
+                // MARK: — Discover
                 Section("Discover") {
                     StatRow(
                         icon: "rectangle.on.rectangle.angled",
@@ -75,8 +83,14 @@ struct StatsView: View {
                     )
                 }
 
-                // Library
+                // MARK: — Library
                 Section("Library") {
+                    StatRow(
+                        icon: "heart.circle",
+                        title: "Total quotes favorited",
+                        value: "\(stats.totalQuotesFavorited)"
+                    )
+
                     StatRow(
                         icon: "heart.fill",
                         title: "Saved quotes screen opened",
@@ -84,7 +98,7 @@ struct StatsView: View {
                     )
                 }
 
-                // App usage
+                // MARK: — App Usage
                 Section("App Usage") {
                     StatRow(
                         icon: "flame",
