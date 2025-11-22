@@ -1336,7 +1336,7 @@
                       "year": 2019,
                       "triviaQuestion": "Who directed this adaptation?",
                       "choices": ["Greta Gerwig", "Sofia Coppola", "Patty Jenkins", "Ava DuVernay"],
-                      "correctIndex": 3,
+                      "correctIndex": 0,
                       "funFact": "Gerwig wrote the script with Saoirse Ronan in mind before the actress was even attached to the project."
                     },
                     {
@@ -1355,8 +1355,8 @@
                       "movie": "The Pursuit of Happyness",
                       "year": 2006,
                       "triviaQuestion": "What profession does Chris Gardner pursue?",
-                      "choices": ["Law", "Investment banking", "Medical sales", "Stockbroking"],
-                      "correctIndex": 1,
+                      "choices": ["Law", "Investment banking", "Medical sales", "Stockbroker"],
+                      "correctIndex": 3,
                       "funFact": "The film’s ending features the real Chris Gardner walking past Will Smith in the final scene."
                     },
                     {
@@ -1376,7 +1376,7 @@
                       "year": 1950,
                       "triviaQuestion": "What object transforms into a carriage?",
                       "choices": ["A pumpkin", "A barrel", "A chest", "A vase"],
-                      "correctIndex": 3,
+                      "correctIndex": 0,
                       "funFact": "Cinderella’s sparkling dress transformation is considered one of Disney’s most iconic animation moments."
                     },
                     {
@@ -1406,7 +1406,7 @@
                       "year": 2010,
                       "triviaQuestion": "What disability does King George VI struggle with?",
                       "choices": ["Deafness", "Stutter", "Memory loss", "Blindness"],
-                      "correctIndex": 2,
+                      "correctIndex": 1,
                       "funFact": "Colin Firth worked with real speech coaches to portray stuttering accurately for the camera."
                     },
                     {
@@ -1416,7 +1416,7 @@
                       "year": 2000,
                       "triviaQuestion": "What grade is the main character, Trevor, in?",
                       "choices": ["5th", "6th", "7th", "8th"],
-                      "correctIndex": 3,
+                      "correctIndex": 2,
                       "funFact": "The film popularized the real-world 'pay it forward' movement, inspiring widespread acts of kindness."
                     },
                     {
