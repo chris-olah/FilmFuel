@@ -33,9 +33,8 @@ struct AppRootView: View {
                     }
                     .tag(RootTab.quiz)
 
-                // DISCOVER (TikTok-style vertical feed)
+                // DISCOVER (TMDB-powered movie explore)
                 DiscoverView()
-                    .environmentObject(appModel)
                     .tabItem { Label("Discover", systemImage: "sparkles") }
                     .tag(RootTab.discover)
 
@@ -52,7 +51,9 @@ struct AppRootView: View {
                 }
             }
             // Deep links (e.g., filmfuel://quiz, filmfuel://discover, filmfuel://settings, filmfuel://tipjar, filmfuel://home)
-            .onOpenURL { url in handleDeepLink(url) }
+            .onOpenURL { url in
+                handleDeepLink(url)
+            }
             // Live route from notification actions when app is already active
             .onReceive(NotificationCenter.default.publisher(for: .filmFuelOpenQuiz)) { _ in
                 selectedTab = .quiz
@@ -121,8 +122,14 @@ struct AppRootView: View {
 // MARK: - Small helper: conditional modifier
 private extension View {
     @ViewBuilder
-    func `if`<Content: View>(_ condition: Bool,
-                             transform: (Self) -> Content) -> some View {
-        if condition { transform(self) } else { self }
+    func `if`<Content: View>(
+        _ condition: Bool,
+        transform: (Self) -> Content
+    ) -> some View {
+        if condition {
+            transform(self)
+        } else {
+            self
+        }
     }
 }
