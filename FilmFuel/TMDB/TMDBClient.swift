@@ -12,6 +12,10 @@ protocol TMDBClientProtocol {
     func fetchTrendingMovies(page: Int) async throws -> TMDBMovieListResponse
     func searchMovies(query: String, page: Int) async throws -> TMDBMovieListResponse
     func fetchDiscoverMovies(page: Int, sortBy: String) async throws -> TMDBMovieListResponse
+
+    // 🔹 New for Movie Detail / Recs
+    func fetchMovieDetail(id: Int) async throws -> TMDBMovieDetail
+    func fetchMovieRecommendations(id: Int, page: Int) async throws -> TMDBMovieListResponse
 }
 
 final class TMDBClient: TMDBClientProtocol {
@@ -65,7 +69,9 @@ final class TMDBClient: TMDBClientProtocol {
     func fetchPopularMovies(page: Int = 1) async throws -> TMDBMovieListResponse {
         let request = try makeRequest(
             path: "movie/popular",
-            queryItems: [URLQueryItem(name: "page", value: String(page))]
+            queryItems: [
+                URLQueryItem(name: "page", value: String(page))
+            ]
         )
         return try await perform(request, as: TMDBMovieListResponse.self)
     }
@@ -73,7 +79,9 @@ final class TMDBClient: TMDBClientProtocol {
     func fetchTrendingMovies(page: Int = 1) async throws -> TMDBMovieListResponse {
         let request = try makeRequest(
             path: "trending/movie/day",
-            queryItems: [URLQueryItem(name: "page", value: String(page))]
+            queryItems: [
+                URLQueryItem(name: "page", value: String(page))
+            ]
         )
         return try await perform(request, as: TMDBMovieListResponse.self)
     }
@@ -99,6 +107,29 @@ final class TMDBClient: TMDBClientProtocol {
             queryItems: [
                 URLQueryItem(name: "page", value: String(page)),
                 URLQueryItem(name: "sort_by", value: sortBy),
+                URLQueryItem(name: "include_adult", value: "false")
+            ]
+        )
+        return try await perform(request, as: TMDBMovieListResponse.self)
+    }
+
+    // MARK: - Movie Detail + Recommendations
+
+    func fetchMovieDetail(id: Int) async throws -> TMDBMovieDetail {
+        let request = try makeRequest(
+            path: "movie/\(id)",
+            queryItems: [
+                // You can add language if you want: URLQueryItem(name: "language", value: "en-US")
+            ]
+        )
+        return try await perform(request, as: TMDBMovieDetail.self)
+    }
+
+    func fetchMovieRecommendations(id: Int, page: Int = 1) async throws -> TMDBMovieListResponse {
+        let request = try makeRequest(
+            path: "movie/\(id)/recommendations",
+            queryItems: [
+                URLQueryItem(name: "page", value: String(page)),
                 URLQueryItem(name: "include_adult", value: "false")
             ]
         )

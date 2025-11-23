@@ -25,7 +25,7 @@ struct DiscoverView: View {
             .navigationTitle("Discover")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                // Filters button – future monetization hook
+                // You can keep or remove this global Filters button.
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button {
                         showingFilters = true
@@ -34,22 +34,6 @@ struct DiscoverView: View {
                             .font(.system(size: 17, weight: .semibold))
                     }
                     .accessibilityLabel("Filters")
-                }
-
-                // Shuffle button – only in Random mode
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    if vm.mode == .random {
-                        Button {
-                            #if canImport(UIKit)
-                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                            #endif
-                            vm.loadInitial()
-                        } label: {
-                            Image(systemName: "shuffle")
-                                .font(.system(size: 18, weight: .semibold))
-                        }
-                        .accessibilityLabel("Shuffle movies")
-                    }
                 }
             }
             .sheet(isPresented: $showingFilters) {
@@ -63,7 +47,7 @@ struct DiscoverView: View {
         }
     }
 
-    // MARK: - Header (title + search + mode chips)
+    // MARK: - Header (title + search + mode chips + random controls)
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -91,7 +75,7 @@ struct DiscoverView: View {
             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
             .padding(.horizontal)
 
-            // Mode chips (Random / Trending / Popular)
+            // Mode chips
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
                     ForEach(DiscoverVM.Mode.allCases) { mode in
@@ -126,6 +110,53 @@ struct DiscoverView: View {
                             .clipShape(Capsule())
                         }
                     }
+                }
+                .padding(.horizontal)
+            }
+
+            // Random-only controls row: Filters + Shuffle
+            if vm.mode == .random {
+                HStack(spacing: 10) {
+                    // Filters pill
+                    Button {
+                        showingFilters = true
+                    } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: "line.3.horizontal.decrease.circle")
+                                .font(.system(size: 14, weight: .semibold))
+                            Text("Filters")
+                                .font(.footnote.weight(.semibold))
+                        }
+                        .padding(.vertical, 7)
+                        .padding(.horizontal, 12)
+                        .background(Color(.secondarySystemBackground))
+                        .clipShape(Capsule())
+                    }
+
+                    // Shuffle pill
+                    Button {
+                        #if canImport(UIKit)
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        #endif
+                        vm.loadInitial()
+                    } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: "shuffle")
+                                .font(.system(size: 14, weight: .semibold))
+                            Text("Shuffle")
+                                .font(.footnote.weight(.semibold))
+                        }
+                        .padding(.vertical, 7)
+                        .padding(.horizontal, 12)
+                        .background(Color.accentColor.opacity(0.18))
+                        .overlay(
+                            Capsule()
+                                .stroke(Color.accentColor, lineWidth: 1)
+                        )
+                        .clipShape(Capsule())
+                    }
+
+                    Spacer()
                 }
                 .padding(.horizontal)
                 .padding(.bottom, 4)
@@ -169,7 +200,12 @@ struct DiscoverView: View {
                 ScrollView(.vertical, showsIndicators: false) {
                     LazyVStack(spacing: 24) {
                         ForEach(vm.movies) { movie in
-                            movieFeedCard(movie)
+                            NavigationLink {
+                                MovieDetailView(movie: movie)
+                            } label: {
+                                movieFeedCard(movie)
+                            }
+                            .buttonStyle(.plain)
                         }
                     }
                     // Single place we add horizontal padding so everything lines up
@@ -356,12 +392,12 @@ struct DiscoverView: View {
 
     private func loadingMessageForMode(_ mode: DiscoverVM.Mode) -> String {
         switch mode {
-        case .random:
-            return "Digging up fresh picks…"
-        case .trending:
-            return "Fetching what’s hot right now…"
-        case .popular:
-            return "Loading all-time favorites…"
+            case .random:
+                return "Digging up fresh picks…"
+            case .trending:
+                return "Fetching what’s hot right now…"
+            case .popular:
+                return "Loading all-time favorites…"
         }
     }
 }
@@ -407,7 +443,7 @@ private struct FiltersComingSoonSheet: View {
             .navigationTitle("Filters")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
+                ToolbarItem(placement: .navigationBarLeading) {
                     Button("Close") {
                         dismiss()
                     }
