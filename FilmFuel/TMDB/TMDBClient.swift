@@ -1,5 +1,24 @@
 import Foundation
 
+// MARK: - Discover Params (for filtered /discover calls)
+
+struct TMDBDiscoverParams {
+    /// TMDB sort_by value, e.g. "popularity.desc" or "vote_average.desc"
+    var sortBy: String?
+
+    /// Minimum vote_average (0–10)
+    var minRating: Double?
+
+    /// Optional release year lower bound (e.g. 1990)
+    var minYear: Int?
+
+    /// Optional release year upper bound (e.g. 1999)
+    var maxYear: Int?
+
+    /// TMDB genre IDs to include (e.g. [28, 35])
+    var genreIDs: [Int]?
+}
+
 enum TMDBError: Error {
     case invalidURL
     case requestFailed
@@ -13,7 +32,13 @@ protocol TMDBClientProtocol {
     func searchMovies(query: String, page: Int) async throws -> TMDBMovieListResponse
     func fetchDiscoverMovies(page: Int, sortBy: String) async throws -> TMDBMovieListResponse
 
-    // 🔹 New for Movie Detail / Recs
+    // 🔹 New: filtered discover using FilmFuel filters
+    func fetchFilteredDiscoverMovies(
+        page: Int,
+        params: TMDBDiscoverParams
+    ) async throws -> TMDBMovieListResponse
+
+    // 🔹 Movie Detail / Recs
     func fetchMovieDetail(id: Int) async throws -> TMDBMovieDetail
     func fetchMovieRecommendations(id: Int, page: Int) async throws -> TMDBMovieListResponse
 }
@@ -64,7 +89,7 @@ final class TMDBClient: TMDBClientProtocol {
         }
     }
 
-    // MARK: - Public API
+    // MARK: - Public API (existing)
 
     func fetchPopularMovies(page: Int = 1) async throws -> TMDBMovieListResponse {
         let request = try makeRequest(
@@ -113,13 +138,80 @@ final class TMDBClient: TMDBClientProtocol {
         return try await perform(request, as: TMDBMovieListResponse.self)
     }
 
+    // MARK: - New: Filtered Discover
+
+    func fetchFilteredDiscoverMovies(
+        page: Int = 1,
+        params: TMDBDiscoverParams
+    ) async throws -> TMDBMovieListResponse {
+        var items: [URLQueryItem] = []
+
+        // Page
+        items.append(URLQueryItem(name: "page", value: String(page)))
+
+        // Sort
+        let sortBy = params.sortBy ?? "popularity.desc"
+        items.append(URLQueryItem(name: "sort_by", value: sortBy))
+
+        // Adult content disabled
+        items.append(URLQueryItem(name: "include_adult", value: "false"))
+
+        // Minimum rating
+        if let minRating = params.minRating, minRating > 0 {
+            items.append(
+                URLQueryItem(
+                    name: "vote_average.gte",
+                    value: String(minRating)
+                )
+            )
+        }
+
+        // Year bounds -> dates
+        if let minYear = params.minYear {
+            let value = "\(minYear)-01-01"
+            items.append(
+                URLQueryItem(
+                    name: "primary_release_date.gte",
+                    value: value
+                )
+            )
+        }
+        if let maxYear = params.maxYear {
+            let value = "\(maxYear)-12-31"
+            items.append(
+                URLQueryItem(
+                    name: "primary_release_date.lte",
+                    value: value
+                )
+            )
+        }
+
+        // Genres (OR semantics: 28|35 means Action OR Comedy)
+        if let genreIDs = params.genreIDs, !genreIDs.isEmpty {
+            let joined = genreIDs.map(String.init).joined(separator: "|")
+            items.append(
+                URLQueryItem(
+                    name: "with_genres",
+                    value: joined
+                )
+            )
+        }
+
+        let request = try makeRequest(
+            path: "discover/movie",
+            queryItems: items
+        )
+
+        return try await perform(request, as: TMDBMovieListResponse.self)
+    }
+
     // MARK: - Movie Detail + Recommendations
 
     func fetchMovieDetail(id: Int) async throws -> TMDBMovieDetail {
         let request = try makeRequest(
             path: "movie/\(id)",
             queryItems: [
-                // You can add language if you want: URLQueryItem(name: "language", value: "en-US")
+                // If you want: URLQueryItem(name: "language", value: "en-US")
             ]
         )
         return try await perform(request, as: TMDBMovieDetail.self)

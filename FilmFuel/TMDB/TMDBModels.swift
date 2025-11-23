@@ -18,7 +18,7 @@ struct TMDBMovieListResponse: Decodable {
     private enum CodingKeys: String, CodingKey {
         case page
         case results
-        case totalPages = "total_pages"
+        case totalPages  = "total_pages"
         case totalResults = "total_results"
     }
 }
@@ -35,15 +35,19 @@ struct TMDBMovie: Decodable, Identifiable, Hashable {
     let voteAverage: Double
     let voteCount: Int
 
+    /// TMDB list responses provide this as `genre_ids`
+    let genreIDs: [Int]?
+
     private enum CodingKeys: String, CodingKey {
         case id
         case title
         case overview
-        case posterPath   = "poster_path"
-        case backdropPath = "backdrop_path"
-        case releaseDate  = "release_date"
-        case voteAverage  = "vote_average"
-        case voteCount    = "vote_count"
+        case posterPath    = "poster_path"
+        case backdropPath  = "backdrop_path"
+        case releaseDate   = "release_date"
+        case voteAverage   = "vote_average"
+        case voteCount     = "vote_count"
+        case genreIDs      = "genre_ids"
     }
 
     var yearText: String {

@@ -57,7 +57,57 @@ final class DiscoverVM: ObservableObject {
         }
     }
 
+    // Base loaded movies (random / trending / popular / search / filtered discover)
     @Published private(set) var movies: [TMDBMovie] = []
+
+    // Filters
+    @Published var filters: DiscoverFilters = .default
+
+    // Movies after applying filters locally (favorites, extra sanity)
+    var displayedMovies: [TMDBMovie] {
+        var result = movies
+
+        // Favorites only
+        if filters.onlyFavorites {
+            result = result.filter { favorites.contains($0.id) }
+        }
+
+        // Minimum rating (0–10)
+        if filters.minRating > 0 {
+            result = result.filter { movie in
+                movie.voteAverage >= filters.minRating
+            }
+        }
+
+        // Year range from releaseDate "YYYY-MM-DD"
+        if filters.minYear != nil || filters.maxYear != nil {
+            result = result.filter { movie in
+                guard
+                    let dateString = movie.releaseDate,
+                    let year = Int(dateString.prefix(4))
+                else {
+                    return false
+                }
+
+                if let minY = filters.minYear, year < minY { return false }
+                if let maxY = filters.maxYear, year > maxY { return false }
+                return true
+            }
+        }
+
+        // Genres: require at least one overlap between movie.genreIDs and selectedGenreIDs
+        if !filters.selectedGenreIDs.isEmpty {
+            result = result.filter { movie in
+                guard let ids = movie.genreIDs, !ids.isEmpty else {
+                    return false
+                }
+                let movieSet = Set(ids)
+                return !filters.selectedGenreIDs.isDisjoint(with: movieSet)
+            }
+        }
+
+        return result
+    }
 
     @Published var mode: Mode = .random {
         didSet {
@@ -85,7 +135,7 @@ final class DiscoverVM: ObservableObject {
     private let client: TMDBClientProtocol
     private var isSearching: Bool = false
 
-    // How many random pages to sample in Random mode
+    // How many random pages to sample in Random mode (unfiltered)
     private let randomPagesToLoad = 5
     // How many movies to surface in a random feed
     private let maxRandomMovies = 40
@@ -145,13 +195,19 @@ final class DiscoverVM: ObservableObject {
         errorMessage = nil
 
         do {
-            switch mode {
-            case .random:
-                try await loadRandomMovies()
-            case .trending:
-                try await loadTrendingMovies()
-            case .popular:
-                try await loadPopularMovies()
+            if filters.isActive {
+                // When any filter is active, use filtered discover
+                try await loadFilteredMoviesForCurrentMode()
+            } else {
+                // No filters: use your original per-mode behavior
+                switch mode {
+                case .random:
+                    try await loadRandomMovies()
+                case .trending:
+                    try await loadTrendingMovies()
+                case .popular:
+                    try await loadPopularMovies()
+                }
             }
         } catch {
             errorMessage = "Could not load movies. Please try again."
@@ -161,7 +217,54 @@ final class DiscoverVM: ObservableObject {
         isLoading = false
     }
 
-    /// Random mode:
+    /// Filtered mode:
+    /// Use /discover/movie with FilmFuel filters, then:
+    /// - For .random: shuffle the results & cap length
+    /// - For .trending / .popular: rely on sort_by
+    /// Filtered mode:
+    /// Use /discover/movie with FilmFuel filters, then:
+    /// - For .random: shuffle the results & cap length
+    /// - For .trending / .popular: rely on sort_by
+    private func loadFilteredMoviesForCurrentMode() async throws {
+        // Use user-selected sort (defaults to popularity.desc)
+        let sortBy = filters.sort.tmdbSortKey
+
+        // Build discover params from filters
+        let params = TMDBDiscoverParams(
+            sortBy: sortBy,
+            minRating: filters.minRating > 0 ? filters.minRating : nil,
+            minYear: filters.minYear,
+            maxYear: filters.maxYear,
+            genreIDs: filters.selectedGenreIDs.isEmpty
+                ? nil
+                : Array(filters.selectedGenreIDs)
+        )
+
+        // For random-filtered feeds, advance the seed for shuffling
+        if mode == .random {
+            randomReloadCount &+= 1
+        }
+
+        let response = try await client.fetchFilteredDiscoverMovies(
+            page: 1,
+            params: params
+        )
+
+        var withImages = response.results.filter { movie in
+            movie.posterPath != nil && movie.voteCount >= 20
+        }
+
+        if mode == .random {
+            let currentSeed = randomBaseSeed &+ randomReloadCount
+            var shuffleRNG = SeededGenerator(seed: currentSeed &+ 10_000)
+            withImages.shuffle(using: &shuffleRNG)
+            withImages = Array(withImages.prefix(maxRandomMovies))
+        }
+
+        movies = withImages
+    }
+
+    /// Original Random mode (no filters):
     /// 1) Fetch discover page 1 to learn totalPages.
     /// 2) Fetch Trending + Popular (page 1) and build an exclusion set of IDs.
     /// 3) Choose a few random page numbers (seeded) from discover.

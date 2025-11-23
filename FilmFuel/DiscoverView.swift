@@ -25,19 +25,35 @@ struct DiscoverView: View {
             .navigationTitle("Discover")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                // You can keep or remove this global Filters button.
+                // Global Filters button (all modes)
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button {
                         showingFilters = true
                     } label: {
-                        Image(systemName: "slider.horizontal.3")
-                            .font(.system(size: 17, weight: .semibold))
+                        HStack(spacing: 4) {
+                            Image(systemName: "line.3.horizontal.decrease.circle")
+                                .font(.system(size: 17, weight: .semibold))
+
+                            // Tiny dot when any filters are active
+                            if vm.filters.isActive {
+                                Circle()
+                                    .fill(Color.accentColor)
+                                    .frame(width: 6, height: 6)
+                            }
+                        }
                     }
                     .accessibilityLabel("Filters")
                 }
             }
-            .sheet(isPresented: $showingFilters) {
-                FiltersComingSoonSheet(currentMode: vm.mode)
+            .sheet(
+                isPresented: $showingFilters,
+                onDismiss: {
+                    // 🔑 When filters sheet closes, re-fetch from TMDB using current filters
+                    vm.loadInitial()
+                }
+            ) {
+                DiscoverFiltersSheet(filters: $vm.filters)
+                    .presentationDetents([.medium, .large])
             }
             .onAppear {
                 if vm.movies.isEmpty {
@@ -117,7 +133,7 @@ struct DiscoverView: View {
             // Random-only controls row: Filters + Shuffle
             if vm.mode == .random {
                 HStack(spacing: 10) {
-                    // Filters pill
+                    // Filters pill (same sheet as global button)
                     Button {
                         showingFilters = true
                     } label: {
@@ -126,6 +142,12 @@ struct DiscoverView: View {
                                 .font(.system(size: 14, weight: .semibold))
                             Text("Filters")
                                 .font(.footnote.weight(.semibold))
+
+                            if vm.filters.isActive {
+                                Circle()
+                                    .fill(Color.accentColor)
+                                    .frame(width: 6, height: 6)
+                            }
                         }
                         .padding(.vertical, 7)
                         .padding(.horizontal, 12)
@@ -199,7 +221,7 @@ struct DiscoverView: View {
             } else {
                 ScrollView(.vertical, showsIndicators: false) {
                     LazyVStack(spacing: 24) {
-                        ForEach(vm.movies) { movie in
+                        ForEach(vm.displayedMovies) { movie in
                             NavigationLink {
                                 MovieDetailView(movie: movie)
                             } label: {
@@ -213,7 +235,7 @@ struct DiscoverView: View {
                     .padding(.top, 8)
                     .padding(.bottom, 32)
                 }
-                .animation(.easeInOut(duration: 0.25), value: vm.movies.map(\.id))
+                .animation(.easeInOut(duration: 0.25), value: vm.displayedMovies.map(\.id))
             }
         }
     }
@@ -392,71 +414,12 @@ struct DiscoverView: View {
 
     private func loadingMessageForMode(_ mode: DiscoverVM.Mode) -> String {
         switch mode {
-            case .random:
-                return "Digging up fresh picks…"
-            case .trending:
-                return "Fetching what’s hot right now…"
-            case .popular:
-                return "Loading all-time favorites…"
-        }
-    }
-}
-
-// MARK: - Filters stub (future monetization hook)
-
-private struct FiltersComingSoonSheet: View {
-    let currentMode: DiscoverVM.Mode
-    @Environment(\.dismiss) private var dismiss
-
-    var body: some View {
-        NavigationStack {
-            VStack(alignment: .leading, spacing: 16) {
-                Text("Filters coming soon")
-                    .font(.title2.weight(.semibold))
-
-                Text("You’ll be able to refine \(modeName) results by year, rating, and genre. Perfect for movie nights when you know the vibe but not the title.")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-
-                VStack(alignment: .leading, spacing: 10) {
-                    Label("Filter by decade", systemImage: "timeline.selection")
-                    Label("Minimum rating", systemImage: "star.leadinghalf.filled")
-                    Label("Genres & moods", systemImage: "theatermasks")
-                }
-                .font(.subheadline)
-
-                Spacer()
-
-                Button {
-                    dismiss()
-                } label: {
-                    Text("Got it")
-                        .font(.headline)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
-                        .background(Color.accentColor)
-                        .foregroundColor(.white)
-                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-                }
-            }
-            .padding()
-            .navigationTitle("Filters")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Close") {
-                        dismiss()
-                    }
-                }
-            }
-        }
-    }
-
-    private var modeName: String {
-        switch currentMode {
-        case .random:   return "Random"
-        case .trending: return "Trending"
-        case .popular:  return "Popular"
+        case .random:
+            return "Digging up fresh picks…"
+        case .trending:
+            return "Fetching what’s hot right now…"
+        case .popular:
+            return "Loading all-time favorites…"
         }
     }
 }
