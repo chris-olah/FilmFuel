@@ -17,6 +17,14 @@ struct TMDBDiscoverParams {
 
     /// TMDB genre IDs to include (e.g. [28, 35])
     var genreIDs: [Int]?
+
+    /// TMDB watch provider IDs (e.g. 8 = Netflix, 9 = Prime Video, etc.)
+    /// Used with `with_watch_providers`
+    var watchProviderIDs: [Int]?
+
+    /// Region code for streaming availability (e.g. "US", "GB")
+    /// Used with `watch_region`
+    var watchRegion: String?
 }
 
 enum TMDBError: Error {
@@ -32,7 +40,7 @@ protocol TMDBClientProtocol {
     func searchMovies(query: String, page: Int) async throws -> TMDBMovieListResponse
     func fetchDiscoverMovies(page: Int, sortBy: String) async throws -> TMDBMovieListResponse
 
-    // 🔹 New: filtered discover using FilmFuel filters
+    // 🔹 Filtered discover using FilmFuel filters
     func fetchFilteredDiscoverMovies(
         page: Int,
         params: TMDBDiscoverParams
@@ -193,6 +201,43 @@ final class TMDBClient: TMDBClientProtocol {
                 URLQueryItem(
                     name: "with_genres",
                     value: joined
+                )
+            )
+        }
+
+        // Streaming providers
+        if let providerIDs = params.watchProviderIDs, !providerIDs.isEmpty {
+            // OR semantics for providers: 8|9 = Netflix OR Prime Video
+            let joined = providerIDs.map(String.init).joined(separator: "|")
+            items.append(
+                URLQueryItem(
+                    name: "with_watch_providers",
+                    value: joined
+                )
+            )
+
+            // Region (default to US if not provided but providers are used)
+            let region = params.watchRegion ?? "US"
+            items.append(
+                URLQueryItem(
+                    name: "watch_region",
+                    value: region
+                )
+            )
+
+            // Optional: limit to subscription / free / ad-supported
+            items.append(
+                URLQueryItem(
+                    name: "with_watch_monetization_types",
+                    value: "flatrate|free|ads"
+                )
+            )
+        } else if let regionOnly = params.watchRegion {
+            // If caller explicitly set a region without providers, we still honor it
+            items.append(
+                URLQueryItem(
+                    name: "watch_region",
+                    value: regionOnly
                 )
             )
         }

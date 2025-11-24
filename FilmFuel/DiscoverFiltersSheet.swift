@@ -123,6 +123,25 @@ struct DiscoverFiltersSheet: View {
                     }
                 }
 
+                // MARK: - Streaming Services
+
+                Section(header: Text("Streaming Services")) {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            ForEach(StreamingService.allCases, id: \.self) { service in
+                                streamingChip(service)
+                            }
+                        }
+                        .padding(.vertical, 4)
+                    }
+
+                    if !filters.selectedStreamingServices.isEmpty {
+                        Text(selectedStreamingDescription)
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
+                }
+
                 // MARK: - Favorites only
 
                 Section {
@@ -148,11 +167,11 @@ struct DiscoverFiltersSheet: View {
                         Button(role: .destructive) {
                             filters.reset()
                         } label: {
-                            HStack {
-                                Image(systemName: "arrow.counterclockwise")
-                                Text("Clear Filters")
+                                HStack {
+                                    Image(systemName: "arrow.counterclockwise")
+                                    Text("Clear Filters")
+                                }
                             }
-                        }
                     }
                 }
             }
@@ -187,10 +206,50 @@ struct DiscoverFiltersSheet: View {
         .buttonStyle(.plain)
     }
 
+    private func streamingChip(_ service: StreamingService) -> some View {
+        let isSelected = filters.selectedStreamingServices.contains(service)
+
+        return Button {
+            if isSelected {
+                filters.selectedStreamingServices.remove(service)
+            } else {
+                filters.selectedStreamingServices.insert(service)
+            }
+        } label: {
+            HStack(spacing: 6) {
+                if isSelected {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.caption)
+                }
+                Text(service.label)
+                    .font(.subheadline)
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(
+                RoundedRectangle(cornerRadius: 999)
+                    .fill(isSelected ? Color.accentColor.opacity(0.2) : Color(.systemGray6))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 999)
+                    .stroke(isSelected ? Color.accentColor : Color(.systemGray4), lineWidth: 1)
+            )
+        }
+        .buttonStyle(.plain)
+    }
+
     private var selectedGenresDescription: String {
         let names = genreOptions
             .filter { filters.selectedGenreIDs.contains($0.id) }
             .map(\.name)
+            .sorted()
+        return "Selected: " + names.joined(separator: ", ")
+    }
+
+    private var selectedStreamingDescription: String {
+        let names = StreamingService.allCases
+            .filter { filters.selectedStreamingServices.contains($0) }
+            .map(\.label)
             .sorted()
         return "Selected: " + names.joined(separator: ", ")
     }

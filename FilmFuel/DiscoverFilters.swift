@@ -5,6 +5,48 @@
 
 import Foundation
 
+// MARK: - Streaming services (TMDB watch providers)
+
+enum StreamingService: String, CaseIterable, Identifiable, Hashable {
+    case netflix
+    case primeVideo
+    case disneyPlus
+    case hulu
+    case max
+    case appleTVPlus
+    case peacock
+    case paramountPlus
+
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .netflix:       return "Netflix"
+        case .primeVideo:    return "Prime Video"
+        case .disneyPlus:    return "Disney+"
+        case .hulu:          return "Hulu"
+        case .max:           return "Max"
+        case .appleTVPlus:   return "Apple TV+"
+        case .peacock:       return "Peacock"
+        case .paramountPlus: return "Paramount+"
+        }
+    }
+
+    /// TMDB watch provider IDs for /discover/movie with `with_watch_providers`
+    var providerID: Int {
+        switch self {
+        case .netflix:       return 8
+        case .primeVideo:    return 9
+        case .hulu:          return 15
+        case .disneyPlus:    return 337
+        case .max:           return 384       // HBO Max / Max
+        case .appleTVPlus:   return 350
+        case .peacock:       return 387
+        case .paramountPlus: return 531
+        }
+    }
+}
+
 // MARK: - Sort options for Discover
 
 enum DiscoverSort: String, CaseIterable, Identifiable, Equatable {
@@ -59,6 +101,9 @@ struct DiscoverFilters: Equatable {
     /// Selected TMDB genre IDs (e.g. 28 = Action, 35 = Comedy)
     var selectedGenreIDs: Set<Int> = []
 
+    /// Selected streaming services (TMDB watch providers)
+    var selectedStreamingServices: Set<StreamingService> = []
+
     /// Sort mode (default: popularity)
     var sort: DiscoverSort = .popularity
 
@@ -70,7 +115,8 @@ struct DiscoverFilters: Equatable {
                maxYear != nil ||
                onlyFavorites ||
                !selectedGenreIDs.isEmpty ||
-               sort != .popularity   // non-default sort counts as an "active" filter
+               !selectedStreamingServices.isEmpty ||   // 👈 streaming filters count as active
+               sort != .popularity                     // non-default sort counts as an "active" filter
     }
 
     mutating func reset() {

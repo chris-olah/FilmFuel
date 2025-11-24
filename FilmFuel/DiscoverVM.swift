@@ -106,6 +106,11 @@ final class DiscoverVM: ObservableObject {
             }
         }
 
+        // NOTE:
+        // Streaming filters are applied server-side via TMDB's /discover
+        // using `with_watch_providers`, so we don't need extra local
+        // filtering here unless you want to double-check.
+
         return result
     }
 
@@ -221,13 +226,14 @@ final class DiscoverVM: ObservableObject {
     /// Use /discover/movie with FilmFuel filters, then:
     /// - For .random: shuffle the results & cap length
     /// - For .trending / .popular: rely on sort_by
-    /// Filtered mode:
-    /// Use /discover/movie with FilmFuel filters, then:
-    /// - For .random: shuffle the results & cap length
-    /// - For .trending / .popular: rely on sort_by
     private func loadFilteredMoviesForCurrentMode() async throws {
         // Use user-selected sort (defaults to popularity.desc)
         let sortBy = filters.sort.tmdbSortKey
+
+        // Build watch provider IDs from selected streaming services
+        let providerIDs: [Int]? = filters.selectedStreamingServices.isEmpty
+            ? nil
+            : filters.selectedStreamingServices.map { $0.providerID }
 
         // Build discover params from filters
         let params = TMDBDiscoverParams(
@@ -237,7 +243,9 @@ final class DiscoverVM: ObservableObject {
             maxYear: filters.maxYear,
             genreIDs: filters.selectedGenreIDs.isEmpty
                 ? nil
-                : Array(filters.selectedGenreIDs)
+                : Array(filters.selectedGenreIDs),
+            watchProviderIDs: providerIDs,   // 👈 NEW
+            watchRegion: "US"                // 👈 NEW (adjust for other regions if needed)
         )
 
         // For random-filtered feeds, advance the seed for shuffling
