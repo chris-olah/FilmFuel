@@ -36,6 +36,92 @@ private enum RandomSeenStore {
     }
 }
 
+// MARK: - Movie Mood (for Discover 2.0)
+
+enum MovieMood: String, CaseIterable, Identifiable {
+    case any
+    case cozy
+    case adrenaline
+    case dateNight
+    case nostalgic
+    case feelGood
+    case mindBend
+    case spooky
+
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .any:        return "Any Mood"
+        case .cozy:       return "Cozy"
+        case .adrenaline: return "Adrenaline"
+        case .dateNight:  return "Date Night"
+        case .nostalgic:  return "Nostalgic"
+        case .feelGood:   return "Feel-Good"
+        case .mindBend:   return "Mind-Bend"
+        case .spooky:     return "Spooky"
+        }
+    }
+
+    func matches(movie: TMDBMovie) -> Bool {
+        if self == .any { return true }
+
+        // Parse year from releaseDate
+        var year: Int? = nil
+        if let release = movie.releaseDate, let y = Int(release.prefix(4)) {
+            year = y
+        }
+
+        let ids = Set(movie.genreIDs ?? [])
+        func has(_ g: Int) -> Bool { ids.contains(g) }
+
+        switch self {
+        case .cozy:
+            return has(10751) || has(16) || has(35) || has(10749)
+        case .adrenaline:
+            return has(28) || has(12) || has(53)
+        case .dateNight:
+            return has(10749) || has(35)
+        case .nostalgic:
+            if let y = year {
+                return y < 2008
+            }
+            return false
+        case .feelGood:
+            return has(35) || has(10751) || has(14)
+        case .mindBend:
+            return has(878) || has(9648)
+        case .spooky:
+            return has(27)
+        case .any:
+            return true
+        }
+    }
+}
+
+// MARK: - Taste Profile
+
+struct TasteProfile {
+    private(set) var genreCounts: [Int: Int] = [:]
+
+    mutating func record(genreIDs: [Int]) {
+        for g in genreIDs {
+            genreCounts[g, default: 0] += 1
+        }
+    }
+
+    var topGenreIDs: [Int] {
+        let sorted = genreCounts.sorted { $0.value > $1.value }
+        return Array(sorted.prefix(3)).map { $0.key }
+    }
+
+    func score(for movie: TMDBMovie) -> Int {
+        let favs = Set(topGenreIDs)
+        let movieGenres = Set(movie.genreIDs ?? [])
+        return favs.intersection(movieGenres).count
+    }
+}
+
 // MARK: - ViewModel
 
 @MainActor
@@ -57,13 +143,45 @@ final class DiscoverVM: ObservableObject {
         }
     }
 
+    // MARK: - Static genre mapping for taste names
+
+    static let genreNameByID: [Int: String] = [
+        28: "Action",
+        12: "Adventure",
+        16: "Animation",
+        35: "Comedy",
+        80: "Crime",
+        99: "Documentary",
+        18: "Drama",
+        10751: "Family",
+        14: "Fantasy",
+        27: "Horror",
+        10402: "Music",
+        9648: "Mystery",
+        10749: "Romance",
+        878: "Sci-Fi",
+        10770: "TV Movie",
+        53: "Thriller",
+        10752: "War",
+        37: "Western"
+    ]
+
     // Base loaded movies (random / trending / popular / search / filtered discover)
     @Published private(set) var movies: [TMDBMovie] = []
 
     // Filters
     @Published var filters: DiscoverFilters = .default
 
-    // Movies after applying filters locally (favorites, extra sanity)
+    // Discover 2.0 additions
+    @Published var selectedMood: MovieMood = .any
+    @Published var useSmartMode: Bool = true
+    @Published var tasteProfile = TasteProfile()
+
+    // Tip nudges
+    @Published var showTipNudge: Bool = false
+    @Published var tipNudgeMessage: String?
+
+    // Movies after applying filters locally (favorites, mood, sanity)
     var displayedMovies: [TMDBMovie] {
         var result = movies
 
@@ -106,10 +224,20 @@ final class DiscoverVM: ObservableObject {
             }
         }
 
-        // NOTE:
-        // Streaming filters are applied server-side via TMDB's /discover
-        // using `with_watch_providers`, so we don't need extra local
-        // filtering here unless you want to double-check.
+        // Mood filter (on top of everything else)
+        if selectedMood != .any {
+            result = result.filter { selectedMood.matches(movie: $0) }
+        }
+
+        // Smart taste-based weighting, only in random mode & not during search
+        if useSmartMode,
+           !tasteProfile.topGenreIDs.isEmpty,
+           mode == .random,
+           !isSearching {
+            result = result.sorted {
+                tasteProfile.score(for: $0) > tasteProfile.score(for: $1)
+            }
+        }
 
         return result
     }
@@ -137,8 +265,12 @@ final class DiscoverVM: ObservableObject {
         didSet { FavoriteStore.save(favorites) }
     }
 
+    var topGenreNames: [String] {
+        tasteProfile.topGenreIDs.compactMap { Self.genreNameByID[$0] }
+    }
+
     private let client: TMDBClientProtocol
-    private var isSearching: Bool = false
+    fileprivate var isSearching: Bool = false
 
     // How many random pages to sample in Random mode (unfiltered)
     private let randomPagesToLoad = 5
@@ -156,6 +288,10 @@ final class DiscoverVM: ObservableObject {
     private let randomBaseSeed: Int
     private var randomReloadCount: Int = 0
 
+    // Tip nudge counts
+    private var shuffleCount: Int = 0
+    private var detailOpenCount: Int = 0
+
     init(client: TMDBClientProtocol) {
         self.client = client
         // Base seed for this VM lifetime (stable with @StateObject)
@@ -170,11 +306,31 @@ final class DiscoverVM: ObservableObject {
         }
     }
 
+    /// Shuffle for Random mode (user tapped “Shuffle”), separate from initial load
+    func shuffleRandomFeed() {
+        guard mode == .random else {
+            // If not in random mode, just reload mode feed
+            loadInitial()
+            return
+        }
+
+        shuffleCount &+= 1
+
+        Task { [weak self] in
+            await self?.reloadForMode()
+            self?.maybeShowTipNudge(reason: .shuffle)
+        }
+    }
+
     func toggleFavorite(_ movie: TMDBMovie) {
         if favorites.contains(movie.id) {
             favorites.remove(movie.id)
         } else {
             favorites.insert(movie.id)
+            // Favoriting feeds the taste profile
+            if let ids = movie.genreIDs {
+                tasteProfile.record(genreIDs: ids)
+            }
         }
     }
 
@@ -187,7 +343,43 @@ final class DiscoverVM: ObservableObject {
         // Reload is handled in didSet
     }
 
+    /// Called when user opens a movie detail screen
+    func recordDetailOpen(_ movie: TMDBMovie) {
+        detailOpenCount &+= 1
+        if let ids = movie.genreIDs {
+            tasteProfile.record(genreIDs: ids)
+        }
+        maybeShowTipNudge(reason: .detail)
+    }
+
+    func dismissTipNudge() {
+        showTipNudge = false
+    }
+
+    func recordTipSuccess() {
+        // Could persist a “hasTipped” flag here if you want to avoid future nudges
+        showTipNudge = false
+    }
+
     // MARK: - Private
+
+    private enum NudgeReason {
+        case shuffle
+        case detail
+    }
+
+    private func maybeShowTipNudge(reason: NudgeReason) {
+        switch reason {
+        case .shuffle where shuffleCount == 8:
+            tipNudgeMessage = "Loving the Discover shuffle? 🍿 Consider fueling FilmFuel with a small tip!"
+            showTipNudge = true
+        case .detail where detailOpenCount == 5:
+            tipNudgeMessage = "Enjoying all these deep dives? 🎬 A tiny tip helps keep FilmFuel going."
+            showTipNudge = true
+        default:
+            break
+        }
+    }
 
     private func reloadForMode() async {
         // If user is actively searching, don't override search results
@@ -235,7 +427,44 @@ final class DiscoverVM: ObservableObject {
             ? nil
             : filters.selectedStreamingServices.map { $0.providerID }
 
-        // Build discover params from filters
+        // Runtime: interpret presets + custom
+        let trimmedPreset = filters.runtimePreset
+        let runtimeMin: Int?
+        let runtimeMax: Int?
+
+        if trimmedPreset == .any {
+            runtimeMin = nil
+            runtimeMax = nil
+        } else {
+            // For non-any presets we rely on filters.customMinRuntime/customMaxRuntime,
+            // which are set in the Filters sheet via applyRuntimePresetIfNeeded().
+            runtimeMin = filters.customMinRuntime
+            runtimeMax = filters.customMaxRuntime
+        }
+
+        // Premium actor/director filters:
+        // We resolve names -> TMDB person IDs via the client.
+        let actorName = filters.actorName.trimmingCharacters(in: .whitespacesAndNewlines)
+        let directorName = filters.directorName.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        var actorID: Int? = nil
+        var directorID: Int? = nil
+
+        if !actorName.isEmpty {
+            actorID = try? await client.searchPersonID(
+                named: actorName,
+                departmentHint: .acting
+            )
+        }
+
+        if !directorName.isEmpty {
+            directorID = try? await client.searchPersonID(
+                named: directorName,
+                departmentHint: .directing
+            )
+        }
+
+        // Build discover params from filters (including premium fields)
         let params = TMDBDiscoverParams(
             sortBy: sortBy,
             minRating: filters.minRating > 0 ? filters.minRating : nil,
@@ -244,8 +473,12 @@ final class DiscoverVM: ObservableObject {
             genreIDs: filters.selectedGenreIDs.isEmpty
                 ? nil
                 : Array(filters.selectedGenreIDs),
-            watchProviderIDs: providerIDs,   // 👈 NEW
-            watchRegion: "US"                // 👈 NEW (adjust for other regions if needed)
+            watchProviderIDs: providerIDs,
+            watchRegion: "US",
+            minRuntime: runtimeMin,
+            maxRuntime: runtimeMax,
+            actorPersonID: actorID,
+            directorPersonID: directorID
         )
 
         // For random-filtered feeds, advance the seed for shuffling
@@ -272,12 +505,7 @@ final class DiscoverVM: ObservableObject {
         movies = withImages
     }
 
-    /// Original Random mode (no filters):
-    /// 1) Fetch discover page 1 to learn totalPages.
-    /// 2) Fetch Trending + Popular (page 1) and build an exclusion set of IDs.
-    /// 3) Choose a few random page numbers (seeded) from discover.
-    /// 4) Fetch each, require poster + min votes, exclude trending/popular IDs,
-    ///    prefer unseen (session + lifetime), then seeded-shuffle.
+    /// Original Random mode (no filters)
     private func loadRandomMovies() async throws {
         // Advance a counter so each reload uses a different seed,
         // but still deterministic for this VM lifetime.
@@ -357,7 +585,6 @@ final class DiscoverVM: ObservableObject {
             lifetimeSeenRandomMovieIDs = []
             RandomSeenStore.save(lifetimeSeenRandomMovieIDs)
 
-            // Still keep them excluded from trending/popular, just reset "seen".
             unseen = withImages
         }
 
@@ -388,7 +615,6 @@ final class DiscoverVM: ObservableObject {
     private func loadTrendingMovies() async throws {
         let response = try await client.fetchTrendingMovies(page: 1)
 
-        // Require a poster + enough votes for trending feed
         let withImages = response.results.filter { movie in
             movie.posterPath != nil && movie.voteCount >= 20
         }
@@ -398,7 +624,6 @@ final class DiscoverVM: ObservableObject {
     private func loadPopularMovies() async throws {
         let response = try await client.fetchPopularMovies(page: 1)
 
-        // Require a poster + enough votes for popular feed
         let withImages = response.results.filter { movie in
             movie.posterPath != nil && movie.voteCount >= 20
         }
@@ -422,7 +647,6 @@ final class DiscoverVM: ObservableObject {
         do {
             let response = try await client.searchMovies(query: trimmed, page: 1)
 
-            // Require a poster + enough votes for search results
             let withImages = response.results.filter { movie in
                 movie.posterPath != nil && movie.voteCount >= 20
             }
@@ -442,15 +666,13 @@ struct SeededGenerator: RandomNumberGenerator {
     private var state: UInt64
 
     init(seed: Int) {
-        // Truncate / wrap the Int into 64 bits
         self.state = UInt64(bitPattern: Int64(seed))
         if self.state == 0 {
-            self.state = 0xdead_beef  // avoid zero state
+            self.state = 0xdead_beef
         }
     }
 
     mutating func next() -> UInt64 {
-        // Simple LCG
         state = state &* 6364136223846793005 &+ 1
         return state
     }

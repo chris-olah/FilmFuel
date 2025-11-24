@@ -85,6 +85,44 @@ enum DiscoverSort: String, CaseIterable, Identifiable, Equatable {
     }
 }
 
+// MARK: - Runtime presets
+
+enum RuntimePreset: String, CaseIterable, Identifiable {
+    case any
+    case short
+    case medium
+    case long
+    case custom   // FilmFuel+ → unlock precise min/max
+
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .any:    return "Any"
+        case .short:  return "< 100 min"
+        case .medium: return "90–130 min"
+        case .long:   return "140+ min"
+        case .custom: return "Custom"
+        }
+    }
+
+    /// Default suggested min/max for this preset.
+    var defaultBounds: (min: Int?, max: Int?) {
+        switch self {
+        case .any:
+            return (nil, nil)
+        case .short:
+            return (nil, 100)
+        case .medium:
+            return (90, 130)
+        case .long:
+            return (140, nil)
+        case .custom:
+            return (nil, nil)
+        }
+    }
+}
+
 // MARK: - Filters
 
 struct DiscoverFilters: Equatable {
@@ -107,6 +145,23 @@ struct DiscoverFilters: Equatable {
     /// Sort mode (default: popularity)
     var sort: DiscoverSort = .popularity
 
+    // MARK: - Runtime
+
+    /// Free: user-visible preset (Any / Short / Medium / Long / Custom)
+    var runtimePreset: RuntimePreset = .any
+
+    /// FilmFuel+ only: precise runtime range in minutes (used when preset == .custom)
+    var customMinRuntime: Int? = nil
+    var customMaxRuntime: Int? = nil
+
+    // MARK: - Premium cast/crew filters (FilmFuel+)
+
+    /// User-entered actor name (FilmFuel+)
+    var actorName: String = ""
+
+    /// User-entered director name (FilmFuel+)
+    var directorName: String = ""
+
     static let `default` = DiscoverFilters()
 
     var isActive: Bool {
@@ -115,8 +170,22 @@ struct DiscoverFilters: Equatable {
                maxYear != nil ||
                onlyFavorites ||
                !selectedGenreIDs.isEmpty ||
-               !selectedStreamingServices.isEmpty ||   // 👈 streaming filters count as active
-               sort != .popularity                     // non-default sort counts as an "active" filter
+               !selectedStreamingServices.isEmpty ||
+               sort != .popularity ||
+               runtimePreset != .any ||
+               customMinRuntime != nil ||
+               customMaxRuntime != nil ||
+               !actorName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ||
+               !directorName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    mutating func applyRuntimePresetIfNeeded() {
+        // For non-custom presets, reset custom bounds to the preset defaults.
+        guard runtimePreset != .custom else { return }
+
+        let bounds = runtimePreset.defaultBounds
+        customMinRuntime = bounds.min
+        customMaxRuntime = bounds.max
     }
 
     mutating func reset() {

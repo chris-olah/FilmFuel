@@ -1,0 +1,151 @@
+{
+  "appPolicies" : {
+    "eula" : "",
+    "policies" : [
+      {
+        "locale" : "en_US",
+        "policyText" : "",
+        "policyURL" : ""
+      }
+    ]
+  },
+  "identifier" : "9E6EC3B5",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+    {
+      "displayPrice" : "4.99",
+      "familyShareable" : false,
+      "internalID" : "6755496944",
+      "localizations" : [
+        {
+          "description" : "A blockbuster-level boost that helps FilmFuel grow.",
+          "displayName" : "Blockbuster Boost",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "tip.popcorn.large",
+      "referenceName" : "Blockbuster Boost",
+      "type" : "Consumable"
+    },
+    {
+      "displayPrice" : "2.99",
+      "familyShareable" : false,
+      "internalID" : "6755496835",
+      "localizations" : [
+        {
+          "description" : "A generous tip to support FilmFuel updates. Thank you!",
+          "displayName" : "Double Feature Tip",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "tip.popcorn.medium",
+      "referenceName" : "Double Feature Tip",
+      "type" : "Consumable"
+    },
+    {
+      "displayPrice" : "0.99",
+      "familyShareable" : false,
+      "internalID" : "6755490260",
+      "localizations" : [
+        {
+          "description" : "A small tip to support FilmFuel and its future updates.",
+          "displayName" : "Popcorn Treat",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "tip.popcorn.small",
+      "referenceName" : "Popcorn Small",
+      "type" : "Consumable"
+    }
+  ],
+  "settings" : {
+    "_applicationInternalID" : "6755317910",
+    "_askToBuyEnabled" : false,
+    "_billingGracePeriodEnabled" : false,
+    "_billingIssuesEnabled" : false,
+    "_developerTeamID" : "FRCA497Y9T",
+    "_disableDialogs" : false,
+    "_failTransactionsEnabled" : false,
+    "_lastSynchronizedDate" : 785709579.08873498,
+    "_locale" : "en_US",
+    "_renewalBillingIssuesEnabled" : false,
+    "_storefront" : "USA",
+    "_storeKitErrors" : [
+
+    ],
+    "_timeRate" : 0
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "21841191",
+      "localizations" : [
+
+      ],
+      "name" : "FilmFuel+",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "1.99",
+          "familyShareable" : true,
+          "groupNumber" : 1,
+          "internalID" : "6755695404",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Unlock FilmFuel Pro with a monthly plan.",
+              "displayName" : "FilmFuel+ Monthly",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "ff_plus_monthly",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "FilmFuel+ Monthly",
+          "subscriptionGroupID" : "21841191",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "9.99",
+          "familyShareable" : false,
+          "groupNumber" : 2,
+          "internalID" : "6755695375",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Unlock FilmFuel Pro with a yearly plan.",
+              "displayName" : "FilmFuel+ Yearly",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "ff_plus_yearly",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "FilmFuel+ Yearly",
+          "subscriptionGroupID" : "21841191",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        }
+      ]
+    }
+  ],
+  "version" : {
+    "major" : 4,
+    "minor" : 0
+  }
+}

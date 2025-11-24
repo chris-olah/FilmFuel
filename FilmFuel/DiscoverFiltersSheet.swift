@@ -9,6 +9,12 @@ struct DiscoverFiltersSheet: View {
     @Binding var filters: DiscoverFilters
     @Environment(\.dismiss) private var dismiss
 
+    /// FilmFuel+ status (from entitlements)
+    let isPremiumUnlocked: Bool
+
+    /// Called when the user taps an upgrade CTA in the sheet
+    let onUpgradeTapped: (() -> Void)?
+
     // Common TMDB genre IDs
     private struct GenreOption: Identifiable {
         let id: Int        // TMDB genre id
@@ -142,6 +148,146 @@ struct DiscoverFiltersSheet: View {
                     }
                 }
 
+                // MARK: - Runtime
+
+                Section(header: Text("Runtime")) {
+                    // Presets (free)
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            ForEach(RuntimePreset.allCases) { preset in
+                                Button {
+                                    filters.runtimePreset = preset
+                                    filters.applyRuntimePresetIfNeeded()
+                                } label: {
+                                    Text(preset.label)
+                                        .font(.footnote)
+                                        .padding(.vertical, 6)
+                                        .padding(.horizontal, 10)
+                                        .background(
+                                            filters.runtimePreset == preset
+                                                ? Color.accentColor.opacity(0.18)
+                                                : Color(.systemGray6)
+                                        )
+                                        .foregroundColor(
+                                            filters.runtimePreset == preset
+                                                ? .accentColor
+                                                : .primary
+                                        )
+                                        .clipShape(Capsule())
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                        .padding(.vertical, 4)
+                    }
+
+                    // Custom runtime fields → FilmFuel+
+                    if filters.runtimePreset == .custom {
+                        if isPremiumUnlocked {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("Custom range (FilmFuel+)")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+
+                                HStack {
+                                    VStack(alignment: .leading) {
+                                        Text("Min (min)")
+                                            .font(.caption2)
+                                            .foregroundColor(.secondary)
+                                        TextField("e.g. 90", text: Binding(
+                                            get: { filters.customMinRuntime.map(String.init) ?? "" },
+                                            set: { filters.customMinRuntime = Int($0) }
+                                        ))
+                                        .keyboardType(.numberPad)
+                                        .textFieldStyle(.roundedBorder)
+                                    }
+
+                                    VStack(alignment: .leading) {
+                                        Text("Max (min)")
+                                            .font(.caption2)
+                                            .foregroundColor(.secondary)
+                                        TextField("e.g. 150", text: Binding(
+                                            get: { filters.customMaxRuntime.map(String.init) ?? "" },
+                                            set: { filters.customMaxRuntime = Int($0) }
+                                        ))
+                                        .keyboardType(.numberPad)
+                                        .textFieldStyle(.roundedBorder)
+                                    }
+                                }
+                            }
+                        } else {
+                            VStack(alignment: .leading, spacing: 6) {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "lock.fill")
+                                        .foregroundColor(.accentColor)
+                                    Text("Custom runtime is a FilmFuel+ feature.")
+                                        .font(.footnote)
+                                }
+
+                                Button {
+                                    onUpgradeTapped?()
+                                } label: {
+                                    Text("Unlock FilmFuel+")
+                                        .font(.subheadline.weight(.semibold))
+                                        .frame(maxWidth: .infinity)
+                                        .padding(.vertical, 8)
+                                        .background(Color.accentColor)
+                                        .foregroundColor(.white)
+                                        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // MARK: - Cast & Crew (Premium)
+
+                Section {
+                    if isPremiumUnlocked {
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack(spacing: 4) {
+                                Image(systemName: "star.circle.fill")
+                                    .foregroundColor(.accentColor)
+                                Text("Cast & Crew Filters (FilmFuel+)")
+                                    .font(.footnote.weight(.semibold))
+                                    .foregroundColor(.secondary)
+                            }
+
+                            TextField("Actor (e.g. Tom Hanks)", text: $filters.actorName)
+                                .textInputAutocapitalization(.words)
+                                .disableAutocorrection(true)
+
+                            TextField("Director (e.g. Christopher Nolan)", text: $filters.directorName)
+                                .textInputAutocapitalization(.words)
+                                .disableAutocorrection(true)
+                        }
+                    } else {
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack(spacing: 4) {
+                                Image(systemName: "lock.fill")
+                                    .foregroundColor(.accentColor)
+                                Text("Filter by actor & director with FilmFuel+.")
+                                    .font(.footnote)
+                                    .foregroundColor(.secondary)
+                            }
+
+                            Button {
+                                onUpgradeTapped?()
+                            } label: {
+                                Text("Unlock FilmFuel+ Filters")
+                                    .font(.subheadline.weight(.semibold))
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 8)
+                                    .background(Color.accentColor)
+                                    .foregroundColor(.white)
+                                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                            }
+                        }
+                    }
+                } header: {
+                    Text("Cast & Crew")
+                }
+
                 // MARK: - Favorites only
 
                 Section {
@@ -167,11 +313,11 @@ struct DiscoverFiltersSheet: View {
                         Button(role: .destructive) {
                             filters.reset()
                         } label: {
-                                HStack {
-                                    Image(systemName: "arrow.counterclockwise")
-                                    Text("Clear Filters")
-                                }
+                            HStack {
+                                Image(systemName: "arrow.counterclockwise")
+                                Text("Clear Filters")
                             }
+                        }
                     }
                 }
             }
@@ -256,5 +402,9 @@ struct DiscoverFiltersSheet: View {
 }
 
 #Preview {
-    DiscoverFiltersSheet(filters: .constant(.default))
+    DiscoverFiltersSheet(
+        filters: .constant(.default),
+        isPremiumUnlocked: false,
+        onUpgradeTapped: {}
+    )
 }

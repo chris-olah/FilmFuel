@@ -4,7 +4,10 @@ import UserNotifications
 @main
 struct FilmFuelApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+
     @StateObject private var appModel = AppModel()
+    @StateObject private var store = FilmFuelStore()
+    @StateObject private var entitlements = FilmFuelEntitlements()
 
     init() {
         // Count launches + unique days used
@@ -15,13 +18,20 @@ struct FilmFuelApp: App {
         WindowGroup {
             AppRootView()
                 .environmentObject(appModel)
+                .environmentObject(store)
+                .environmentObject(entitlements)
                 .preferredColorScheme(.dark)
                 .onAppear {
                     StatsManager.shared.trackAppLaunched()
+                    // Sync initial Plus state
+                    entitlements.isPlus = store.isPlus
+                }
+                .onChange(of: store.isPlus) { _, newValue in
+                    // Whenever StoreKit reports a new entitlement, update entitlements
+                    entitlements.isPlus = newValue
                 }
         }
     }
-
 }
 
 final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {

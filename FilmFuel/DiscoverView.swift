@@ -1,3 +1,8 @@
+//
+//  DiscoverView.swift
+//  FilmFuel
+//
+
 import SwiftUI
 #if canImport(UIKit)
 import UIKit
@@ -6,9 +11,20 @@ import UIKit
 struct DiscoverView: View {
     @StateObject private var vm: DiscoverVM
     @State private var showingFilters = false
+    @State private var showingPlusPaywall = false
 
-    init(client: TMDBClientProtocol = TMDBClient()) {
+    @EnvironmentObject var store: FilmFuelStore
+    @EnvironmentObject var entitlements: FilmFuelEntitlements
+
+    /// Hook this up from the parent to show your Tip Jar / IAP
+    var onTipTapped: (() -> Void)?
+
+    init(
+        client: TMDBClientProtocol = TMDBClient(),
+        onTipTapped: (() -> Void)? = nil
+    ) {
         _vm = StateObject(wrappedValue: DiscoverVM(client: client))
+        self.onTipTapped = onTipTapped
     }
 
     var body: some View {
@@ -20,6 +36,12 @@ struct DiscoverView: View {
                 VStack(spacing: 0) {
                     header
                     content
+                }
+
+                if vm.showTipNudge {
+                    tipNudgeOverlay
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                        .animation(.spring(), value: vm.showTipNudge)
                 }
             }
             .navigationTitle("Discover")
@@ -48,12 +70,24 @@ struct DiscoverView: View {
             .sheet(
                 isPresented: $showingFilters,
                 onDismiss: {
-                    // 🔑 When filters sheet closes, re-fetch from TMDB using current filters
+                    // When filters sheet closes, re-fetch from TMDB using current filters
                     vm.loadInitial()
                 }
             ) {
-                DiscoverFiltersSheet(filters: $vm.filters)
-                    .presentationDetents([.medium, .large])
+                DiscoverFiltersSheet(
+                    filters: $vm.filters,
+                    isPremiumUnlocked: entitlements.isPlus,
+                    onUpgradeTapped: {
+                        showingPlusPaywall = true
+                    }
+                )
+                .presentationDetents([.medium, .large])
+            }
+            // Plus paywall sheet
+            .sheet(isPresented: $showingPlusPaywall) {
+                FilmFuelPlusPaywallView()
+                    .environmentObject(store)
+                    .environmentObject(entitlements)
             }
             .onAppear {
                 if vm.movies.isEmpty {
@@ -63,18 +97,57 @@ struct DiscoverView: View {
         }
     }
 
-    // MARK: - Header (title + search + mode chips + random controls)
+    // MARK: - Header (title + search + mode chips + moods + controls + debug)
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 10) {
-            // Title + subtitle
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Find your next watch")
-                    .font(.title3.weight(.semibold))
+            // Title + Tip button
+            HStack(alignment: .center) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Find your next watch")
+                        .font(.title3.weight(.semibold))
 
-                Text(subtitleForMode(vm.mode))
-                    .font(.subheadline)
+                    Text(subtitleForMode(vm.mode))
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+
+                Spacer()
+
+                if let onTipTapped {
+                    Button {
+                        onTipTapped()
+                    } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: "popcorn")
+                            Text("Tip")
+                                .font(.subheadline.weight(.semibold))
+                        }
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .background(.ultraThinMaterial)
+                        .clipShape(Capsule())
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.horizontal)
+
+            // 🔍 DEBUG STATUS ROW (Plus vs Free + Smart uses left)
+            HStack(spacing: 8) {
+                Circle()
+                    .fill(entitlements.isPlus ? Color.green : Color.orange)
+                    .frame(width: 8, height: 8)
+
+                Text(entitlements.isPlus ? "FilmFuel+ Active" : "Free tier")
+                    .font(.caption)
                     .foregroundColor(.secondary)
+
+                Text("Smart left: \(entitlements.freeSmartUsesRemainingToday)")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+
+                Spacer()
             }
             .padding(.horizontal)
 
@@ -130,10 +203,39 @@ struct DiscoverView: View {
                 .padding(.horizontal)
             }
 
-            // Random-only controls row: Filters + Shuffle
+            // Mood chips (Discover 2.0)
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(MovieMood.allCases) { mood in
+                        Button {
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                vm.selectedMood = mood
+                            }
+                        } label: {
+                            Text(mood.label)
+                                .font(.caption)
+                                .padding(.vertical, 6)
+                                .padding(.horizontal, 12)
+                                .background(
+                                    vm.selectedMood == mood
+                                        ? Color.accentColor.opacity(0.18)
+                                        : Color(.secondarySystemBackground)
+                                )
+                                .foregroundColor(
+                                    vm.selectedMood == mood ? .accentColor : .primary
+                                )
+                                .clipShape(Capsule())
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                .padding(.horizontal)
+            }
+
+            // Random-only controls row: Filters + Sort + Smart Mode + Shuffle
             if vm.mode == .random {
                 HStack(spacing: 10) {
-                    // Filters pill (same sheet as global button)
+                    // Filters pill (opens same sheet as toolbar button)
                     Button {
                         showingFilters = true
                     } label: {
@@ -155,12 +257,68 @@ struct DiscoverView: View {
                         .clipShape(Capsule())
                     }
 
+                    // Sort menu (uses DiscoverFilters.sort)
+                    Menu {
+                        ForEach(DiscoverSort.allCases) { sort in
+                            Button {
+                                vm.filters.sort = sort
+                                vm.loadInitial()
+                            } label: {
+                                if vm.filters.sort == sort {
+                                    Label(sort.label, systemImage: "checkmark")
+                                } else {
+                                    Text(sort.label)
+                                }
+                            }
+                        }
+                    } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: "arrow.up.arrow.down")
+                                .font(.system(size: 13, weight: .semibold))
+                            Text(vm.filters.sort.label)
+                                .font(.footnote.weight(.semibold))
+                        }
+                        .padding(.vertical, 7)
+                        .padding(.horizontal, 12)
+                        .background(Color(.secondarySystemBackground))
+                        .clipShape(Capsule())
+                    }
+
+                    // Smart Mode toggle (gated by FilmFuel+)
+                    Toggle(isOn: Binding(
+                        get: { vm.useSmartMode },
+                        set: { newValue in
+                            if newValue {
+                                if entitlements.isPlus {
+                                    vm.useSmartMode = true
+                                } else {
+                                    // Free user: check daily allowance
+                                    if entitlements.consumeFreeSmartModeUseIfNeeded() {
+                                        vm.useSmartMode = true
+                                    } else {
+                                        // Hit limit → show paywall
+                                        vm.useSmartMode = false
+                                        showingPlusPaywall = true
+                                    }
+                                }
+                            } else {
+                                vm.useSmartMode = false
+                            }
+                        }
+                    )) {
+                        Text("Smart Mode")
+                            .font(.footnote)
+                    }
+                    .toggleStyle(SwitchToggleStyle(tint: .accentColor))
+
+                    Spacer()
+
                     // Shuffle pill
                     Button {
                         #if canImport(UIKit)
                         UIImpactFeedbackGenerator(style: .light).impactOccurred()
                         #endif
-                        vm.loadInitial()
+                        vm.shuffleRandomFeed()
                     } label: {
                         HStack(spacing: 6) {
                             Image(systemName: "shuffle")
@@ -177,9 +335,22 @@ struct DiscoverView: View {
                         )
                         .clipShape(Capsule())
                     }
+                }
+                .padding(.horizontal)
+                .padding(.bottom, 2)
+            }
 
+            // Taste profile summary
+            if !vm.topGenreNames.isEmpty {
+                HStack(spacing: 6) {
+                    Image(systemName: "sparkles")
+                    Text("FilmFuel Taste Profile:")
+                        .font(.caption.weight(.semibold))
+                    Text(vm.topGenreNames.joined(separator: " • "))
+                        .font(.caption)
                     Spacer()
                 }
+                .foregroundColor(.secondary)
                 .padding(.horizontal)
                 .padding(.bottom, 4)
             }
@@ -224,13 +395,15 @@ struct DiscoverView: View {
                         ForEach(vm.displayedMovies) { movie in
                             NavigationLink {
                                 MovieDetailView(movie: movie)
+                                    .onAppear {
+                                        vm.recordDetailOpen(movie)
+                                    }
                             } label: {
                                 movieFeedCard(movie)
                             }
                             .buttonStyle(.plain)
                         }
                     }
-                    // Single place we add horizontal padding so everything lines up
                     .padding(.horizontal, 16)
                     .padding(.top, 8)
                     .padding(.bottom, 32)
@@ -391,12 +564,57 @@ struct DiscoverView: View {
         }
     }
 
+    // MARK: - Tip nudge overlay
+
+    private var tipNudgeOverlay: some View {
+        VStack {
+            Spacer()
+            HStack(spacing: 12) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Boost FilmFuel?")
+                        .font(.headline)
+                    if let message = vm.tipNudgeMessage {
+                        Text(message)
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
+                }
+                Spacer()
+                Button {
+                    vm.dismissTipNudge()
+                } label: {
+                    Text("Not now")
+                        .font(.subheadline)
+                }
+                if let onTipTapped {
+                    Button {
+                        onTipTapped()
+                        vm.recordTipSuccess()
+                    } label: {
+                        Text("Tip")
+                            .font(.subheadline.weight(.semibold))
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .background(Color.accentColor)
+                            .foregroundColor(.white)
+                            .clipShape(Capsule())
+                    }
+                }
+            }
+            .padding()
+            .background(.ultraThinMaterial)
+            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .padding(.horizontal)
+            .padding(.bottom, 12)
+        }
+    }
+
     // MARK: - Helpers
 
     private func subtitleForMode(_ mode: DiscoverVM.Mode) -> String {
         switch mode {
         case .random:
-            return "A fresh mix of movies from all over TMDB."
+            return "Shuffle by mood, taste, and filters."
         case .trending:
             return "What movie fans are talking about today."
         case .popular:

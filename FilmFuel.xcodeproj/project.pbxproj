@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		9F9575C22ECE44D600277D3F /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9F9575C12ECE44D600277D3F /* StoreKit.framework */; };
+		9FAF204A2ED4F6790075747A /* FilmFuelStorekit.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 9FAF20492ED4F6790075747A /* FilmFuelStorekit.storekit */; };
 		9FC904FD2EB3E3F700399DE2 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9FC904FC2EB3E3F700399DE2 /* WidgetKit.framework */; };
 		9FC904FF2EB3E3F700399DE2 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9FC904FE2EB3E3F700399DE2 /* SwiftUI.framework */; };
 		9FC905102EB3E3F800399DE2 /* FilmFuelWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 9FC904FA2EB3E3F700399DE2 /* FilmFuelWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -47,6 +48,7 @@
 
 /* Begin PBXFileReference section */
 		9F9575C12ECE44D600277D3F /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
+		9FAF20492ED4F6790075747A /* FilmFuelStorekit.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = FilmFuelStorekit.storekit; sourceTree = "<group>"; };
 		9FC904DC2EB27C6100399DE2 /* FilmFuel.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FilmFuel.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9FC904FA2EB3E3F700399DE2 /* FilmFuelWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = FilmFuelWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		9FC904FC2EB3E3F700399DE2 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
@@ -127,6 +129,7 @@
 		9FC904D32EB27C6100399DE2 = {
 			isa = PBXGroup;
 			children = (
+				9FAF20492ED4F6790075747A /* FilmFuelStorekit.storekit */,
 				9FC9058F2EBCD02500399DE2 /* Shared */,
 				9FC905172EB3E61800399DE2 /* FilmFuelWidgetExtension.entitlements */,
 				9FC904DE2EB27C6100399DE2 /* FilmFuel */,
@@ -259,6 +262,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				9FC905902EBCD05300399DE2 /* quotes.json in Resources */,
+				9FAF204A2ED4F6790075747A /* FilmFuelStorekit.storekit in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
