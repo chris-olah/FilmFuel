@@ -4,57 +4,30 @@
 //
 
 import SwiftUI
-import StoreKit
 
 struct FilmFuelPlusPaywallView: View {
-    @Environment(\.dismiss) private var dismiss
-
     @EnvironmentObject var store: FilmFuelStore
     @EnvironmentObject var entitlements: FilmFuelEntitlements
-
-    @State private var isPurchasing: Bool = false
+    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 20) {
-                header
-
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 16) {
-                        featureList
-                        planOptions
-
-                        if let message = store.purchaseErrorMessage {
-                            Text(message)
-                                .font(.footnote)
-                                .foregroundColor(.red)
-                        }
-
-                        if let state = store.lastPurchaseStateDescription {
-                            Text(state)
-                                .font(.footnote)
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                    .padding(.horizontal)
-                    .padding(.bottom, 20)
+            ScrollView {
+                VStack(spacing: 24) {
+                    headerSection
+                    heroCard
+                    perksList
+                    smartModeCallout
+                    buttonsSection
+                    faqSection
                 }
-
-                bottomButtons
+                .padding()
             }
             .navigationTitle("FilmFuel+")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Close") {
-                        dismiss()
-                    }
-                }
-            }
-            .onChange(of: store.isPlus) { _, newValue in
-                if newValue {
-                    entitlements.isPlus = true
-                    dismiss()
+                    Button("Close") { dismiss() }
                 }
             }
         }
@@ -62,128 +35,179 @@ struct FilmFuelPlusPaywallView: View {
 
     // MARK: - Sections
 
-    private var header: some View {
-        VStack(spacing: 10) {
-            Image(systemName: "popcorn")
-                .font(.system(size: 40))
-            Text("Fuel your movie obsession")
-                .font(.title3.weight(.semibold))
-            Text("Unlock all trivia packs, smarter Discover, and premium goodies.")
+    private var headerSection: some View {
+        VStack(spacing: 8) {
+            Text("Unlock FilmFuel+")
+                .font(.largeTitle.weight(.bold))
+                .multilineTextAlignment(.center)
+
+            Text("Turn Discover into your personal movie concierge.")
                 .font(.subheadline)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
-                .padding(.horizontal, 24)
         }
-        .padding(.top, 16)
+        .frame(maxWidth: .infinity)
     }
 
-    private var featureList: some View {
-        VStack(alignment: .leading, spacing: 8) {
+    private var heroCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 10) {
+                Image(systemName: "sparkles.tv.fill")
+                    .font(.title2)
+                Text("Smarter Discover")
+                    .font(.headline)
+            }
+
+            Text("FilmFuel+ unlocks unlimited Smart Mode and taste-powered shuffles, so every batch feels hand-picked for you.")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+
+            HStack(spacing: 6) {
+                Text("Free:")
+                    .font(.caption.weight(.semibold))
+                Text("2 Smart picks/day")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+
+                Text("•")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+
+                Text("FilmFuel+: unlimited")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+        }
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(LinearGradient(
+                    colors: [Color.accentColor.opacity(0.18), Color(.secondarySystemBackground)],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                ))
+        )
+    }
+
+    private var perksList: some View {
+        VStack(alignment: .leading, spacing: 14) {
             Text("What you get with FilmFuel+")
                 .font(.headline)
 
-            featureRow("All current & future trivia packs")
-            featureRow("Unlimited endless trivia")
-            featureRow("Smart Discover tailored to your taste")
-            featureRow("Advanced filters & moods")
-            featureRow("Premium widgets and icons")
-            featureRow("Early access to new features")
-        }
-    }
+            perkRow(
+                icon: "sparkles",
+                title: "Unlimited Smart Mode",
+                text: "No more daily cap – every shuffle can lean into your taste, favorite genres, and hidden gems."
+            )
 
-    private func featureRow(_ text: String) -> some View {
-        HStack(alignment: .top, spacing: 8) {
-            Image(systemName: "checkmark.circle.fill")
-                .foregroundColor(.accentColor)
-            Text(text)
-                .font(.subheadline)
-        }
-    }
+            perkRow(
+                icon: "person.2.wave.2.fill",
+                title: "Taste-powered Discover",
+                text: "Your likes, favorites, and moods shape the feed. The more you use it, the better it gets."
+            )
 
-    private var planOptions: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Choose your plan")
-                .font(.headline)
-                .padding(.top, 8)
+            perkRow(
+                icon: "gamecontroller.fill",
+                title: "Trivia & future perks",
+                text: "Support FilmFuel today and unlock current Plus goodies, plus upcoming trivia & Discover upgrades."
+            )
 
-            if store.plusProducts.isEmpty {
-                Text("Loading plans…")
-                    .foregroundColor(.secondary)
-                    .font(.subheadline)
-            } else {
-                ForEach(store.plusProducts, id: \.id) { product in
-                    planCard(for: product)
-                }
-            }
-        }
-    }
-
-    private func planCard(for product: Product) -> some View {
-        Button {
-            Task { await purchase(product) }
-        } label: {
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(planTitle(for: product))
-                        .font(.subheadline.weight(.semibold))
-                    Text(planSubtitle(for: product))
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                Spacer()
-                Text(product.displayPrice)
-                    .font(.subheadline.weight(.semibold))
-            }
-            .padding()
-            .background(
-                RoundedRectangle(cornerRadius: 14)
-                    .fill(Color(.secondarySystemBackground))
+            perkRow(
+                icon: "heart.fill",
+                title: "Support a solo dev",
+                text: "You’re literally helping keep FilmFuel alive and evolving. Thank you. 🙏"
             )
         }
-        .buttonStyle(.plain)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    private func planTitle(for product: Product) -> String {
-        if product.id.contains("year") || product.subscription?.subscriptionPeriod.unit == .year {
-            return "Yearly – Best value"
-        } else {
-            return "Monthly"
+    private func perkRow(icon: String, title: String, text: String) -> some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: icon)
+                .font(.title3)
+                .frame(width: 28)
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .font(.subheadline.weight(.semibold))
+                Text(text)
+                    .font(.footnote)
+                    .foregroundColor(.secondary)
+            }
         }
     }
 
-    private func planSubtitle(for product: Product) -> String {
-        if product.id.contains("year") || product.subscription?.subscriptionPeriod.unit == .year {
-            return "Save more with a year of FilmFuel+."
-        } else {
-            return "Flexibility, billed every month."
-        }
-    }
-
-    private var bottomButtons: some View {
-        VStack(spacing: 10) {
-            Button {
-                Task { await store.restorePurchases() }
-            } label: {
-                Text("Restore Purchases")
-                    .font(.footnote.weight(.medium))
+    private var smartModeCallout: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 8) {
+                Image(systemName: "bolt.heart.fill")
+                    .font(.headline)
+                    .foregroundColor(.accentColor)
+                Text("Already love Discover?")
+                    .font(.subheadline.weight(.semibold))
             }
 
-            Text("You can cancel anytime in your App Store account settings.")
-                .font(.caption2)
+            Text("FilmFuel+ is the “turn it up” button for the features you’re already using – smarter shuffles, better picks, and no daily limits.")
+                .font(.footnote)
                 .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 24)
         }
-        .padding(.bottom, 16)
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color(.secondarySystemBackground))
+        )
     }
 
-    // MARK: - Purchase helper
+    private var buttonsSection: some View {
+        VStack(spacing: 10) {
+            Button {
+                // TODO: Wire this to your FilmFuelStore purchase call, e.g.:
+                // store.purchasePlus()
+            } label: {
+                Text("Start FilmFuel+")
+                    .font(.headline)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.accentColor)
+                    .foregroundColor(.white)
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+            }
 
-    private func purchase(_ product: Product) async {
-        guard !isPurchasing else { return }
-        isPurchasing = true
-        defer { isPurchasing = false }
+            Button {
+                // TODO: Wire this to your restore purchases call, e.g.:
+                // store.restorePurchases()
+            } label: {
+                Text("Restore purchases")
+                    .font(.subheadline)
+                    .frame(maxWidth: .infinity)
+                    .padding(10)
+            }
+        }
+    }
 
-        await store.purchase(product)
+    private var faqSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Divider()
+                .padding(.vertical, 8)
+
+            Text("FAQ")
+                .font(.headline)
+
+            VStack(alignment: .leading, spacing: 6) {
+                Text("What happens if I don’t upgrade?")
+                    .font(.subheadline.weight(.semibold))
+                Text("You can keep using FilmFuel for free with 2 Smart Mode sessions per day and all the core features.")
+                    .font(.footnote)
+                    .foregroundColor(.secondary)
+            }
+
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Will my current picks change?")
+                    .font(.subheadline.weight(.semibold))
+                Text("FilmFuel+ doesn’t take anything away – it just levels up Discover, Smart Mode, and taste-driven shuffles.")
+                    .font(.footnote)
+                    .foregroundColor(.secondary)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }

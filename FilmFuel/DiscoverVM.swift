@@ -1,3 +1,8 @@
+//
+//  DiscoverVM.swift
+//  FilmFuel
+//
+
 import Foundation
 import SwiftUI
 import Combine
@@ -136,9 +141,40 @@ final class DiscoverVM: ObservableObject {
 
         var label: String {
             switch self {
-            case .random:   return "Random"
+            case .random:   return "For You"
             case .trending: return "Trending"
             case .popular:  return "Popular"
+            }
+        }
+    }
+
+    enum RandomFlavor: String, CaseIterable, Identifiable {
+        case pure
+        case hotRightNow
+        case criticallyAcclaimed
+        case fromYourTaste
+
+        var id: String { rawValue }
+
+        var shortLabel: String {
+            switch self {
+            case .pure:                return "Pure random"
+            case .hotRightNow:         return "Hot right now"
+            case .criticallyAcclaimed: return "Critically acclaimed"
+            case .fromYourTaste:       return "From your taste"
+            }
+        }
+
+        var subtitle: String {
+            switch self {
+            case .pure:
+                return "Anything with good buzz"
+            case .hotRightNow:
+                return "High rating & lots of votes"
+            case .criticallyAcclaimed:
+                return "Only top-rated picks"
+            case .fromYourTaste:
+                return "Leans into your favorites"
             }
         }
     }
@@ -176,6 +212,7 @@ final class DiscoverVM: ObservableObject {
     @Published var selectedMood: MovieMood = .any
     @Published var useSmartMode: Bool = true
     @Published var tasteProfile = TasteProfile()
+    @Published var randomFlavor: RandomFlavor = .pure
 
     // Tip nudges
     @Published var showTipNudge: Bool = false
@@ -224,7 +261,7 @@ final class DiscoverVM: ObservableObject {
             }
         }
 
-        // Mood filter (on top of everything else)
+        // Mood filter (we mainly care in Random, but harmless elsewhere)
         if selectedMood != .any {
             result = result.filter { selectedMood.matches(movie: $0) }
         }
@@ -271,6 +308,12 @@ final class DiscoverVM: ObservableObject {
 
     private let client: TMDBClientProtocol
     fileprivate var isSearching: Bool = false
+
+    // MARK: - Paging state (for Trending / Popular infinite scroll)
+
+    @Published private(set) var currentPage: Int = 1
+    private var totalPagesAvailable: Int = 1
+    private var isLoadingMore: Bool = false
 
     // How many random pages to sample in Random mode (unfiltered)
     private let randomPagesToLoad = 5
@@ -361,6 +404,69 @@ final class DiscoverVM: ObservableObject {
         showTipNudge = false
     }
 
+    // Called from each cell when it appears near the bottom to trigger pagination
+    func loadMoreIfNeeded(currentItem movie: TMDBMovie) async {
+        // No infinite scroll in Random (we show the “end of feed” card instead)
+        guard mode != .random else { return }
+
+        // Don’t paginate during search
+        guard !isSearching,
+              searchQuery.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        else { return }
+
+        // Basic guards
+        guard !isLoadingMore,
+              currentPage < totalPagesAvailable,
+              !displayedMovies.isEmpty
+        else { return }
+
+        // Only load more when the user is near the bottom of displayedMovies
+        guard let index = displayedMovies.firstIndex(where: { $0.id == movie.id }) else {
+            return
+        }
+
+        let thresholdIndex = displayedMovies.index(
+            displayedMovies.endIndex,
+            offsetBy: -5,
+            limitedBy: displayedMovies.startIndex
+        ) ?? displayedMovies.startIndex
+
+        guard index >= thresholdIndex else {
+            return
+        }
+
+        isLoadingMore = true
+        defer { isLoadingMore = false }
+
+        let nextPage = currentPage + 1
+
+        do {
+            let response: TMDBMovieListResponse
+
+            switch mode {
+            case .trending:
+                response = try await client.fetchTrendingMovies(page: nextPage)
+            case .popular:
+                response = try await client.fetchPopularMovies(page: nextPage)
+            case .random:
+                return
+            }
+
+            let newMovies = response.results.filter { movie in
+                movie.posterPath != nil && movie.voteCount >= 20
+            }
+
+            let existingIDs = Set(movies.map(\.id))
+            let deduped = newMovies.filter { !existingIDs.contains($0.id) }
+
+            movies.append(contentsOf: deduped)
+            currentPage = nextPage
+            totalPagesAvailable = response.totalPages
+        } catch {
+            print("⚠️ Failed to load more movies: \(error)")
+        }
+    }
+
     // MARK: - Private
 
     private enum NudgeReason {
@@ -381,6 +487,11 @@ final class DiscoverVM: ObservableObject {
         }
     }
 
+    private func resetPaging() {
+        currentPage = 1
+        totalPagesAvailable = 1
+    }
+
     private func reloadForMode() async {
         // If user is actively searching, don't override search results
         guard searchQuery.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
@@ -390,10 +501,11 @@ final class DiscoverVM: ObservableObject {
         isSearching = false
         isLoading = true
         errorMessage = nil
+        resetPaging()
 
         do {
             if filters.isActive {
-                // When any filter is active, use filtered discover
+                // When any filter is active, use filtered discover (no infinite scroll for now)
                 try await loadFilteredMoviesForCurrentMode()
             } else {
                 // No filters: use your original per-mode behavior
@@ -428,22 +540,18 @@ final class DiscoverVM: ObservableObject {
             : filters.selectedStreamingServices.map { $0.providerID }
 
         // Runtime: interpret presets + custom
-        let trimmedPreset = filters.runtimePreset
+        let preset = filters.runtimePreset
         let runtimeMin: Int?
         let runtimeMax: Int?
 
-        if trimmedPreset == .any {
+        if preset == .any {
             runtimeMin = nil
             runtimeMax = nil
         } else {
-            // For non-any presets we rely on filters.customMinRuntime/customMaxRuntime,
-            // which are set in the Filters sheet via applyRuntimePresetIfNeeded().
             runtimeMin = filters.customMinRuntime
             runtimeMax = filters.customMaxRuntime
         }
 
-        // Premium actor/director filters:
-        // We resolve names -> TMDB person IDs via the client.
         let actorName = filters.actorName.trimmingCharacters(in: .whitespacesAndNewlines)
         let directorName = filters.directorName.trimmingCharacters(in: .whitespacesAndNewlines)
 
@@ -464,7 +572,6 @@ final class DiscoverVM: ObservableObject {
             )
         }
 
-        // Build discover params from filters (including premium fields)
         let params = TMDBDiscoverParams(
             sortBy: sortBy,
             minRating: filters.minRating > 0 ? filters.minRating : nil,
@@ -481,7 +588,6 @@ final class DiscoverVM: ObservableObject {
             directorPersonID: directorID
         )
 
-        // For random-filtered feeds, advance the seed for shuffling
         if mode == .random {
             randomReloadCount &+= 1
         }
@@ -494,6 +600,9 @@ final class DiscoverVM: ObservableObject {
         var withImages = response.results.filter { movie in
             movie.posterPath != nil && movie.voteCount >= 20
         }
+
+        currentPage = 1
+        totalPagesAvailable = response.totalPages
 
         if mode == .random {
             let currentSeed = randomBaseSeed &+ randomReloadCount
@@ -518,7 +627,7 @@ final class DiscoverVM: ObservableObject {
             sortBy: "popularity.desc"
         )
 
-        let totalPages = max(1, min(firstDiscover.totalPages, 500)) // Safety cap
+        let totalPagesFromAPI = max(1, min(firstDiscover.totalPages, 500)) // Safety cap
         var allResults: [TMDBMovie] = firstDiscover.results
 
         // --- Step 2: fetch Trending + Popular to build an exclusion set ---
@@ -540,8 +649,8 @@ final class DiscoverVM: ObservableObject {
 
         var pageRNG = SeededGenerator(seed: currentSeed)
 
-        while pages.count < randomPagesToLoad && pages.count < totalPages {
-            let p = Int.random(in: 1...totalPages, using: &pageRNG)
+        while pages.count < randomPagesToLoad && pages.count < totalPagesFromAPI {
+            let p = Int.random(in: 1...totalPagesFromAPI, using: &pageRNG)
             pages.insert(p)
         }
 
@@ -609,7 +718,43 @@ final class DiscoverVM: ObservableObject {
 
         RandomSeenStore.save(lifetimeSeenRandomMovieIDs)
 
-        movies = finalMovies
+        // Apply random flavor shaping on top of the seeded randomness
+        var feed = finalMovies
+
+        switch randomFlavor {
+        case .pure:
+            break
+
+        case .hotRightNow:
+            feed = feed.sorted { lhs, rhs in
+                if lhs.voteAverage == rhs.voteAverage {
+                    return lhs.voteCount > rhs.voteCount
+                }
+                return lhs.voteAverage > rhs.voteAverage
+            }
+
+        case .criticallyAcclaimed:
+            feed = feed.filter { $0.voteAverage >= 7.7 }
+
+        case .fromYourTaste:
+            if !tasteProfile.topGenreIDs.isEmpty {
+                feed = feed.sorted { lhs, rhs in
+                    let s0 = tasteProfile.score(for: lhs)
+                    let s1 = tasteProfile.score(for: rhs)
+
+                    if s0 == s1 {
+                        return lhs.voteAverage > rhs.voteAverage
+                    }
+                    return s0 > s1
+                }
+            }
+        }
+
+        movies = feed
+
+        // For Random mode, paging doesn't matter (we show a capped feed)
+        currentPage = 1
+        totalPagesAvailable = 1
     }
 
     private func loadTrendingMovies() async throws {
@@ -619,6 +764,8 @@ final class DiscoverVM: ObservableObject {
             movie.posterPath != nil && movie.voteCount >= 20
         }
         movies = withImages
+        currentPage = 1
+        totalPagesAvailable = response.totalPages
     }
 
     private func loadPopularMovies() async throws {
@@ -628,6 +775,8 @@ final class DiscoverVM: ObservableObject {
             movie.posterPath != nil && movie.voteCount >= 20
         }
         movies = withImages
+        currentPage = 1
+        totalPagesAvailable = response.totalPages
     }
 
     private func handleSearchChange() async {
@@ -643,6 +792,7 @@ final class DiscoverVM: ObservableObject {
         isSearching = true
         isLoading = true
         errorMessage = nil
+        resetPaging()
 
         do {
             let response = try await client.searchMovies(query: trimmed, page: 1)

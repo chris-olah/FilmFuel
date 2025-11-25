@@ -73,6 +73,12 @@ protocol TMDBClientProtocol {
     func fetchMovieDetail(id: Int) async throws -> TMDBMovieDetail
     func fetchMovieRecommendations(id: Int, page: Int) async throws -> TMDBMovieListResponse
 
+    // Where to watch (+ region-specific providers)
+    func fetchWatchProviders(id: Int) async throws -> TMDBWatchProvidersResponse
+
+    // Release dates (for MPAA-style ratings by region)
+    func fetchReleaseDates(id: Int) async throws -> TMDBReleaseDatesResponse
+
     // Used by premium filters (actor/director)
     func searchPersonID(named: String, departmentHint: TMDBDepartmentHint) async throws -> Int?
 }
@@ -335,6 +341,26 @@ final class TMDBClient: TMDBClientProtocol {
         return try await perform(request, as: TMDBMovieListResponse.self)
     }
 
+    // MARK: - Watch Providers
+
+    func fetchWatchProviders(id: Int) async throws -> TMDBWatchProvidersResponse {
+        let request = try makeRequest(
+            path: "movie/\(id)/watch/providers",
+            queryItems: []
+        )
+        return try await perform(request, as: TMDBWatchProvidersResponse.self)
+    }
+
+    // MARK: - Release Dates (for MPAA-style ratings)
+
+    func fetchReleaseDates(id: Int) async throws -> TMDBReleaseDatesResponse {
+        let request = try makeRequest(
+            path: "movie/\(id)/release_dates",
+            queryItems: []
+        )
+        return try await perform(request, as: TMDBReleaseDatesResponse.self)
+    }
+
     // MARK: - Premium: Person search (actor/director)
 
     private struct TMDBPersonSearchResponse: Decodable {
@@ -496,6 +522,16 @@ struct TMDBMovieDetail: Decodable {
         }
     }
 
+    var posterURL: URL? {
+        guard let path = posterPath else { return nil }
+        return TMDBConfig.imageBaseURL.appendingPathComponent(path)
+    }
+
+    var backdropURL: URL? {
+        guard let path = backdropPath else { return nil }
+        return TMDBConfig.imageBaseURL.appendingPathComponent(path)
+    }
+
     enum CodingKeys: String, CodingKey {
         case id
         case title
@@ -514,4 +550,113 @@ struct TMDBMovieDetail: Decodable {
 struct TMDBGenre: Decodable, Identifiable {
     let id: Int
     let name: String
+}
+
+// MARK: - Watch Providers Models
+
+/// Top-level response for /movie/{id}/watch/providers
+struct TMDBWatchProvidersResponse: Decodable {
+    /// Keyed by region code, e.g. "US", "GB"
+    let results: [String: TMDBWatchProvidersRegion]
+}
+
+/// Data for a specific region code (e.g. "US")
+struct TMDBWatchProvidersRegion: Decodable {
+    let link: String?
+    let flatrate: [TMDBWatchProvider]?
+    let rent: [TMDBWatchProvider]?
+    let buy: [TMDBWatchProvider]?
+
+    private enum CodingKeys: String, CodingKey {
+        case link
+        case flatrate
+        case rent
+        case buy
+    }
+}
+
+/// Individual provider option (e.g. Netflix, Hulu, etc.)
+struct TMDBWatchProvider: Decodable, Identifiable, Hashable {
+    let providerId: Int
+    let providerName: String
+    let logoPath: String?
+
+    var id: Int { providerId }
+
+    private enum CodingKeys: String, CodingKey {
+        case providerId   = "provider_id"
+        case providerName = "provider_name"
+        case logoPath     = "logo_path"
+    }
+
+    var logoURL: URL? {
+        guard let path = logoPath else { return nil }
+        return TMDBConfig.imageBaseURL.appendingPathComponent(path)
+    }
+}
+
+// Convenience helpers for region + streaming text you can show in UI
+extension TMDBWatchProvidersResponse {
+    func region(_ code: String = "US") -> TMDBWatchProvidersRegion? {
+        results[code]
+    }
+}
+
+extension TMDBWatchProvidersRegion {
+    /// e.g. "Netflix • Hulu • Max"
+    var flatrateNamesJoined: String {
+        guard let flatrate, !flatrate.isEmpty else { return "" }
+        return flatrate.map { $0.providerName }.joined(separator: " • ")
+    }
+}
+
+// MARK: - Release Dates Models (ratings / certifications)
+
+/// Top-level response for /movie/{id}/release_dates
+struct TMDBReleaseDatesResponse: Decodable {
+    let results: [TMDBReleaseDatesForRegion]
+}
+
+/// Region-specific release dates + certifications
+struct TMDBReleaseDatesForRegion: Decodable {
+    let iso31661: String
+    let releaseDates: [TMDBReleaseDateEntry]
+
+    private enum CodingKeys: String, CodingKey {
+        case iso31661     = "iso_3166_1"
+        case releaseDates = "release_dates"
+    }
+}
+
+/// Individual release date entry with certification / type
+struct TMDBReleaseDateEntry: Decodable {
+    let certification: String
+    let iso6391: String?
+    let releaseDate: String
+    let type: Int
+
+    private enum CodingKeys: String, CodingKey {
+        case certification
+        case iso6391     = "iso_639_1"
+        case releaseDate = "release_date"
+        case type
+    }
+}
+
+extension TMDBReleaseDatesResponse {
+    /// Try to get a "primary" certification for a region (default "US").
+    /// You can use this to show things like "PG-13".
+    func primaryCertification(forRegion code: String = "US") -> String? {
+        guard let region = results.first(where: { $0.iso31661 == code }) else {
+            return nil
+        }
+
+        // Many APIs treat type 3 (theatrical) or 2 (theatrical limited) as primary.
+        // We'll prefer non-empty certification with lowest type value.
+        let sorted = region.releaseDates
+            .filter { !$0.certification.isEmpty }
+            .sorted { $0.type < $1.type }
+
+        return sorted.first?.certification
+    }
 }

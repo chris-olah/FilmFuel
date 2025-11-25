@@ -17,6 +17,7 @@ final class FilmFuelEntitlements: ObservableObject {
         didSet {
             if isPlus {
                 // If they become Plus, you can reset Smart Mode limits or ignore them.
+                // We'll just reset so if they ever downgrade you have a sane baseline.
                 freeSmartUsesRemainingToday = maxFreeSmartUsesPerDay
                 saveSmartUses()
             }
@@ -28,11 +29,15 @@ final class FilmFuelEntitlements: ObservableObject {
     private let smartUsesKey = "ff.freeSmartUsesRemaining"
     private let smartUsesDateKey = "ff.freeSmartUsesDate"
 
-    let maxFreeSmartUsesPerDay = 3
+    /// Maximum free Smart Mode toggles per day on the free tier.
+    let maxFreeSmartUsesPerDay = 2
 
-    @Published var freeSmartUsesRemainingToday: Int = 3
+    /// How many Smart Mode uses the free user has left *today*.
+    @Published var freeSmartUsesRemainingToday: Int
 
     init() {
+        // Default to full allowance until we read from disk
+        self.freeSmartUsesRemainingToday = maxFreeSmartUsesPerDay
         loadSmartUses()
     }
 
@@ -48,6 +53,7 @@ final class FilmFuelEntitlements: ObservableObject {
     /// Returns true if it was allowed and decremented, false if they hit the limit.
     @discardableResult
     func consumeFreeSmartModeUseIfNeeded() -> Bool {
+        // Plus users are unrestricted
         if isPlus { return true }
 
         guard freeSmartUsesRemainingToday > 0 else {
@@ -71,32 +77,32 @@ final class FilmFuelEntitlements: ObservableObject {
 
     // MARK: - Persistence
 
+    /// Load or reset today's Smart Mode uses from UserDefaults.
     private func loadSmartUses() {
         let defaults = UserDefaults.standard
         let today = Self.todayString()
 
         if let storedDate = defaults.string(forKey: smartUsesDateKey),
            storedDate == today {
+            // Same day → use stored value, clamped into a safe range.
             let remaining = defaults.integer(forKey: smartUsesKey)
-            if remaining > 0 {
-                freeSmartUsesRemainingToday = remaining
-            } else {
-                freeSmartUsesRemainingToday = 0
-            }
+            freeSmartUsesRemainingToday = max(0, min(remaining, maxFreeSmartUsesPerDay))
         } else {
-            // New day → reset
+            // New day → reset full allowance and write it out.
             freeSmartUsesRemainingToday = maxFreeSmartUsesPerDay
             defaults.set(today, forKey: smartUsesDateKey)
             defaults.set(freeSmartUsesRemainingToday, forKey: smartUsesKey)
         }
     }
 
+    /// Save current remaining uses + associate it with "today".
     private func saveSmartUses() {
         let defaults = UserDefaults.standard
         defaults.set(Self.todayString(), forKey: smartUsesDateKey)
         defaults.set(freeSmartUsesRemainingToday, forKey: smartUsesKey)
     }
 
+    /// Simple "yyyy-MM-dd" day stamp used to reset the daily allowance.
     private static func todayString() -> String {
         let formatter = DateFormatter()
         formatter.calendar = Calendar(identifier: .gregorian)
