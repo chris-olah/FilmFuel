@@ -16,9 +16,6 @@ struct DiscoverView: View {
     // For a little shuffle animation
     @State private var shuffleSpin = false
 
-    // Used with ScrollViewReader to jump back to top
-    @State private var scrollToTopToken: Int = 0
-
     @EnvironmentObject var store: FilmFuelStore
     @EnvironmentObject var entitlements: FilmFuelEntitlements
 
@@ -41,10 +38,7 @@ struct DiscoverView: View {
 
                 VStack(spacing: 0) {
                     header
-
-                    ScrollViewReader { proxy in
-                        contentScroll(proxy: proxy)
-                    }
+                    content
                 }
 
                 if vm.showTipNudge {
@@ -65,7 +59,6 @@ struct DiscoverView: View {
                             Image(systemName: "line.3.horizontal.decrease.circle")
                                 .font(.system(size: 17, weight: .semibold))
 
-                            // Tiny dot when any filters are active
                             if vm.filters.isActive {
                                 Circle()
                                     .fill(Color.accentColor)
@@ -79,7 +72,6 @@ struct DiscoverView: View {
             .sheet(
                 isPresented: $showingFilters,
                 onDismiss: {
-                    // When filters sheet closes, re-fetch from TMDB using current filters
                     vm.loadInitial()
                 }
             ) {
@@ -92,7 +84,6 @@ struct DiscoverView: View {
                 )
                 .presentationDetents([.medium, .large])
             }
-            // Plus paywall sheet
             .sheet(isPresented: $showingPlusPaywall) {
                 FilmFuelPlusPaywallView()
                     .environmentObject(store)
@@ -142,7 +133,7 @@ struct DiscoverView: View {
             }
             .padding(.horizontal)
 
-            // DEBUG STATUS ROW (Plus vs Free + Smart uses left)
+            // Status row (Plus vs Free + Smart uses left)
             HStack(spacing: 8) {
                 Circle()
                     .fill(entitlements.isPlus ? Color.green : Color.orange)
@@ -179,8 +170,8 @@ struct DiscoverView: View {
                     ForEach(DiscoverVM.Mode.allCases) { mode in
                         Button {
                             withAnimation(.easeInOut(duration: 0.2)) {
-                                scrollToTopToken &+= 1
                                 vm.userSelectedMode(mode)
+                                scrollToTop()
                             }
                         } label: {
                             HStack(spacing: 6) {
@@ -220,7 +211,6 @@ struct DiscoverView: View {
                         Button {
                             withAnimation(.easeInOut(duration: 0.2)) {
                                 vm.selectedMood = mood
-                                scrollToTopToken &+= 1
                             }
                         } label: {
                             Text(mood.label)
@@ -243,7 +233,7 @@ struct DiscoverView: View {
                 .padding(.horizontal)
             }
 
-            // Random flavor row (only in Random / For You mode)
+            // Random flavor row (only in Random/For You mode)
             if vm.mode == .random {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
@@ -253,7 +243,6 @@ struct DiscoverView: View {
 
                             Button {
                                 if isLocked {
-                                    // Show paywall instead of switching
                                     showingPlusPaywall = true
                                     #if canImport(UIKit)
                                     let generator = UINotificationFeedbackGenerator()
@@ -262,8 +251,8 @@ struct DiscoverView: View {
                                 } else {
                                     withAnimation(.easeInOut(duration: 0.2)) {
                                         vm.randomFlavor = flavor
-                                        scrollToTopToken &+= 1
                                         vm.loadInitial()
+                                        scrollToTop()
                                     }
                                 }
                             } label: {
@@ -329,7 +318,7 @@ struct DiscoverView: View {
             // Random-only controls row: Filters + Sort + Smart Mode + Shuffle
             if vm.mode == .random {
                 HStack(spacing: 10) {
-                    // Filters pill (opens same sheet as toolbar button)
+                    // Filters pill
                     Button {
                         showingFilters = true
                     } label: {
@@ -351,13 +340,13 @@ struct DiscoverView: View {
                         .clipShape(Capsule())
                     }
 
-                    // Sort menu (uses DiscoverFilters.sort)
+                    // Sort menu
                     Menu {
                         ForEach(DiscoverSort.allCases) { sort in
                             Button {
                                 vm.filters.sort = sort
-                                scrollToTopToken &+= 1
                                 vm.loadInitial()
+                                scrollToTop()
                             } label: {
                                 if vm.filters.sort == sort {
                                     Label(sort.label, systemImage: "checkmark")
@@ -386,26 +375,26 @@ struct DiscoverView: View {
                             if newValue {
                                 if entitlements.isPlus {
                                     vm.useSmartMode = true
-                                    scrollToTopToken &+= 1
                                 } else {
-                                    // Free user: check daily allowance
                                     if entitlements.consumeFreeSmartModeUseIfNeeded() {
                                         vm.useSmartMode = true
-                                        scrollToTopToken &+= 1
                                     } else {
-                                        // Hit limit → show paywall
                                         vm.useSmartMode = false
                                         showingPlusPaywall = true
                                     }
                                 }
                             } else {
                                 vm.useSmartMode = false
-                                scrollToTopToken &+= 1
                             }
                         }
                     )) {
-                        Text("Smart Mode")
-                            .font(.footnote)
+                        VStack(alignment: .leading, spacing: 0) {
+                            Text("Smart Mode")
+                                .font(.footnote)
+                            Text(entitlements.isPlus ? "Always on" : "2 free picks/day")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                        }
                     }
                     .toggleStyle(SwitchToggleStyle(tint: .accentColor))
 
@@ -417,8 +406,8 @@ struct DiscoverView: View {
                         UIImpactFeedbackGenerator(style: .light).impactOccurred()
                         #endif
                         shuffleSpin.toggle()
-                        scrollToTopToken &+= 1
                         vm.shuffleRandomFeed()
+                        scrollToTop()
                     } label: {
                         HStack(spacing: 6) {
                             Image(systemName: "shuffle")
@@ -463,9 +452,9 @@ struct DiscoverView: View {
         .padding(.top, 8)
     }
 
-    // MARK: - Main content (scrollable)
+    // MARK: - Main content
 
-    private func contentScroll(proxy: ScrollViewProxy) -> some View {
+    private var content: some View {
         Group {
             if vm.isLoading && vm.movies.isEmpty {
                 VStack(spacing: 12) {
@@ -522,7 +511,6 @@ struct DiscoverView: View {
                                 vm.searchQuery = ""
                                 vm.filters = .default
                                 vm.selectedMood = .any
-                                scrollToTopToken &+= 1
                                 vm.loadInitial()
                             } label: {
                                 Text("Clear filters & reset")
@@ -538,14 +526,10 @@ struct DiscoverView: View {
                 } else {
                     ScrollView(.vertical, showsIndicators: false) {
                         LazyVStack(spacing: 24) {
-                            // Top anchor for scroll-to-top behavior
-                            Color.clear
-                                .frame(height: 0)
-                                .id("discoverTop")
-
                             ForEach(vm.displayedMovies) { movie in
                                 NavigationLink {
                                     MovieDetailView(movie: movie)
+                                        .environmentObject(vm)
                                         .onAppear {
                                             vm.recordDetailOpen(movie)
                                         }
@@ -553,30 +537,50 @@ struct DiscoverView: View {
                                     movieFeedCard(movie)
                                 }
                                 .buttonStyle(.plain)
-                                .task {
-                                    await vm.loadMoreIfNeeded(currentItem: movie)
-                                }
                             }
 
-                            // Random mode: end-of-feed card instead of infinite scroll
+                            // End-of-feed footer for Random
                             if vm.mode == .random && !vm.displayedMovies.isEmpty {
-                                randomEndOfFeedCard
+                                VStack(spacing: 8) {
+                                    Text("End of this shuffle")
+                                        .font(.subheadline.weight(.semibold))
+                                    Text("Hit Shuffle for a fresh batch of picks.")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+
+                                    Button {
+                                        #if canImport(UIKit)
+                                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                        #endif
+                                        shuffleSpin.toggle()
+                                        vm.shuffleRandomFeed()
+                                        scrollToTop()
+                                    } label: {
+                                        HStack(spacing: 6) {
+                                            Image(systemName: "shuffle")
+                                            Text("Shuffle again")
+                                                .font(.subheadline.weight(.semibold))
+                                        }
+                                        .padding(.horizontal, 16)
+                                        .padding(.vertical, 8)
+                                        .background(Color.accentColor.opacity(0.18))
+                                        .clipShape(Capsule())
+                                    }
+                                }
+                                .padding(.top, 4)
+                                .padding(.bottom, 32)
+                            } else {
+                                Spacer(minLength: 24)
                             }
                         }
                         .padding(.horizontal, 16)
                         .padding(.top, 8)
                         .padding(.bottom, 32)
                     }
-                    // smooth reshuffle animation
                     .animation(
                         .easeInOut(duration: 0.25),
                         value: vm.displayedMovies.map(\.id)
                     )
-                    .onChange(of: scrollToTopToken) { _, _ in
-                        withAnimation(.easeInOut(duration: 0.25)) {
-                            proxy.scrollTo("discoverTop", anchor: .top)
-                        }
-                    }
                 }
             }
         }
@@ -585,7 +589,11 @@ struct DiscoverView: View {
     // MARK: - Movie card
 
     private func movieFeedCard(_ movie: TMDBMovie) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
+        let isInWatchlist = vm.isInWatchlist(movie)
+        let isSeen = vm.isSeen(movie)
+        let isDisliked = vm.isDisliked(movie)
+
+        return VStack(alignment: .leading, spacing: 10) {
             ZStack(alignment: .bottomLeading) {
                 Group {
                     if let url = movie.backdropURL ?? movie.posterURL {
@@ -613,7 +621,6 @@ struct DiscoverView: View {
                         posterPlaceholder
                     }
                 }
-                // Constrain to a 16:9 box, full width inside card
                 .aspectRatio(16/9, contentMode: .fit)
                 .frame(maxWidth: .infinity, alignment: .center)
                 .clipped()
@@ -704,6 +711,77 @@ struct DiscoverView: View {
             }
             .font(.caption)
             .foregroundColor(.secondary.opacity(0.9))
+
+            // Actions row: Watchlist / Seen / Not for me
+            HStack(spacing: 10) {
+                Button {
+                    vm.toggleWatchlist(movie)
+                    #if canImport(UIKit)
+                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    #endif
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: isInWatchlist ? "bookmark.fill" : "bookmark")
+                        Text("Watchlist")
+                            .font(.caption.weight(.semibold))
+                    }
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(
+                        isInWatchlist
+                        ? Color.accentColor.opacity(0.18)
+                        : Color(.secondarySystemBackground)
+                    )
+                    .foregroundColor(isInWatchlist ? .accentColor : .primary)
+                    .clipShape(Capsule())
+                }
+
+                Button {
+                    vm.toggleSeen(movie)
+                    #if canImport(UIKit)
+                    UIImpactFeedbackGenerator(style: .rigid).impactOccurred()
+                    #endif
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: isSeen ? "eye.fill" : "eye")
+                        Text("Seen it")
+                            .font(.caption.weight(.semibold))
+                    }
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(
+                        isSeen
+                        ? Color.green.opacity(0.18)
+                        : Color(.secondarySystemBackground)
+                    )
+                    .foregroundColor(isSeen ? .green : .primary)
+                    .clipShape(Capsule())
+                }
+
+                Button {
+                    vm.toggleDisliked(movie)
+                    #if canImport(UIKit)
+                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                    #endif
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: isDisliked ? "hand.thumbsdown.fill" : "hand.thumbsdown")
+                        Text("Not for me")
+                            .font(.caption.weight(.semibold))
+                    }
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(
+                        isDisliked
+                        ? Color.red.opacity(0.16)
+                        : Color(.secondarySystemBackground)
+                    )
+                    .foregroundColor(isDisliked ? .red : .primary)
+                    .clipShape(Capsule())
+                }
+
+                Spacer()
+            }
         }
         .padding(12)
         .background(
@@ -716,63 +794,6 @@ struct DiscoverView: View {
         )
         .shadow(color: Color.black.opacity(0.12), radius: 10, x: 0, y: 6)
         .contentShape(Rectangle())
-    }
-
-    // MARK: - Random end-of-feed card
-
-    private var randomEndOfFeedCard: some View {
-        VStack(alignment: .center, spacing: 10) {
-            Image(systemName: "sparkles.tv")
-                .font(.system(size: 26, weight: .semibold))
-                .foregroundColor(.accentColor)
-
-            Text("You’ve reached the end of this shuffle")
-                .font(.headline)
-                .multilineTextAlignment(.center)
-
-            Text("Tap Shuffle to spin a fresh For You lineup. Smart Mode will keep leaning into what you’ve been loving.")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 8)
-
-            Button {
-                #if canImport(UIKit)
-                UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                #endif
-                shuffleSpin.toggle()
-                scrollToTopToken &+= 1
-                vm.shuffleRandomFeed()
-            } label: {
-                HStack(spacing: 8) {
-                    Image(systemName: "shuffle")
-                    Text("Shuffle again")
-                        .fontWeight(.semibold)
-                }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 9)
-                .background(Color.accentColor.opacity(0.14))
-                .overlay(
-                    Capsule()
-                        .stroke(Color.accentColor, lineWidth: 1)
-                )
-                .clipShape(Capsule())
-            }
-
-            if !entitlements.isPlus {
-                Text("FilmFuel+ removes Smart Mode limits and unlocks more tailored shuffles.")
-                    .font(.footnote)
-                    .foregroundColor(.secondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.top, 2)
-            }
-        }
-        .frame(maxWidth: .infinity)
-        .padding(16)
-        .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(Color(.secondarySystemBackground))
-        )
     }
 
     private var posterPlaceholder: some View {
@@ -841,11 +862,11 @@ struct DiscoverView: View {
     private func subtitleForMode(_ mode: DiscoverVM.Mode) -> String {
         switch mode {
         case .random:
-            return "For You picks based on taste, mood, and filters."
+            return "For you, based on mood & taste."
         case .trending:
             return "What movie fans are talking about today."
         case .popular:
-            return "Loading all-time favorites…"
+            return "All-time crowd favorites and hits."
         }
     }
 
@@ -866,5 +887,18 @@ struct DiscoverView: View {
         case .popular:
             return "Loading all-time favorites…"
         }
+    }
+
+    /// Super lightweight way to snap user back to the top visually:
+    /// you can expand this later using ScrollViewReader if you want pixel-perfect.
+    private func scrollToTop() {
+        #if canImport(UIKit)
+        UIApplication.shared.sendAction(
+            #selector(UIScrollView.scrollRectToVisible(_:animated:)),
+            to: nil,
+            from: nil,
+            for: nil
+        )
+        #endif
     }
 }

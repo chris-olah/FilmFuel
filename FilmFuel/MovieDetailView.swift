@@ -9,6 +9,8 @@ import UIKit
 #endif
 
 struct MovieDetailView: View {
+    @EnvironmentObject var discoverVM: DiscoverVM   // ✅ so detail screen can use watchlist/seen/disliked
+
     let movie: TMDBMovie
     private let client: TMDBClientProtocol
 
@@ -40,6 +42,7 @@ struct MovieDetailView: View {
                 VStack(alignment: .leading, spacing: 16) {
                     titleSection
                     metaChipsSection
+                    userActionsSection        // ✅ new actions row here
                     taglineSection
                     overviewSection
                     genresSection
@@ -231,6 +234,87 @@ struct MovieDetailView: View {
         }
     }
 
+    // MARK: - NEW: User actions row
+
+    private var userActionsSection: some View {
+        let isInWatchlist = discoverVM.isInWatchlist(movie)
+        let isSeen = discoverVM.isSeen(movie)
+        let isDisliked = discoverVM.isDisliked(movie)
+
+        return HStack(spacing: 10) {
+            // Watchlist
+            Button {
+                discoverVM.toggleWatchlist(movie)
+                #if canImport(UIKit)
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                #endif
+            } label: {
+                HStack(spacing: 4) {
+                    Image(systemName: isInWatchlist ? "bookmark.fill" : "bookmark")
+                    Text("Watchlist")
+                        .font(.caption.weight(.semibold))
+                }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(
+                    isInWatchlist
+                    ? Color.accentColor.opacity(0.18)
+                    : Color(.secondarySystemBackground)
+                )
+                .foregroundColor(isInWatchlist ? .accentColor : .primary)
+                .clipShape(Capsule())
+            }
+
+            // Seen it
+            Button {
+                discoverVM.toggleSeen(movie)
+                #if canImport(UIKit)
+                UIImpactFeedbackGenerator(style: .rigid).impactOccurred()
+                #endif
+            } label: {
+                HStack(spacing: 4) {
+                    Image(systemName: isSeen ? "eye.fill" : "eye")
+                    Text("Seen it")
+                        .font(.caption.weight(.semibold))
+                }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(
+                    isSeen
+                    ? Color.green.opacity(0.18)
+                    : Color(.secondarySystemBackground)
+                )
+                .foregroundColor(isSeen ? .green : .primary)
+                .clipShape(Capsule())
+            }
+
+            // Not for me
+            Button {
+                discoverVM.toggleDisliked(movie)
+                #if canImport(UIKit)
+                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                #endif
+            } label: {
+                HStack(spacing: 4) {
+                    Image(systemName: isDisliked ? "hand.thumbsdown.fill" : "hand.thumbsdown")
+                    Text("Not for me")
+                        .font(.caption.weight(.semibold))
+                }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(
+                    isDisliked
+                    ? Color.red.opacity(0.16)
+                    : Color(.secondarySystemBackground)
+                )
+                .foregroundColor(isDisliked ? .red : .primary)
+                .clipShape(Capsule())
+            }
+
+            Spacer()
+        }
+    }
+
     private var taglineSection: some View {
         EmptyView()
     }
@@ -344,6 +428,7 @@ struct MovieDetailView: View {
                             ForEach(recommendations) { rec in
                                 NavigationLink {
                                     MovieDetailView(movie: rec, client: client)
+                                        .environmentObject(discoverVM)   // ✅ keep same VM so actions stay in sync
                                 } label: {
                                     VStack(alignment: .leading, spacing: 6) {
                                         AsyncImage(url: rec.posterURL) { phase in
@@ -512,7 +597,6 @@ private struct FlowLayout<Content: View>: View {
         var rows: [[AnyView]] = [[]]
         var currentRowWidth: CGFloat = 0
 
-        // Measure each chip
         let chips = content().asArray()
 
         for chip in chips {
@@ -544,13 +628,15 @@ private extension View {
     func eraseToAnyView() -> AnyView { AnyView(self) }
 
     func intrinsicWidth() -> CGFloat {
+        #if canImport(UIKit)
         let controller = UIHostingController(rootView: self)
         return controller.view.intrinsicContentSize.width
+        #else
+        return 0
+        #endif
     }
 
     func asArray() -> [AnyView] {
-        // This treats the whole content as a single chip; for small # of genres
-        // this is fine, but you can expand later if you want per-chip measurement.
         [self.eraseToAnyView()]
     }
 }
