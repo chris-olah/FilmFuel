@@ -7,6 +7,14 @@ import Foundation
 import SwiftUI
 import Combine
 
+// MARK: - Lightweight watch provider model for UI
+
+struct MovieWatchProvider: Identifiable, Hashable {
+    let id: Int            // TMDB provider ID
+    let name: String       // e.g. "Netflix", "Disney+"
+    let logoPath: String?  // TMDB logo path if you want to use it later
+}
+
 @MainActor
 final class MovieDetailVM: ObservableObject {
 
@@ -19,6 +27,10 @@ final class MovieDetailVM: ObservableObject {
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
 
+    // Watch providers (for "Where to watch" section)
+    @Published var watchProviders: [MovieWatchProvider] = []
+    @Published var watchProvidersRegion: String?  // e.g. "US"
+
     init(movie: TMDBMovie, client: TMDBClientProtocol) {
         self.movie = movie
         self.client = client
@@ -27,20 +39,73 @@ final class MovieDetailVM: ObservableObject {
     // MARK: - Public loading
 
     func loadIfNeeded() async {
-        if detail != nil { return }
+        // If we already have detail and providers, skip
+        if detail != nil && !watchProviders.isEmpty { return }
 
         isLoading = true
         errorMessage = nil
 
         do {
+            // Always load detail
             let detail = try await client.fetchMovieDetail(id: movie.id)
             self.detail = detail
+
+            // Non-fatal: try to load watch providers
+            await loadWatchProvidersSafely()
         } catch {
             print("❌ Movie detail load failed: \(error)")
             errorMessage = "Could not load details right now."
         }
 
         isLoading = false
+    }
+
+    // MARK: - Watch providers loading
+
+    /// Non-fatal helper: if TMDB watch provider call fails, we just log it.
+    private func loadWatchProvidersSafely() async {
+        // Don’t spam API if we already have providers
+        if !watchProviders.isEmpty { return }
+
+        do {
+            // Region you’re targeting; can make this dynamic later
+            let regionCode = "US"
+
+            // Uses your existing TMDBClientProtocol method:
+            // func fetchWatchProviders(id: Int) async throws -> TMDBWatchProvidersResponse
+            let response = try await client.fetchWatchProviders(id: movie.id)
+
+            // Use your convenience helper to pick the region
+            guard let region = response.region(regionCode) else {
+                return
+            }
+
+            let flatrate = region.flatrate ?? []
+            let rent = region.rent ?? []
+            let buy = region.buy ?? []
+
+            // Combine all unique providers (by providerId)
+            var byID: [Int: TMDBWatchProvider] = [:]
+            for p in flatrate { byID[p.providerId] = p }
+            for p in rent { byID[p.providerId] = p }
+            for p in buy { byID[p.providerId] = p }
+
+            let mapped: [MovieWatchProvider] = byID.values.map {
+                MovieWatchProvider(
+                    id: $0.providerId,
+                    name: $0.providerName,
+                    logoPath: $0.logoPath
+                )
+            }
+            .sorted { $0.name < $1.name }
+
+            self.watchProviders = mapped
+            self.watchProvidersRegion = regionCode
+
+        } catch {
+            print("❌ Watch providers load failed: \(error)")
+            // Intentionally no user-facing error; detail screen still works fine.
+        }
     }
 
     // MARK: - Basic display helpers
@@ -157,7 +222,8 @@ final class MovieDetailVM: ObservableObject {
         return nil
     }
 
-    /// Simple TMDB link for "Where to watch" section.
+    /// TMDB link for "Where to watch" section.
+    /// You can keep this as a small "See full list on TMDB" link if you want.
     var whereToWatchURL: URL? {
         URL(string: "https://www.themoviedb.org/movie/\(movie.id)")
     }

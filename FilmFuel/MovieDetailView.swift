@@ -45,7 +45,7 @@ struct MovieDetailView: View {
                     smartInsightsSection     // Insight chips (Plus unlocks all)
                     overviewSection
                     genresSection
-                    whereToWatchSection      // ⇐ back
+                    whereToWatchSection      // ⇐ updated
                     ratingsSection
                     plusUpsellSection        // FilmFuel+ CTA
                     moreLikeThisSection      // ⇐ back
@@ -568,31 +568,70 @@ struct MovieDetailView: View {
         }
     }
 
-    // MARK: - Where to watch (via TMDB link)
+    // MARK: - Where to watch (using TMDB watch providers)
 
     private var whereToWatchSection: some View {
         Group {
-            if let url = vm.whereToWatchURL {
+            // Preferred path: show in-app providers as chips
+            if !vm.watchProviders.isEmpty {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Where to watch")
                         .font(.headline)
 
-                    Text("Streaming availability can change. Check the latest providers on TMDB:")
+                    if let region = vm.watchProvidersRegion {
+                        Text("Availability in \(region)")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            ForEach(vm.watchProviders) { provider in
+                                HStack(spacing: 6) {
+                                    Image(systemName: "tv")
+                                    Text(provider.name)
+                                        .font(.caption.weight(.medium))
+                                }
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 6)
+                                .background(Color(.secondarySystemBackground))
+                                .clipShape(Capsule())
+                            }
+                        }
+                        .padding(.vertical, 2)
+                    }
+
+                    // Optional small TMDB link, but no big CTA text
+                    if let url = vm.whereToWatchURL {
+                        Link(destination: url) {
+                            HStack(spacing: 4) {
+                                Text("See all streaming options on TMDB")
+                                Image(systemName: "arrow.up.right")
+                            }
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        }
+                        .padding(.top, 2)
+                    }
+                }
+            }
+            // Fallback: no provider data yet, show a subtle TMDB link
+            else if let url = vm.whereToWatchURL {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Where to watch")
+                        .font(.headline)
+
+                    Text("Streaming availability can change. Check the latest info:")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
 
                     Link(destination: url) {
-                        HStack(spacing: 6) {
-                            Image(systemName: "tv")
-                            Text("View watch options on TMDB")
+                        HStack(spacing: 4) {
+                            Text("See streaming options on TMDB")
                             Image(systemName: "arrow.up.right")
                         }
-                        .font(.subheadline.weight(.semibold))
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 8)
-                        .background(Color.accentColor.opacity(0.18))
-                        .foregroundColor(.accentColor)
-                        .clipShape(Capsule())
+                        .font(.caption)
+                        .foregroundColor(.secondary)
                     }
                 }
             }
