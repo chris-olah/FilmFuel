@@ -184,14 +184,25 @@ struct DiscoverView: View {
             // Mood + random flavors + controls
             moodAndRandomSection
 
-            // Taste profile summary (genres only for now)
-            if !vm.topGenreNames.isEmpty {
+            // Taste profile summary (genres + decade)
+            if !vm.topGenreNames.isEmpty || vm.favoriteDecadeLabel != nil {
                 HStack(spacing: 6) {
                     Image(systemName: "sparkles")
                     Text("Your taste:")
                         .font(.caption.weight(.semibold))
 
-                    Text(vm.topGenreNames.joined(separator: " • "))
+                    let pieces: [String] = {
+                        var parts: [String] = []
+                        if !vm.topGenreNames.isEmpty {
+                            parts.append(vm.topGenreNames.joined(separator: " • "))
+                        }
+                        if let dec = vm.favoriteDecadeLabel {
+                            parts.append("\(dec) era")
+                        }
+                        return parts
+                    }()
+
+                    Text(pieces.joined(separator: " • "))
                         .font(.caption)
 
                     Spacer()
@@ -562,6 +573,7 @@ struct DiscoverView: View {
         let isInWatchlist = vm.isInWatchlist(movie)
         let isSeen = vm.isSeen(movie)
         let isDisliked = vm.isDisliked(movie)
+        let reason = vm.briefReasonFor(movie)
 
         return VStack(alignment: .leading, spacing: 10) {
             ZStack(alignment: .bottomLeading) {
@@ -639,8 +651,19 @@ struct DiscoverView: View {
                 }
                 .padding(10)
 
-                // Bottom-left overlay: title + meta
+                // Bottom-left overlay: "Because you..." + title + meta
                 VStack(alignment: .leading, spacing: 6) {
+                    if let reason, vm.mode == .random {
+                        Text(reason)
+                            .font(.caption2.weight(.semibold))
+                            .foregroundColor(.white.opacity(0.95))
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(Color.black.opacity(0.45))
+                            .clipShape(Capsule())
+                            .shadow(radius: 6)
+                    }
+
                     Text(movie.title)
                         .font(.headline.weight(.semibold))
                         .foregroundColor(.white)

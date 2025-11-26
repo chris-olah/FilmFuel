@@ -154,7 +154,10 @@ enum MovieMood: String, CaseIterable, Identifiable {
 // MARK: - Taste Profile
 
 struct TasteProfile {
+    // Genre → weight
     private(set) var genreCounts: [Int: Int] = [:]
+    // Decade start year (e.g. 1990, 2000) → weight
+    private(set) var decadeCounts: [Int: Int] = [:]
 
     mutating func record(genreIDs: [Int]) {
         for g in genreIDs {
@@ -162,9 +165,29 @@ struct TasteProfile {
         }
     }
 
+    mutating func recordDecade(from movie: TMDBMovie, multiplier: Int = 1) {
+        guard
+            let dateString = movie.releaseDate,
+            let year = Int(dateString.prefix(4)),
+            year > 1900
+        else { return }
+
+        let decade = (year / 10) * 10
+        guard decade > 1900 else { return }
+
+        for _ in 0..<multiplier {
+            decadeCounts[decade, default: 0] += 1
+        }
+    }
+
     var topGenreIDs: [Int] {
         let sorted = genreCounts.sorted { $0.value > $1.value }
         return Array(sorted.prefix(3)).map { $0.key }
+    }
+
+    var favoriteDecade: Int? {
+        guard !decadeCounts.isEmpty else { return nil }
+        return decadeCounts.max(by: { $0.value < $1.value })?.key
     }
 
     func score(for movie: TMDBMovie) -> Int {
@@ -372,8 +395,82 @@ final class DiscoverVM: ObservableObject {
         }
     }
 
+    // MARK: - Taste summary helpers
+
     var topGenreNames: [String] {
         tasteProfile.topGenreIDs.compactMap { Self.genreNameByID[$0] }
+    }
+
+    /// Human-readable decade label for the header, e.g. "90s" or "2000s".
+    var favoriteDecadeLabel: String? {
+        guard let decade = tasteProfile.favoriteDecade else { return nil }
+
+        if decade >= 2000 {
+            // "2000s", "2010s"
+            return "\(decade)s"
+        } else {
+            // "90s", "80s"
+            let twoDigits = decade % 100
+            return "\(twoDigits)s"
+        }
+    }
+
+    /// Short “Because you…” explanation for cards in Random + Smart mode.
+    func briefReasonFor(_ movie: TMDBMovie) -> String? {
+        // Only show in random + smart mode so it feels special / intentional
+        guard mode == .random, useSmartMode else { return nil }
+
+        // 1) Mood-based reason if user selected a mood and this movie matches it
+        if selectedMood != .any, selectedMood.matches(movie: movie) {
+            switch selectedMood {
+            case .cozy:
+                return "Because you’re in a cozy mood"
+            case .adrenaline:
+                return "Because you wanted something high-energy"
+            case .dateNight:
+                return "Because you picked a date-night mood"
+            case .nostalgic:
+                return "Because you asked for something nostalgic"
+            case .feelGood:
+                return "Because you’re in a feel-good mood"
+            case .mindBend:
+                return "Because you wanted a mind-bending pick"
+            case .spooky:
+                return "Because you’re in a spooky mood"
+            case .any:
+                break
+            }
+        }
+
+        // 2) Genre overlap with your top taste
+        let favGenreIDs = Set(tasteProfile.topGenreIDs)
+        if !favGenreIDs.isEmpty, let movieIDs = movie.genreIDs {
+            let overlapIDs = favGenreIDs.intersection(movieIDs)
+            if !overlapIDs.isEmpty {
+                let names = overlapIDs.compactMap { Self.genreNameByID[$0] }
+                if let first = names.first {
+                    return "Because you like \(first.lowercased()) movies"
+                } else {
+                    return "Because it fits genres you watch a lot"
+                }
+            }
+        }
+
+        // 3) Similar to things you’ve favorited / seen
+        if favorites.contains(movie.id) {
+            return "Because it’s similar to things you’ve favorited"
+        }
+
+        if seenMovieIDs.contains(movie.id) {
+            return "Because it fits the vibe of what you’ve watched"
+        }
+
+        // 4) Fallback: strong social proof
+        if movie.voteAverage >= 8.0, movie.voteCount >= 2000 {
+            return "Because it’s one of the highest-rated picks right now"
+        }
+
+        return nil
     }
 
     private let client: TMDBClientProtocol
@@ -437,6 +534,7 @@ final class DiscoverVM: ObservableObject {
             if let ids = movie.genreIDs {
                 tasteProfile.record(genreIDs: ids)
             }
+            tasteProfile.recordDecade(from: movie)
         }
     }
 
@@ -466,6 +564,7 @@ final class DiscoverVM: ObservableObject {
             if let ids = movie.genreIDs {
                 tasteProfile.record(genreIDs: ids)
             }
+            tasteProfile.recordDecade(from: movie)
         }
     }
 
@@ -500,6 +599,7 @@ final class DiscoverVM: ObservableObject {
         if let ids = movie.genreIDs {
             tasteProfile.record(genreIDs: ids)
         }
+        tasteProfile.recordDecade(from: movie)
         maybeShowTipNudge(reason: .detail)
     }
 
@@ -512,7 +612,7 @@ final class DiscoverVM: ObservableObject {
         showTipNudge = false
     }
 
-    /// NEW: Taste training from MovieDetailView
+    /// Taste training from MovieDetailView
     /// - Free: light training
     /// - Plus: stronger training, auto-enables Smart Mode & "From your taste" flavor in Random
     func trainTaste(on movie: TMDBMovie, isStrong: Bool) {
@@ -521,6 +621,7 @@ final class DiscoverVM: ObservableObject {
         let multiplier = isStrong ? 4 : 1
         for _ in 0..<multiplier {
             tasteProfile.record(genreIDs: ids)
+            tasteProfile.recordDecade(from: movie)
         }
 
         if isStrong {
