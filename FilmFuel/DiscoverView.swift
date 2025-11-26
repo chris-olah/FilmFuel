@@ -97,351 +97,103 @@ struct DiscoverView: View {
         }
     }
 
-    // MARK: - Header (title + search + mode chips + moods + controls)
+    // MARK: - Header (hero card + modes + mood/random controls)
 
     private var header: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            // Title + Tip button
-            HStack(alignment: .center) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Find your next watch")
-                        .font(.title3.weight(.semibold))
+        VStack(spacing: 12) {
 
-                    Text(subtitleForMode(vm.mode))
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                }
+            // Hero card with title, status, search, plus upsell
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(alignment: .top) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Find your next watch")
+                            .font(.title2.weight(.bold))
 
-                Spacer()
-
-                if let onTipTapped {
-                    Button {
-                        onTipTapped()
-                    } label: {
-                        HStack(spacing: 6) {
-                            Image(systemName: "popcorn")
-                            Text("Tip")
-                                .font(.subheadline.weight(.semibold))
-                        }
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 6)
-                        .background(.ultraThinMaterial)
-                        .clipShape(Capsule())
+                        Text(subtitleForMode(vm.mode))
+                            .font(.footnote)
+                            .foregroundColor(.secondary)
                     }
-                    .buttonStyle(.plain)
-                }
-            }
-            .padding(.horizontal)
-
-            // Status row (Plus vs Free + Smart uses left)
-            HStack(spacing: 8) {
-                Circle()
-                    .fill(entitlements.isPlus ? Color.green : Color.orange)
-                    .frame(width: 8, height: 8)
-
-                Text(entitlements.isPlus ? "FilmFuel+ Active" : "Free tier")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-
-                Text("Smart left: \(entitlements.freeSmartUsesRemainingToday)")
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
-
-                Spacer()
-            }
-            .padding(.horizontal)
-
-            // Search bar
-            HStack {
-                Image(systemName: "magnifyingglass")
-                    .foregroundColor(.secondary)
-                TextField("Search movies…", text: $vm.searchQuery)
-                    .textInputAutocapitalization(.words)
-                    .disableAutocorrection(true)
-            }
-            .padding(10)
-            .background(Color(.secondarySystemBackground))
-            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-            .padding(.horizontal)
-
-            // Mode chips
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 8) {
-                    ForEach(DiscoverVM.Mode.allCases) { mode in
-                        Button {
-                            withAnimation(.easeInOut(duration: 0.2)) {
-                                vm.userSelectedMode(mode)
-                                scrollToTop()
-                            }
-                        } label: {
-                            HStack(spacing: 6) {
-                                Image(systemName: iconForMode(mode))
-                                    .font(.caption2)
-
-                                Text(mode.label)
-                                    .font(.caption)
-                            }
-                            .padding(.vertical, 6)
-                            .padding(.horizontal, 12)
-                            .background(
-                                vm.mode == mode
-                                    ? Color.accentColor.opacity(0.18)
-                                    : Color(.systemBackground)
-                            )
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 999)
-                                    .stroke(
-                                        vm.mode == mode
-                                            ? Color.accentColor
-                                            : Color(.separator),
-                                        lineWidth: 1
-                                    )
-                            )
-                            .clipShape(Capsule())
-                        }
-                    }
-                }
-                .padding(.horizontal)
-            }
-
-            // Mood chips
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 8) {
-                    ForEach(MovieMood.allCases) { mood in
-                        Button {
-                            withAnimation(.easeInOut(duration: 0.2)) {
-                                vm.selectedMood = mood
-                            }
-                        } label: {
-                            Text(mood.label)
-                                .font(.caption)
-                                .padding(.vertical, 6)
-                                .padding(.horizontal, 12)
-                                .background(
-                                    vm.selectedMood == mood
-                                        ? Color.accentColor.opacity(0.18)
-                                        : Color(.secondarySystemBackground)
-                                )
-                                .foregroundColor(
-                                    vm.selectedMood == mood ? .accentColor : .primary
-                                )
-                                .clipShape(Capsule())
-                        }
-                        .buttonStyle(.plain)
-                    }
-                }
-                .padding(.horizontal)
-            }
-
-            // Random flavor row (only in Random/For You mode)
-            if vm.mode == .random {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 8) {
-                        ForEach(DiscoverVM.RandomFlavor.allCases) { flavor in
-                            let isLocked = (flavor == .fromYourTaste && !entitlements.isPlus)
-                            let isSelected = (vm.randomFlavor == flavor)
-
-                            Button {
-                                if isLocked {
-                                    showingPlusPaywall = true
-                                    #if canImport(UIKit)
-                                    let generator = UINotificationFeedbackGenerator()
-                                    generator.notificationOccurred(.warning)
-                                    #endif
-                                } else {
-                                    withAnimation(.easeInOut(duration: 0.2)) {
-                                        vm.randomFlavor = flavor
-                                        vm.loadInitial()
-                                        scrollToTop()
-                                    }
-                                }
-                            } label: {
-                                VStack(alignment: .leading, spacing: 2) {
-                                    HStack(spacing: 4) {
-                                        Text(flavor.shortLabel)
-                                            .font(.caption.weight(
-                                                isSelected && !isLocked ? .semibold : .regular
-                                            ))
-
-                                        if isLocked {
-                                            Image(systemName: "lock.fill")
-                                                .font(.system(size: 9, weight: .bold))
-                                        }
-                                    }
-
-                                    Text(flavor.subtitle)
-                                        .font(.caption2)
-                                        .foregroundColor(.secondary)
-                                        .lineLimit(1)
-                                }
-                                .padding(.vertical, 8)
-                                .padding(.horizontal, 12)
-                                .frame(minWidth: 130, alignment: .leading)
-                                .background(
-                                    (isSelected && !isLocked)
-                                        ? Color.accentColor.opacity(0.18)
-                                        : Color(.secondarySystemBackground)
-                                )
-                                .foregroundColor(
-                                    isLocked
-                                        ? .secondary
-                                        : (isSelected ? .accentColor : .primary)
-                                )
-                                .overlay(
-                                    RoundedRectangle(
-                                        cornerRadius: 14,
-                                        style: .continuous
-                                    )
-                                    .stroke(
-                                        isLocked
-                                            ? Color.secondary.opacity(0.4)
-                                            : (isSelected
-                                                ? Color.accentColor
-                                                : Color.clear),
-                                        lineWidth: isSelected || isLocked ? 1 : 0
-                                    )
-                                )
-                                .clipShape(
-                                    RoundedRectangle(
-                                        cornerRadius: 14,
-                                        style: .continuous
-                                    )
-                                )
-                            }
-                            .buttonStyle(.plain)
-                        }
-                    }
-                    .padding(.horizontal)
-                }
-            }
-
-            // Random-only controls row: Filters + Sort + Smart Mode + Shuffle
-            if vm.mode == .random {
-                HStack(spacing: 10) {
-                    // Filters pill
-                    Button {
-                        showingFilters = true
-                    } label: {
-                        HStack(spacing: 6) {
-                            Image(systemName: "line.3.horizontal.decrease.circle")
-                                .font(.system(size: 14, weight: .semibold))
-                            Text("Filters")
-                                .font(.footnote.weight(.semibold))
-
-                            if vm.filters.isActive {
-                                Circle()
-                                    .fill(Color.accentColor)
-                                    .frame(width: 6, height: 6)
-                            }
-                        }
-                        .padding(.vertical, 7)
-                        .padding(.horizontal, 12)
-                        .background(Color(.secondarySystemBackground))
-                        .clipShape(Capsule())
-                    }
-
-                    // Sort menu
-                    Menu {
-                        ForEach(DiscoverSort.allCases) { sort in
-                            Button {
-                                vm.filters.sort = sort
-                                vm.loadInitial()
-                                scrollToTop()
-                            } label: {
-                                if vm.filters.sort == sort {
-                                    Label(sort.label, systemImage: "checkmark")
-                                } else {
-                                    Text(sort.label)
-                                }
-                            }
-                        }
-                    } label: {
-                        HStack(spacing: 6) {
-                            Image(systemName: "arrow.up.arrow.down")
-                                .font(.system(size: 13, weight: .semibold))
-                            Text(vm.filters.sort.label)
-                                .font(.footnote.weight(.semibold))
-                        }
-                        .padding(.vertical, 7)
-                        .padding(.horizontal, 12)
-                        .background(Color(.secondarySystemBackground))
-                        .clipShape(Capsule())
-                    }
-
-                    // Smart Mode toggle (gated by FilmFuel+)
-                    Toggle(isOn: Binding(
-                        get: { vm.useSmartMode },
-                        set: { newValue in
-                            if newValue {
-                                if entitlements.isPlus {
-                                    vm.useSmartMode = true
-                                } else {
-                                    if entitlements.consumeFreeSmartModeUseIfNeeded() {
-                                        vm.useSmartMode = true
-                                    } else {
-                                        vm.useSmartMode = false
-                                        showingPlusPaywall = true
-                                    }
-                                }
-                            } else {
-                                vm.useSmartMode = false
-                            }
-                        }
-                    )) {
-                        VStack(alignment: .leading, spacing: 0) {
-                            Text("Smart Mode")
-                                .font(.footnote)
-                            Text(entitlements.isPlus ? "Always on" : "2 free picks/day")
-                                .font(.caption2)
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                    .toggleStyle(SwitchToggleStyle(tint: .accentColor))
 
                     Spacer()
 
-                    // Shuffle pill
-                    Button {
-                        #if canImport(UIKit)
-                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                        #endif
-                        shuffleSpin.toggle()
-                        vm.shuffleRandomFeed()
-                        scrollToTop()
-                    } label: {
-                        HStack(spacing: 6) {
-                            Image(systemName: "shuffle")
-                                .font(.system(size: 14, weight: .semibold))
-                            Text("Shuffle")
-                                .font(.footnote.weight(.semibold))
+                    if let onTipTapped {
+                        Button {
+                            onTipTapped()
+                        } label: {
+                            Image(systemName: "popcorn")
+                                .font(.subheadline.weight(.semibold))
+                                .padding(8)
+                                .background(.ultraThinMaterial)
+                                .clipShape(Circle())
                         }
-                        .padding(.vertical, 7)
-                        .padding(.horizontal, 12)
-                        .background(Color.accentColor.opacity(0.18))
-                        .overlay(
-                            Capsule()
-                                .stroke(Color.accentColor, lineWidth: 1)
-                        )
-                        .clipShape(Capsule())
-                        .rotationEffect(.degrees(shuffleSpin ? 360 : 0))
-                        .animation(
-                            .spring(response: 0.5, dampingFraction: 0.7),
-                            value: shuffleSpin
-                        )
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("Tip jar")
                     }
                 }
-                .padding(.horizontal)
-                .padding(.bottom, 2)
-            }
 
-            // Taste profile summary
+                // Plus / Smart status + upsell
+                HStack(spacing: 8) {
+                    if entitlements.isPlus {
+                        Label("FilmFuel+ Active", systemImage: "sparkles")
+                            .font(.caption2.weight(.semibold))
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 4)
+                            .background(Color.accentColor.opacity(0.16))
+                            .foregroundColor(.accentColor)
+                            .clipShape(Capsule())
+                    } else {
+                        Button {
+                            showingPlusPaywall = true
+                        } label: {
+                            Label("Unlock FilmFuel+", systemImage: "sparkles")
+                                .font(.caption2.weight(.semibold))
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 4)
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .tint(.accentColor)
+                    }
+
+                    Text("\(entitlements.freeSmartUsesRemainingToday) smart picks left today")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+
+                    Spacer()
+                }
+
+                // Search bar
+                HStack {
+                    Image(systemName: "magnifyingglass")
+                        .foregroundColor(.secondary)
+                    TextField("Search movies…", text: $vm.searchQuery)
+                        .textInputAutocapitalization(.words)
+                        .disableAutocorrection(true)
+                }
+                .padding(10)
+                .background(Color(.secondarySystemBackground))
+                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            }
+            .padding(.horizontal)
+            .padding(.vertical, 8)
+            .background(.ultraThinMaterial)
+            .clipShape(RoundedRectangle(cornerRadius: 26, style: .continuous))
+
+            // Modes as segmented control
+            modeSegmentedControl
+
+            // Mood + random flavors + controls
+            moodAndRandomSection
+
+            // Taste profile summary (genres only for now)
             if !vm.topGenreNames.isEmpty {
                 HStack(spacing: 6) {
                     Image(systemName: "sparkles")
-                    Text("FilmFuel Taste Profile:")
+                    Text("Your taste:")
                         .font(.caption.weight(.semibold))
+
                     Text(vm.topGenreNames.joined(separator: " • "))
                         .font(.caption)
+
                     Spacer()
                 }
                 .foregroundColor(.secondary)
@@ -450,6 +202,223 @@ struct DiscoverView: View {
             }
         }
         .padding(.top, 8)
+    }
+
+    private var modeSegmentedControl: some View {
+        HStack(spacing: 6) {
+            ForEach(DiscoverVM.Mode.allCases) { mode in
+                let isSelected = vm.mode == mode
+                Button {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        vm.userSelectedMode(mode)
+                        scrollToTop()
+                    }
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: iconForMode(mode))
+                        Text(mode.label)
+                    }
+                    .font(.footnote.weight(isSelected ? .semibold : .regular))
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 8)
+                    .background(
+                        isSelected
+                            ? Color.accentColor
+                            : Color(.secondarySystemBackground)
+                    )
+                    .foregroundColor(isSelected ? .white : .primary)
+                    .clipShape(Capsule())
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(.horizontal)
+    }
+
+    private var moodAndRandomSection: some View {
+        VStack(spacing: 10) {
+
+            // Moods + random flavors in one rail (in random mode),
+            // or just moods otherwise.
+            if vm.mode == .random {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(MovieMood.allCases) { mood in
+                            moodChip(mood)
+                        }
+                        ForEach(DiscoverVM.RandomFlavor.allCases) { flavor in
+                            randomFlavorChip(flavor)
+                        }
+                    }
+                    .padding(.horizontal)
+                }
+            } else {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(MovieMood.allCases) { mood in
+                            moodChip(mood)
+                        }
+                    }
+                    .padding(.horizontal)
+                }
+            }
+
+            // Main controls row in random mode
+            if vm.mode == .random {
+                HStack(spacing: 10) {
+                    pillButton(title: "Filters", systemImage: "line.3.horizontal.decrease.circle") {
+                        showingFilters = true
+                    }
+
+                    Toggle(isOn: Binding(
+                        get: { vm.useSmartMode },
+                        set: handleSmartToggle
+                    )) {
+                        Text("Smart mode")
+                            .font(.footnote.weight(.semibold))
+                    }
+                    .toggleStyle(SwitchToggleStyle(tint: .accentColor))
+
+                    Spacer()
+
+                    pillButton(title: "Shuffle", systemImage: "shuffle") {
+                        #if canImport(UIKit)
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        #endif
+                        shuffleSpin.toggle()
+                        vm.shuffleRandomFeed()
+                        scrollToTop()
+                    }
+                    .rotationEffect(.degrees(shuffleSpin ? 360 : 0))
+                    .animation(
+                        .spring(response: 0.5, dampingFraction: 0.7),
+                        value: shuffleSpin
+                    )
+                }
+                .padding(.horizontal)
+
+                // Smart-mode upsell hint when off but free uses remain
+                if !vm.useSmartMode && entitlements.freeSmartUsesRemainingToday > 0 {
+                    HStack(spacing: 6) {
+                        Image(systemName: "sparkles")
+                        Text("Try Smart mode – you still have \(entitlements.freeSmartUsesRemainingToday) free smart picks today.")
+                        Spacer()
+                    }
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                    .padding(.horizontal)
+                }
+            }
+        }
+    }
+
+    private func moodChip(_ mood: MovieMood) -> some View {
+        let isSelected = vm.selectedMood == mood
+        let isAny = (mood == .any)
+
+        return Button {
+            withAnimation(.easeInOut(duration: 0.2)) {
+                vm.selectedMood = mood
+            }
+        } label: {
+            Text(mood.label)
+                .font(.caption.weight(isSelected ? .semibold : .regular))
+                .padding(.vertical, 6)
+                .padding(.horizontal, 12)
+                .background(
+                    isSelected
+                        ? Color.accentColor
+                        : Color(.secondarySystemBackground)
+                )
+                .foregroundColor(isSelected ? .white : .primary)
+                .overlay(
+                    Group {
+                        if isSelected && isAny {
+                            Capsule()
+                                .stroke(Color.white.opacity(0.5), lineWidth: 1)
+                        }
+                    }
+                )
+                .clipShape(Capsule())
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func randomFlavorChip(_ flavor: DiscoverVM.RandomFlavor) -> some View {
+        let isLocked = (flavor == .fromYourTaste && !entitlements.isPlus)
+        let isSelected = (vm.randomFlavor == flavor)
+
+        return Button {
+            if isLocked {
+                showingPlusPaywall = true
+                #if canImport(UIKit)
+                UINotificationFeedbackGenerator().notificationOccurred(.warning)
+                #endif
+            } else {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    vm.randomFlavor = flavor
+                    vm.loadInitial()
+                    scrollToTop()
+                }
+            }
+        } label: {
+            HStack(spacing: 4) {
+                Text(flavor.shortLabel)
+                    .font(.caption.weight(isSelected && !isLocked ? .semibold : .regular))
+                if isLocked {
+                    Image(systemName: "lock.fill")
+                        .font(.system(size: 9, weight: .bold))
+                }
+            }
+            .padding(.vertical, 6)
+            .padding(.horizontal, 12)
+            .background(
+                (isSelected && !isLocked)
+                    ? Color.accentColor.opacity(0.18)
+                    : Color(.secondarySystemBackground)
+            )
+            .foregroundColor(
+                isLocked
+                    ? .secondary
+                    : (isSelected ? .accentColor : .primary)
+            )
+            .clipShape(Capsule())
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func pillButton(
+        title: String,
+        systemImage: String,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            HStack(spacing: 6) {
+                Image(systemName: systemImage)
+                Text(title)
+            }
+            .font(.footnote.weight(.semibold))
+            .padding(.vertical, 7)
+            .padding(.horizontal, 12)
+            .background(Color(.secondarySystemBackground))
+            .clipShape(Capsule())
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func handleSmartToggle(_ newValue: Bool) {
+        if newValue {
+            if entitlements.isPlus {
+                vm.useSmartMode = true
+            } else if entitlements.consumeFreeSmartModeUseIfNeeded() {
+                vm.useSmartMode = true
+            } else {
+                vm.useSmartMode = false
+                showingPlusPaywall = true
+            }
+        } else {
+            vm.useSmartMode = false
+        }
     }
 
     // MARK: - Main content
@@ -525,8 +494,8 @@ struct DiscoverView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
                     ScrollView(.vertical, showsIndicators: false) {
-                        LazyVStack(spacing: 24) {
-                            ForEach(vm.displayedMovies) { movie in
+                        LazyVStack(spacing: 18) {
+                            ForEach(Array(vm.displayedMovies.enumerated()), id: \.element.id) { _, movie in
                                 NavigationLink {
                                     MovieDetailView(movie: movie)
                                         .environmentObject(vm)
@@ -535,6 +504,7 @@ struct DiscoverView: View {
                                         }
                                 } label: {
                                     movieFeedCard(movie)
+                                        .transition(.move(edge: .bottom).combined(with: .opacity))
                                 }
                                 .buttonStyle(.plain)
                             }
@@ -578,7 +548,7 @@ struct DiscoverView: View {
                         .padding(.bottom, 32)
                     }
                     .animation(
-                        .easeInOut(duration: 0.25),
+                        .spring(response: 0.45, dampingFraction: 0.85),
                         value: vm.displayedMovies.map(\.id)
                     )
                 }
@@ -595,15 +565,14 @@ struct DiscoverView: View {
 
         return VStack(alignment: .leading, spacing: 10) {
             ZStack(alignment: .bottomLeading) {
+                // Poster / backdrop
                 Group {
                     if let url = movie.backdropURL ?? movie.posterURL {
                         AsyncImage(url: url) { phase in
                             switch phase {
                             case .empty:
                                 Rectangle()
-                                    .overlay {
-                                        ProgressView()
-                                    }
+                                    .overlay { ProgressView() }
 
                             case .success(let image):
                                 image
@@ -627,22 +596,56 @@ struct DiscoverView: View {
                 .overlay(
                     LinearGradient(
                         colors: [
-                            Color.black.opacity(0.0),
-                            Color.black.opacity(0.65)
+                            Color.black.opacity(0.15),
+                            Color.black.opacity(0.75)
                         ],
-                        startPoint: .center,
+                        startPoint: .top,
                         endPoint: .bottom
                     )
                 )
                 .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
 
+                // TOP overlay: Smart badge + heart
+                VStack {
+                    HStack {
+                        if vm.useSmartMode && vm.mode == .random {
+                            Text(vm.randomFlavor == .fromYourTaste ? "From your taste" : "Smart pick")
+                                .font(.caption2.weight(.semibold))
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(Color.accentColor)
+                                .foregroundColor(.white)
+                                .clipShape(Capsule())
+                        }
+
+                        Spacer()
+
+                        Button {
+                            vm.toggleFavorite(movie)
+                            #if canImport(UIKit)
+                            UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+                            #endif
+                        } label: {
+                            Image(systemName: vm.isFavorite(movie) ? "heart.fill" : "heart")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundColor(vm.isFavorite(movie) ? .red : .white)
+                                .padding(10)
+                                .background(.thinMaterial)
+                                .clipShape(Circle())
+                                .shadow(radius: 4)
+                        }
+                    }
+                    Spacer()
+                }
+                .padding(10)
+
                 // Bottom-left overlay: title + meta
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: 6) {
                     Text(movie.title)
                         .font(.headline.weight(.semibold))
                         .foregroundColor(.white)
                         .lineLimit(2)
-                        .minimumScaleFactor(0.8)
+                        .minimumScaleFactor(0.7)
                         .shadow(radius: 10)
 
                     HStack(spacing: 8) {
@@ -664,34 +667,11 @@ struct DiscoverView: View {
                         .foregroundColor(.yellow)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
-                        .background(Color.black.opacity(0.45))
+                        .background(Color.black.opacity(0.55))
                         .clipShape(Capsule())
                     }
                 }
                 .padding(14)
-
-                // Top-right: favorite button
-                VStack {
-                    HStack {
-                        Spacer()
-                        Button {
-                            vm.toggleFavorite(movie)
-                            #if canImport(UIKit)
-                            UIImpactFeedbackGenerator(style: .soft).impactOccurred()
-                            #endif
-                        } label: {
-                            Image(systemName: vm.isFavorite(movie) ? "heart.fill" : "heart")
-                                .font(.system(size: 16, weight: .semibold))
-                                .foregroundColor(vm.isFavorite(movie) ? .red : .white)
-                                .padding(10)
-                                .background(.thinMaterial)
-                                .clipShape(Circle())
-                                .shadow(radius: 4)
-                        }
-                    }
-                    Spacer()
-                }
-                .padding(10)
             }
 
             // Below-image text
@@ -783,7 +763,8 @@ struct DiscoverView: View {
                 Spacer()
             }
         }
-        .padding(12)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
         .background(
             RoundedRectangle(cornerRadius: 20, style: .continuous)
                 .fill(Color(.secondarySystemBackground))
@@ -792,7 +773,7 @@ struct DiscoverView: View {
             RoundedRectangle(cornerRadius: 20, style: .continuous)
                 .stroke(Color.black.opacity(0.04), lineWidth: 0.5)
         )
-        .shadow(color: Color.black.opacity(0.12), radius: 10, x: 0, y: 6)
+        .shadow(color: Color.black.opacity(0.10), radius: 6, x: 0, y: 4)
         .contentShape(Rectangle())
     }
 

@@ -9,29 +9,29 @@ import UIKit
 #endif
 
 struct MovieDetailView: View {
-    @EnvironmentObject var discoverVM: DiscoverVM   // ✅ so detail screen can use watchlist/seen/disliked
+    // Shared app state
+    @EnvironmentObject var discoverVM: DiscoverVM
+    @EnvironmentObject var entitlements: FilmFuelEntitlements
+    @EnvironmentObject var store: FilmFuelStore
 
-    let movie: TMDBMovie
-    private let client: TMDBClientProtocol
+    // Local view model just for this screen
+    @StateObject private var vm: MovieDetailVM
 
-    // Core detail
-    @State private var detail: TMDBMovieDetail?
-    @State private var certification: String?
-    @State private var usWatchRegion: TMDBWatchProvidersRegion?
+    // Paywall
+    @State private var showingPlusPaywall = false
 
-    // More like this
-    @State private var recommendations: [TMDBMovie] = []
+    // Taste training toast
+    @State private var showTasteToast = false
+    @State private var tasteToastText = ""
 
-    // Loading / error
-    @State private var isLoading = false
-    @State private var errorMessage: String?
+    // Convenience
+    private var movie: TMDBMovie { vm.movie }
 
     init(
         movie: TMDBMovie,
         client: TMDBClientProtocol = TMDBClient()
     ) {
-        self.movie = movie
-        self.client = client
+        _vm = StateObject(wrappedValue: MovieDetailVM(movie: movie, client: client))
     }
 
     var body: some View {
@@ -40,28 +40,36 @@ struct MovieDetailView: View {
                 headerImageSection
 
                 VStack(alignment: .leading, spacing: 16) {
-                    titleSection
-                    metaChipsSection
-                    userActionsSection        // ✅ new actions row here
-                    taglineSection
+                    infoCardSection          // title + meta + actions + taste training
+                    smartMatchSection        // Smart Match score + reasons
+                    smartInsightsSection     // Insight chips (Plus unlocks all)
                     overviewSection
                     genresSection
-                    whereToWatchSection
+                    whereToWatchSection      // ⇐ back
                     ratingsSection
-                    moreLikeThisSection
+                    plusUpsellSection        // FilmFuel+ CTA
+                    moreLikeThisSection      // ⇐ back
+
+                    // Taste training confirmation toast
+                    if showTasteToast {
+                        tasteTrainingToast
+                            .transition(.move(edge: .bottom).combined(with: .opacity))
+                    }
                 }
                 .padding(.horizontal, 16)
                 .padding(.bottom, 24)
             }
         }
         .background(Color(.systemBackground))
-        .navigationTitle(detail?.title ?? movie.title)
+        .navigationTitle(vm.displayTitle)
         .navigationBarTitleDisplayMode(.inline)
         .task {
-            await loadDetailsIfNeeded()
+            await vm.loadIfNeeded()
+            // Let Discover know user opened this detail (for taste profile)
+            discoverVM.recordDetailOpen(movie)
         }
         .overlay(alignment: .center) {
-            if isLoading && detail == nil && errorMessage == nil {
+            if vm.isLoading && vm.detail == nil && vm.errorMessage == nil {
                 ProgressView()
                     .padding()
                     .background(.thinMaterial)
@@ -69,26 +77,28 @@ struct MovieDetailView: View {
             }
         }
         .alert("Couldn’t load movie details", isPresented: Binding(
-            get: { errorMessage != nil },
-            set: { _ in errorMessage = nil }
+            get: { vm.errorMessage != nil },
+            set: { _ in vm.errorMessage = nil }
         )) {
             Button("OK", role: .cancel) { }
         } message: {
-            if let errorMessage {
-                Text(errorMessage)
+            if let message = vm.errorMessage {
+                Text(message)
             }
+        }
+        .sheet(isPresented: $showingPlusPaywall) {
+            FilmFuelPlusPaywallView()
+                .environmentObject(store)
+                .environmentObject(entitlements)
         }
     }
 
-    // MARK: - Sections
+    // MARK: - Header hero image
 
     private var headerImageSection: some View {
         ZStack(alignment: .bottomLeading) {
             Group {
-                if let url = detail?.backdropURL
-                    ?? detail?.posterURL
-                    ?? movie.backdropURL
-                    ?? movie.posterURL {
+                if let url = vm.headerImageURL {
                     AsyncImage(url: url) { phase in
                         switch phase {
                         case .empty:
@@ -103,9 +113,7 @@ struct MovieDetailView: View {
                                         endPoint: .bottomTrailing
                                     )
                                 )
-                                .overlay {
-                                    ProgressView()
-                                }
+                                .overlay { ProgressView() }
 
                         case .success(let image):
                             image
@@ -129,26 +137,25 @@ struct MovieDetailView: View {
             .overlay(
                 LinearGradient(
                     colors: [
-                        Color.black.opacity(0.0),
-                        Color.black.opacity(0.75)
+                        Color.black.opacity(0.15),
+                        Color.black.opacity(0.80)
                     ],
-                    startPoint: .center,
+                    startPoint: .top,
                     endPoint: .bottom
                 )
             )
 
+            // Glass card for title + year + rating
             VStack(alignment: .leading, spacing: 6) {
-                Text(detail?.title ?? movie.title)
+                Text(vm.displayTitle)
                     .font(.title2.weight(.semibold))
                     .foregroundColor(.white)
                     .lineLimit(2)
                     .minimumScaleFactor(0.8)
-                    .shadow(radius: 10)
 
                 HStack(spacing: 8) {
-                    let year = detail?.yearText ?? movie.yearText
-                    if year != "—" {
-                        Text(year)
+                    if vm.displayYearText != "—" {
+                        Text(vm.displayYearText)
                             .font(.caption.weight(.medium))
                             .padding(.horizontal, 8)
                             .padding(.vertical, 4)
@@ -157,7 +164,7 @@ struct MovieDetailView: View {
                             .clipShape(Capsule())
                     }
 
-                    if let cert = certification, !cert.isEmpty {
+                    if let cert = vm.certification, !cert.isEmpty {
                         Text(cert)
                             .font(.caption.weight(.medium))
                             .padding(.horizontal, 8)
@@ -168,19 +175,46 @@ struct MovieDetailView: View {
                     }
                 }
             }
+            .padding(12)
+            .background(.ultraThinMaterial)
+            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
             .padding(.horizontal, 16)
-            .padding(.bottom, 16)
+            .padding(.bottom, 14)
         }
+    }
+
+    // MARK: - Info card (title + meta + actions + taste training)
+
+    private var infoCardSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            titleSection
+            metaChipsSection
+            userActionsSection
+
+            // Taste training (only if we have any genres info)
+            let hasDetailGenres = (vm.detail?.genres.isEmpty == false)
+            let hasBaseGenres = (movie.genreIDs?.isEmpty == false)
+
+            if hasDetailGenres || hasBaseGenres {
+                trainTasteButton
+            }
+        }
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(Color(.secondarySystemBackground))
+        )
     }
 
     private var titleSection: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text(detail?.title ?? movie.title)
+            Text(vm.displayTitle)
                 .font(.title3.weight(.semibold))
 
-            if let tagline = detail?.tagline,
-               !tagline.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                Text(tagline)
+            if let d = vm.detail,
+               let taglineRaw = d.tagline,
+               !taglineRaw.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                Text(taglineRaw)
                     .font(.subheadline.italic())
                     .foregroundColor(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -193,7 +227,7 @@ struct MovieDetailView: View {
             // Rating chip
             HStack(spacing: 4) {
                 Image(systemName: "star.fill")
-                Text(String(format: "%.1f", detail?.voteAverage ?? movie.voteAverage))
+                Text(String(format: "%.1f", vm.displayVoteAverage))
             }
             .font(.caption.weight(.medium))
             .foregroundColor(.yellow)
@@ -203,7 +237,7 @@ struct MovieDetailView: View {
             .clipShape(Capsule())
 
             // Runtime chip
-            if let runtimeText = detail?.runtimeText, runtimeText != "—" {
+            if let runtimeText = vm.runtimeText {
                 HStack(spacing: 4) {
                     Image(systemName: "clock")
                     Text(runtimeText)
@@ -211,22 +245,21 @@ struct MovieDetailView: View {
                 .font(.caption.weight(.medium))
                 .padding(.horizontal, 10)
                 .padding(.vertical, 6)
-                .background(Color(.secondarySystemBackground))
+                .background(Color(.tertiarySystemBackground))
                 .clipShape(Capsule())
             }
 
             // Vote count
-            let votes = detail?.voteCount ?? movie.voteCount
-            if votes > 0 {
+            if vm.displayVoteCount > 0 {
                 HStack(spacing: 4) {
                     Image(systemName: "person.3.fill")
-                    Text("\(votes) ratings")
+                    Text("\(vm.displayVoteCount) ratings")
                 }
                 .font(.caption)
                 .foregroundColor(.secondary)
                 .padding(.horizontal, 10)
                 .padding(.vertical, 6)
-                .background(Color(.secondarySystemBackground))
+                .background(Color(.tertiarySystemBackground))
                 .clipShape(Capsule())
             }
 
@@ -234,7 +267,7 @@ struct MovieDetailView: View {
         }
     }
 
-    // MARK: - NEW: User actions row
+    // MARK: - User actions row (watchlist / seen / not for me)
 
     private var userActionsSection: some View {
         let isInWatchlist = discoverVM.isInWatchlist(movie)
@@ -315,27 +348,202 @@ struct MovieDetailView: View {
         }
     }
 
-    private var taglineSection: some View {
-        EmptyView()
+    // MARK: - Taste training button
+
+    private var trainTasteButton: some View {
+        let isPlus = entitlements.isPlus
+
+        return Button {
+            // Train taste via DiscoverVM
+            discoverVM.trainTaste(on: movie, isStrong: isPlus)
+
+            #if canImport(UIKit)
+            UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+            #endif
+
+            if isPlus {
+                tasteToastText = "Boosted: FilmFuel+ will lean harder into picks like this."
+            } else {
+                tasteToastText = "Got it — we’ll lean a bit more into movies like this."
+            }
+
+            withAnimation(.spring(response: 0.4, dampingFraction: 0.85)) {
+                showTasteToast = true
+            }
+
+            Task {
+                try? await Task.sleep(nanoseconds: 2_000_000_000)
+                await MainActor.run {
+                    withAnimation(.easeOut(duration: 0.25)) {
+                        showTasteToast = false
+                    }
+                }
+            }
+
+        } label: {
+            HStack(spacing: 8) {
+                Image(systemName: "slider.horizontal.3")
+                Text(isPlus ? "Boost my taste on this" : "Train my taste on this")
+                    .font(.footnote.weight(.semibold))
+
+                if isPlus {
+                    Image(systemName: "sparkles")
+                }
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(
+                isPlus
+                ? Color.accentColor.opacity(0.18)
+                : Color(.tertiarySystemBackground)
+            )
+            .foregroundColor(isPlus ? .accentColor : .primary)
+            .clipShape(Capsule())
+        }
+        .buttonStyle(.plain)
     }
+
+    private var tasteTrainingToast: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "checkmark.seal.fill")
+                .font(.subheadline)
+                .foregroundColor(.accentColor)
+            Text(tasteToastText)
+                .font(.footnote)
+                .foregroundColor(.primary)
+                .fixedSize(horizontal: false, vertical: true)
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .background(.ultraThinMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+    }
+
+    // MARK: - Smart Match section
+
+    private var smartMatchSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 8) {
+                Image(systemName: "target")
+                    .font(.subheadline)
+                Text("Smart match for you")
+                    .font(.headline)
+                Spacer()
+
+                Text("\(vm.smartMatchScore)%")
+                    .font(.title3.weight(.bold))
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .background(Color.accentColor.opacity(0.18))
+                    .clipShape(Capsule())
+            }
+
+            VStack(alignment: .leading, spacing: 4) {
+                let reasons = vm.smartReasonLines
+                if entitlements.isPlus {
+                    ForEach(reasons, id: \.self) { line in
+                        Text("• \(line)")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                } else {
+                    if let first = reasons.first {
+                        Text("• \(first)")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    if reasons.count > 1 {
+                        Text("Unlock FilmFuel+ to see the full breakdown of why this matches your taste.")
+                            .font(.caption)
+                            .foregroundColor(.secondary.opacity(0.9))
+                            .padding(.top, 2)
+                    }
+                }
+            }
+        }
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(Color(.secondarySystemBackground))
+        )
+    }
+
+    // MARK: - Smart Insights section
+
+    private var smartInsightsSection: some View {
+        let chips = vm.quickInsights
+        guard !chips.isEmpty else { return AnyView(EmptyView()) }
+
+        return AnyView(
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(spacing: 6) {
+                    Image(systemName: "lightbulb")
+                    Text("Smart insights")
+                        .font(.headline)
+                    Spacer()
+                    if !entitlements.isPlus {
+                        Text("FilmFuel+")
+                            .font(.caption2.weight(.bold))
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 3)
+                            .background(Color.accentColor.opacity(0.18))
+                            .clipShape(Capsule())
+                    }
+                }
+
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        if entitlements.isPlus {
+                            ForEach(chips, id: \.self) { chip in
+                                insightChip(text: chip, highlighted: true)
+                            }
+                        } else {
+                            // Show first chip for free, hint there is more with Plus
+                            if let first = chips.first {
+                                insightChip(text: first, highlighted: false)
+                            }
+                            if chips.count > 1 {
+                                insightChip(
+                                    text: "+\(chips.count - 1) more insights with FilmFuel+",
+                                    highlighted: true
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+            .padding(14)
+            .background(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(Color(.secondarySystemBackground))
+            )
+        )
+    }
+
+    private func insightChip(text: String, highlighted: Bool) -> some View {
+        Text(text)
+            .font(.caption)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(
+                highlighted
+                ? Color.accentColor.opacity(0.18)
+                : Color(.tertiarySystemBackground)
+            )
+            .foregroundColor(highlighted ? .accentColor : .primary)
+            .clipShape(Capsule())
+    }
+
+    // MARK: - Overview
 
     private var overviewSection: some View {
         Group {
-            if let fullOverview = detail?.overview,
-               !fullOverview.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            if let overview = vm.overviewText {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Overview")
                         .font(.headline)
-                    Text(fullOverview)
-                        .font(.body)
-                        .foregroundColor(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-            } else if !movie.overview.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Overview")
-                        .font(.headline)
-                    Text(movie.overview)
+                    Text(overview)
                         .font(.body)
                         .foregroundColor(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -346,57 +554,46 @@ struct MovieDetailView: View {
 
     private var genresSection: some View {
         Group {
-            if let genres = detail?.genres, !genres.isEmpty {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Genres")
-                        .font(.headline)
+            if let d = vm.detail {
+                let genres = d.genres
+                if !genres.isEmpty {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Genres")
+                            .font(.headline)
 
-                    FlexibleGenreChips(genres: genres)
+                        FlexibleGenreChips(genres: genres)
+                    }
                 }
             }
         }
     }
 
+    // MARK: - Where to watch (via TMDB link)
+
     private var whereToWatchSection: some View {
         Group {
-            if let region = usWatchRegion,
-               let names = region.flatrateNamesJoined.isEmpty ? nil : region.flatrateNamesJoined {
+            if let url = vm.whereToWatchURL {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Where to watch")
                         .font(.headline)
 
-                    HStack(alignment: .firstTextBaseline, spacing: 6) {
-                        Image(systemName: "tv")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                        Text(names)
-                            .font(.subheadline)
-                            .foregroundColor(.primary)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-
-                    if let link = region.link, let url = URL(string: link) {
-                        Link(destination: url) {
-                            HStack(spacing: 6) {
-                                Text("Open on TMDB")
-                                Image(systemName: "arrow.up.right")
-                            }
-                            .font(.caption.weight(.semibold))
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 6)
-                            .background(Color(.secondarySystemBackground))
-                            .clipShape(Capsule())
-                        }
-                    }
-                }
-            } else if detail != nil {
-                // Only show this fallback once we actually have detail
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Where to watch")
-                        .font(.headline)
-                    Text("Streaming availability may vary by region.")
+                    Text("Streaming availability can change. Check the latest providers on TMDB:")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
+
+                    Link(destination: url) {
+                        HStack(spacing: 6) {
+                            Image(systemName: "tv")
+                            Text("View watch options on TMDB")
+                            Image(systemName: "arrow.up.right")
+                        }
+                        .font(.subheadline.weight(.semibold))
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(Color.accentColor.opacity(0.18))
+                        .foregroundColor(.accentColor)
+                        .clipShape(Capsule())
+                    }
                 }
             }
         }
@@ -404,7 +601,7 @@ struct MovieDetailView: View {
 
     private var ratingsSection: some View {
         Group {
-            if let cert = certification, !cert.isEmpty {
+            if let cert = vm.certification, !cert.isEmpty {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Rating")
                         .font(.headline)
@@ -416,19 +613,90 @@ struct MovieDetailView: View {
         }
     }
 
+    // MARK: - FilmFuel+ upsell (detail screen monetization)
+
+    private var plusUpsellSection: some View {
+        Group {
+            if !entitlements.isPlus {
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "sparkles")
+                        Text("Supercharge your picks")
+                            .font(.headline)
+                    }
+
+                    Text("Unlock FilmFuel+ for full Smart Match breakdowns, all Smart Insights, deeper recommendations, and boosted Smart Mode in Discover.")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+
+                    Button {
+                        showingPlusPaywall = true
+                        #if canImport(UIKit)
+                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                        #endif
+                    } label: {
+                        HStack(spacing: 6) {
+                            Text("Unlock FilmFuel+")
+                            Image(systemName: "arrow.right")
+                        }
+                        .font(.subheadline.weight(.semibold))
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 8)
+                        .background(Color.accentColor)
+                        .foregroundColor(.white)
+                        .clipShape(Capsule())
+                    }
+                }
+                .padding(14)
+                .background(.ultraThinMaterial)
+                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+            }
+        }
+    }
+
+    // MARK: - More like this (from Discover feed)
+
+    /// Simple recommendations using current Discover feed:
+    /// - Same / overlapping genres
+    /// - Excludes current movie
+    /// - Sorted by genre overlap, then rating
+    private var moreLikeThisMovies: [TMDBMovie] {
+        let baseGenres = Set(movie.genreIDs ?? [])
+        guard !baseGenres.isEmpty else { return [] }
+
+        let candidates = discoverVM.displayedMovies.filter { $0.id != movie.id }
+
+        let scored: [(TMDBMovie, Int)] = candidates.compactMap { candidate in
+            let overlap = baseGenres.intersection(Set(candidate.genreIDs ?? [])).count
+            return overlap > 0 ? (candidate, overlap) : nil
+        }
+
+        let sorted = scored.sorted { lhs, rhs in
+            if lhs.1 == rhs.1 {
+                return lhs.0.voteAverage > rhs.0.voteAverage
+            }
+            return lhs.1 > rhs.1
+        }
+
+        return Array(sorted.prefix(12).map { $0.0 })
+    }
+
     private var moreLikeThisSection: some View {
         Group {
-            if !recommendations.isEmpty {
+            let recs = moreLikeThisMovies
+            if !recs.isEmpty {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("More like this")
                         .font(.headline)
 
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 12) {
-                            ForEach(recommendations) { rec in
+                            ForEach(recs) { rec in
                                 NavigationLink {
-                                    MovieDetailView(movie: rec, client: client)
-                                        .environmentObject(discoverVM)   // ✅ keep same VM so actions stay in sync
+                                    MovieDetailView(movie: rec)
+                                        .environmentObject(discoverVM)
+                                        .environmentObject(entitlements)
+                                        .environmentObject(store)
                                 } label: {
                                     VStack(alignment: .leading, spacing: 6) {
                                         AsyncImage(url: rec.posterURL) { phase in
@@ -437,9 +705,7 @@ struct MovieDetailView: View {
                                                 RoundedRectangle(cornerRadius: 12, style: .continuous)
                                                     .fill(Color(.secondarySystemBackground))
                                                     .frame(width: 110, height: 165)
-                                                    .overlay {
-                                                        ProgressView()
-                                                    }
+                                                    .overlay { ProgressView() }
 
                                             case .success(let image):
                                                 image
@@ -498,37 +764,6 @@ struct MovieDetailView: View {
                 .font(.largeTitle)
                 .foregroundColor(.secondary)
         }
-    }
-
-    @MainActor
-    private func loadDetailsIfNeeded() async {
-        guard detail == nil, !isLoading else { return }
-
-        isLoading = true
-        errorMessage = nil
-
-        do {
-            async let d = client.fetchMovieDetail(id: movie.id)
-            async let providersResp = client.fetchWatchProviders(id: movie.id)
-            async let rd = client.fetchReleaseDates(id: movie.id)
-            async let recResp = client.fetchMovieRecommendations(id: movie.id, page: 1)
-
-            let (detail, providers, releaseDates, recList) = try await (d, providersResp, rd, recResp)
-
-            self.detail = detail
-            self.usWatchRegion = providers.region("US")
-            self.certification = releaseDates.primaryCertification(forRegion: "US")
-
-            // Basic filter: posters only, not the same movie
-            self.recommendations = recList.results
-                .filter { $0.posterPath != nil && $0.id != movie.id }
-
-        } catch {
-            print("❌ Movie detail fetch failed: \(error)")
-            errorMessage = "Please check your connection and try again."
-        }
-
-        isLoading = false
     }
 }
 

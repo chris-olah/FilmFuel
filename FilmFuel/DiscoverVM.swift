@@ -512,6 +512,26 @@ final class DiscoverVM: ObservableObject {
         showTipNudge = false
     }
 
+    /// NEW: Taste training from MovieDetailView
+    /// - Free: light training
+    /// - Plus: stronger training, auto-enables Smart Mode & "From your taste" flavor in Random
+    func trainTaste(on movie: TMDBMovie, isStrong: Bool) {
+        guard let ids = movie.genreIDs, !ids.isEmpty else { return }
+
+        let multiplier = isStrong ? 4 : 1
+        for _ in 0..<multiplier {
+            tasteProfile.record(genreIDs: ids)
+        }
+
+        if isStrong {
+            // Lean into taste in Random
+            useSmartMode = true
+            if mode == .random && randomFlavor != .fromYourTaste {
+                randomFlavor = .fromYourTaste
+            }
+        }
+    }
+
     // MARK: - Private
 
     private enum NudgeReason {

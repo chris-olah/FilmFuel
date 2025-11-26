@@ -23,11 +23,16 @@ struct FilmFuelApp: App {
                 .preferredColorScheme(.dark)
                 .onAppear {
                     StatsManager.shared.trackAppLaunched()
-                    // Sync initial Plus state
-                    entitlements.isPlus = store.isPlus
+
+                    // At launch, always ask StoreKit what the real entitlements are.
+                    // This is what lets you go back to free after resetting sandbox purchases.
+                    Task {
+                        await entitlements.refreshFromStoreKit()
+                    }
                 }
                 .onChange(of: store.isPlus) { _, newValue in
-                    // Whenever StoreKit reports a new entitlement, update entitlements
+                    // Whenever StoreKit purchase flow reports a new entitlement, update entitlements.
+                    // This gives you instant UI response right after a purchase.
                     entitlements.isPlus = newValue
                 }
         }

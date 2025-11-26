@@ -7,9 +7,18 @@
 
 import Foundation
 import Combine
+import StoreKit
 
 @MainActor
 final class FilmFuelEntitlements: ObservableObject {
+
+    // MARK: - Plus product identifiers
+
+    /// All FilmFuel+ subscription product IDs (monthly + yearly).
+    private static let plusProductIDs: [String] = [
+        "ff_plus_monthly",
+        "ff_plus_yearly"
+    ]
 
     // MARK: - Plus state
 
@@ -74,6 +83,43 @@ final class FilmFuelEntitlements: ObservableObject {
     var canUseUnlimitedTrivia: Bool {
         isPlus
     }
+
+    // MARK: - StoreKit entitlement refresh
+
+    /// Ask StoreKit 2 what the current entitlements are and update `isPlus`.
+    /// This is what lets you go *back* to free after sandbox reset.
+    func refreshFromStoreKit() async {
+        // Make a best-effort attempt to sync with the App Store / sandbox.
+        do {
+            try await AppStore.sync()
+        } catch {
+            print("⚠️ AppStore.sync failed: \(error)")
+        }
+
+        var plusActive = false
+
+        // Look through current entitlements for any FilmFuel+ subscription product.
+        for await result in Transaction.currentEntitlements {
+            guard case .verified(let transaction) = result else { continue }
+
+            if Self.plusProductIDs.contains(transaction.productID) {
+                plusActive = true
+                break
+            }
+        }
+
+        // This will trigger the didSet above, resetting smart uses when Plus becomes active.
+        self.isPlus = plusActive
+    }
+
+    #if DEBUG
+    /// Dev-only helper if you ever want a quick "force free" toggle in a debug panel.
+    func debugForceFreeMode() {
+        isPlus = false
+        freeSmartUsesRemainingToday = maxFreeSmartUsesPerDay
+        saveSmartUses()
+    }
+    #endif
 
     // MARK: - Persistence
 
