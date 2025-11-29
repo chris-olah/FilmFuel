@@ -4,32 +4,8 @@ import UserNotifications
 import UIKit
 #endif
 
-// MARK: - Route Inbox (persists deep-link intents across cold launch)
-final class FFRouteInbox {
-    static let shared = FFRouteInbox()
-
-    private let groupID = "group.com.chrisolah.FilmFuel"
-    private let key = "ff.pending.route"
-
-    private var suite: UserDefaults {
-        UserDefaults(suiteName: groupID) ?? .standard
-    }
-
-    func enqueue(_ route: String) {
-        suite.set(route, forKey: key)
-    }
-
-    @discardableResult
-    func consume() -> String? {
-        let r = suite.string(forKey: key)
-        if r != nil {
-            suite.removeObject(forKey: key)
-        }
-        return r
-    }
-}
-
 // MARK: - Reminder config
+
 enum FFReminderMode: String, CaseIterable, Identifiable, Codable {
     case off = "Off"
     case quoteOnly = "Quote Only"
@@ -54,6 +30,7 @@ struct FFReminderSettings: Codable, Equatable {
 }
 
 // MARK: - Lightweight models
+
 struct FFQuote {
     let text: String
     let movie: String
@@ -64,59 +41,39 @@ struct FFTrivia {
     let answer: String
 }
 
-// MARK: - Local Notification Manager
-final class FFNotificationManager: NSObject, UNUserNotificationCenterDelegate {
+// MARK: - Local IDs & constants used only in this file
 
-    static let shared = FFNotificationManager()
+/// Local notification identifiers (unique within app)
+private let ffQuoteNotificationID = "FF.daily.quote"
+private let ffTriviaNotificationID = "FF.daily.trivia"
 
-    private let quoteID = "FF.daily.quote"
-    private let triviaID = "FF.daily.trivia"
+/// Match the category/action IDs defined in AppRoute’s FFNotificationManager.configure()
+private let ffQuizCategoryID = "QUIZ_REMINDER"
+private let ffQuoteCategoryID = "QUOTE_REMINDER"
+private let ffActionQuizID = "OPEN_QUIZ"
+private let ffActionShareID = "SHARE_QUOTE"
 
-    // Category & actions identifiers
-    private let categoryID = "FF.daily"
-    private let actionQuiz = "FF.quiz"
-    private let actionShare = "FF.share"
+// MARK: - Extend the existing FFNotificationManager for scheduling
 
-    func configure() {
-        let center = UNUserNotificationCenter.current()
-        center.delegate = self
+extension FFNotificationManager {
 
-        // Register actions/categories once
-        let quiz = UNNotificationAction(
-            identifier: actionQuiz,
-            title: "Take Quiz",
-            options: [.foreground]
-        )
-        let share = UNNotificationAction(
-            identifier: actionShare,
-            title: "Share Quote",
-            options: [.foreground]
-        )
-
-        let cat = UNNotificationCategory(
-            identifier: categoryID,
-            actions: [quiz, share],
-            intentIdentifiers: [],
-            options: []
-        )
-
-        center.setNotificationCategories([cat])
-
-        center.requestAuthorization(options: [.alert, .sound, .badge]) { granted, err in
-            if let err {
-                print("🔔 Auth error: \(err)")
-            }
-            print("🔔 Notifications \(granted ? "granted" : "denied")")
+    /// Convert 12h + AM/PM -> 24h
+    static func hour24(from12h h: Int, isPM: Bool) -> Int {
+        // 12 AM -> 0, 12 PM -> 12
+        if h == 12 {
+            return isPM ? 12 : 0
         }
+        return isPM ? (h + 12) : h
     }
 
+    /// Reschedule quote/trivia based on current settings
     func reschedule(
         settings: FFReminderSettings,
         quote: FFQuote?,
         trivia: FFTrivia?
     ) {
         let center = UNUserNotificationCenter.current()
-        center.removePendingNotificationRequests(withIdentifiers: [quoteID, triviaID])
+        center.removePendingNotificationRequests(withIdentifiers: [ffQuoteNotificationID, ffTriviaNotificationID])
 
         switch settings.mode {
         case .off:
@@ -158,22 +115,17 @@ final class FFNotificationManager: NSObject, UNUserNotificationCenterDelegate {
         }
     }
 
-    // Internal so the View can compute "next reminder"
-    static func hour24(from12h h: Int, isPM: Bool) -> Int {
-        // 12 AM -> 0, 12 PM -> 12
-        if h == 12 {
-            return isPM ? 12 : 0
-        }
-        return isPM ? (h + 12) : h
-    }
+    // MARK: - Private helpers
 
     private func scheduleQuote(_ quote: FFQuote, hour24: Int, minute: Int) {
         let content = UNMutableNotificationContent()
         content.title = "🎬 Your Daily FilmFuel"
         content.body = "“\(quote.text)” — \(quote.movie)"
         content.sound = .default
-        content.categoryIdentifier = categoryID
-        content.userInfo = ["route": "share-quote"] // hint for banner tap routing
+        // Use the quote category defined in AppRoute.configure()
+        content.categoryIdentifier = ffQuoteCategoryID
+        // Hint for default banner-tap routing
+        content.userInfo = ["route": "share-quote"]
 
         if #available(iOS 15.0, *) {
             content.interruptionLevel = .timeSensitive
@@ -182,7 +134,7 @@ final class FFNotificationManager: NSObject, UNUserNotificationCenterDelegate {
         let trigger = dailyTrigger(hour: hour24, minute: minute)
 
         let req = UNNotificationRequest(
-            identifier: quoteID,
+            identifier: ffQuoteNotificationID,
             content: content,
             trigger: trigger
         )
@@ -201,7 +153,8 @@ final class FFNotificationManager: NSObject, UNUserNotificationCenterDelegate {
         content.title = "🎥 FilmFuel Trivia"
         content.body = trivia.question
         content.sound = .default
-        content.categoryIdentifier = categoryID
+        // Use the quiz category defined in AppRoute.configure()
+        content.categoryIdentifier = ffQuizCategoryID
         content.userInfo = ["route": "quiz"]
 
         if #available(iOS 15.0, *) {
@@ -211,7 +164,7 @@ final class FFNotificationManager: NSObject, UNUserNotificationCenterDelegate {
         let trigger = dailyTrigger(hour: hour24, minute: minute)
 
         let req = UNNotificationRequest(
-            identifier: triviaID,
+            identifier: ffTriviaNotificationID,
             content: content,
             trigger: trigger
         )
@@ -231,6 +184,18 @@ final class FFNotificationManager: NSObject, UNUserNotificationCenterDelegate {
         comps.minute = minute
         return UNCalendarNotificationTrigger(dateMatching: comps, repeats: true)
     }
+}
+
+// MARK: - Dedicated notification center delegate
+
+/// Separate delegate object so we don’t need FFNotificationManager to inherit from NSObject.
+final class FFNotificationCenterDelegate: NSObject, UNUserNotificationCenterDelegate {
+
+    static let shared = FFNotificationCenterDelegate()
+
+    private override init() {
+        super.init()
+    }
 
     // Foreground presentation
     func userNotificationCenter(
@@ -241,7 +206,7 @@ final class FFNotificationManager: NSObject, UNUserNotificationCenterDelegate {
         completionHandler([.banner, .list, .sound])
     }
 
-    // Handle action buttons & banner taps via in-app routing + persistent inbox
+    // Handle action buttons & banner taps
     func userNotificationCenter(
         _ center: UNUserNotificationCenter,
         didReceive response: UNNotificationResponse,
@@ -251,32 +216,16 @@ final class FFNotificationManager: NSObject, UNUserNotificationCenterDelegate {
         let route = (info["route"] as? String ?? "").lowercased()
 
         switch response.actionIdentifier {
-        case actionQuiz:
-            // Action button: Take Quiz
-            FFRouteInbox.shared.enqueue("quiz")
-            DispatchQueue.main.async {
-                NotificationCenter.default.post(name: .filmFuelOpenQuiz, object: nil)
-            }
-
-        case actionShare:
-            // Action button: Share Quote
-            FFRouteInbox.shared.enqueue("share-quote")
-            DispatchQueue.main.async {
-                NotificationCenter.default.post(name: .filmFuelShareQuote, object: nil)
-            }
+        case ffActionQuizID, ffActionShareID:
+            // Use the existing handler defined in AppRoute.swift
+            FFNotificationManager.shared.handleNotificationAction(response.actionIdentifier)
 
         default:
-            // Tapped the banner/background
+            // Tapped the banner / default action -> infer from userInfo["route"]
             if route == "quiz" {
-                FFRouteInbox.shared.enqueue("quiz")
-                DispatchQueue.main.async {
-                    NotificationCenter.default.post(name: .filmFuelOpenQuiz, object: nil)
-                }
+                FFNotificationManager.shared.handleNotificationAction(ffActionQuizID)
             } else if route == "share-quote" {
-                FFRouteInbox.shared.enqueue("share-quote")
-                DispatchQueue.main.async {
-                    NotificationCenter.default.post(name: .filmFuelShareQuote, object: nil)
-                }
+                FFNotificationManager.shared.handleNotificationAction(ffActionShareID)
             }
         }
 
@@ -285,6 +234,7 @@ final class FFNotificationManager: NSObject, UNUserNotificationCenterDelegate {
 }
 
 // MARK: - Notifications Screen (UI)
+
 struct NotificationsScreen: View {
 
     @EnvironmentObject private var appModel: AppModel
@@ -423,7 +373,6 @@ struct NotificationsScreen: View {
                         Image(systemName: "calendar.badge.clock")
                             .foregroundStyle(.secondary)
 
-                        // *** FIXED: keep this string interpolation on a single line ***
                         Text("Next reminder: \(nextFireDateText(h12: settings.quoteHour, m: settings.quoteMinute, isPM: settings.quoteIsPM))")
                             .font(.footnote)
                             .foregroundStyle(.secondary)
@@ -453,7 +402,6 @@ struct NotificationsScreen: View {
                         Image(systemName: "calendar.badge.clock")
                             .foregroundStyle(.secondary)
 
-                        // *** FIXED: single line here too ***
                         Text("Next reminder: \(nextFireDateText(h12: settings.triviaHour, m: settings.triviaMinute, isPM: settings.triviaIsPM))")
                             .font(.footnote)
                             .foregroundStyle(.secondary)
@@ -463,19 +411,31 @@ struct NotificationsScreen: View {
         }
         .navigationTitle("Notifications")
         .onAppear {
-            // Configure as early/often as reasonable
+            // 1) Ensure categories from AppRoute are registered
             FFNotificationManager.shared.configure()
-            refreshAuthStatus()
+
+            // 2) Set delegate + request auth here for UI purposes
+            let center = UNUserNotificationCenter.current()
+            center.delegate = FFNotificationCenterDelegate.shared
+
+            center.requestAuthorization(options: [.alert, .sound, .badge]) { granted, err in
+                if let err {
+                    print("🔔 Auth error: \(err)")
+                }
+                print("🔔 Notifications \(granted ? "granted" : "denied")")
+                refreshAuthStatus()
+            }
 
             if let stored = appModel.reminderSettingsBridge() {
                 settings = stored
             } else if let migrated = migrateFromLegacyPrefs() {
                 settings = migrated
-                persist() // write into App Group for future launches
+                persist() // write into App Group / shared storage
             }
 
             // Ensure current UI state is scheduled
             persistAndReschedule()
+            refreshAuthStatus()
         }
         .onReceive(
             NotificationCenter.default.publisher(
@@ -488,6 +448,7 @@ struct NotificationsScreen: View {
     }
 
     // MARK: - Permission helpers
+
     private func refreshAuthStatus() {
         UNUserNotificationCenter.current().getNotificationSettings { s in
             DispatchQueue.main.async {
@@ -544,6 +505,7 @@ struct NotificationsScreen: View {
     }
 
     // MARK: - Persistence + Scheduling
+
     private func persist() {
         appModel.updateReminderSettingsBridge(settings)
     }
@@ -558,6 +520,7 @@ struct NotificationsScreen: View {
     }
 
     // MARK: - Helpers
+
     private func nextFireDateText(h12: Int, m: Int, isPM: Bool) -> String {
         let hour24 = FFNotificationManager.hour24(from12h: h12, isPM: isPM)
 
@@ -657,6 +620,7 @@ struct NotificationsScreen: View {
 }
 
 // MARK: - Minimal AppModel bridges (App Group persistence)
+
 extension AppModel {
     private var groupID: String { "group.com.chrisolah.FilmFuel" }
     private var settingsKey: String { "ff.reminder.settings" }
@@ -672,10 +636,4 @@ extension AppModel {
         guard let data = try? JSONEncoder().encode(settings) else { return }
         UserDefaults(suiteName: groupID)?.set(data, forKey: settingsKey)
     }
-}
-
-// MARK: - Notification names used app-wide
-extension Notification.Name {
-    static let filmFuelOpenQuiz = Notification.Name("filmFuelOpenQuiz")
-    static let filmFuelShareQuote = Notification.Name("filmFuelShareQuote")
 }

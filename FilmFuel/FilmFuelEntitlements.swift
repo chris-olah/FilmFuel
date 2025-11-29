@@ -2,157 +2,346 @@
 //  FilmFuelEntitlements.swift
 //  FilmFuel
 //
-//  Central place for what is free vs FilmFuel+.
+//  Manages user entitlements, free tier limits, and trial state
+//  Designed for strategic monetization with engagement hooks
 //
 
 import Foundation
 import Combine
-import StoreKit
 
 @MainActor
 final class FilmFuelEntitlements: ObservableObject {
-
-    // MARK: - Plus product identifiers
-
-    /// All FilmFuel+ subscription product IDs (monthly + yearly).
-    private static let plusProductIDs: [String] = [
-        "ff_plus_monthly",
-        "ff_plus_yearly"
-    ]
-
-    // MARK: - Plus state
-
-    @Published var isPlus: Bool = false {
-        didSet {
-            if isPlus {
-                // If they become Plus, you can reset Smart Mode limits or ignore them.
-                // We'll just reset so if they ever downgrade you have a sane baseline.
-                freeSmartUsesRemainingToday = maxFreeSmartUsesPerDay
-                saveSmartUses()
-            }
-        }
-    }
-
-    // MARK: - Free Smart Mode uses per day
-
-    private let smartUsesKey = "ff.freeSmartUsesRemaining"
-    private let smartUsesDateKey = "ff.freeSmartUsesDate"
-
-    /// Maximum free Smart Mode toggles per day on the free tier.
-    let maxFreeSmartUsesPerDay = 2
-
-    /// How many Smart Mode uses the free user has left *today*.
-    @Published var freeSmartUsesRemainingToday: Int
-
-    init() {
-        // Default to full allowance until we read from disk
-        self.freeSmartUsesRemainingToday = maxFreeSmartUsesPerDay
-        loadSmartUses()
-    }
-
-    // MARK: - Smart Mode helpers
-
-    /// Whether the user is allowed to attempt Smart Mode right now.
-    func canUseSmartMode() -> Bool {
-        if isPlus { return true }
-        return freeSmartUsesRemainingToday > 0
-    }
-
-    /// Call this when a free user actually *uses* Smart Mode.
-    /// Returns true if it was allowed and decremented, false if they hit the limit.
-    @discardableResult
-    func consumeFreeSmartModeUseIfNeeded() -> Bool {
-        // Plus users are unrestricted
-        if isPlus { return true }
-
-        guard freeSmartUsesRemainingToday > 0 else {
-            return false
-        }
-
-        freeSmartUsesRemainingToday -= 1
-        saveSmartUses()
-        return true
-    }
-
-    // MARK: - Trivia entitlements
-
-    var canAccessAllTriviaPacks: Bool {
-        isPlus
-    }
-
-    var canUseUnlimitedTrivia: Bool {
-        isPlus
-    }
-
-    // MARK: - StoreKit entitlement refresh
-
-    /// Ask StoreKit 2 what the current entitlements are and update `isPlus`.
-    /// This is what lets you go *back* to free after sandbox reset.
-    func refreshFromStoreKit() async {
-        // Make a best-effort attempt to sync with the App Store / sandbox.
-        do {
-            try await AppStore.sync()
-        } catch {
-            print("⚠️ AppStore.sync failed: \(error)")
-        }
-
-        var plusActive = false
-
-        // Look through current entitlements for any FilmFuel+ subscription product.
-        for await result in Transaction.currentEntitlements {
-            guard case .verified(let transaction) = result else { continue }
-
-            if Self.plusProductIDs.contains(transaction.productID) {
-                plusActive = true
-                break
-            }
-        }
-
-        // This will trigger the didSet above, resetting smart uses when Plus becomes active.
-        self.isPlus = plusActive
-    }
-
-    #if DEBUG
-    /// Dev-only helper if you ever want a quick "force free" toggle in a debug panel.
-    func debugForceFreeMode() {
-        isPlus = false
-        freeSmartUsesRemainingToday = maxFreeSmartUsesPerDay
-        saveSmartUses()
-    }
-    #endif
-
-    // MARK: - Persistence
-
-    /// Load or reset today's Smart Mode uses from UserDefaults.
-    private func loadSmartUses() {
-        let defaults = UserDefaults.standard
-        let today = Self.todayString()
-
-        if let storedDate = defaults.string(forKey: smartUsesDateKey),
-           storedDate == today {
-            // Same day → use stored value, clamped into a safe range.
-            let remaining = defaults.integer(forKey: smartUsesKey)
-            freeSmartUsesRemainingToday = max(0, min(remaining, maxFreeSmartUsesPerDay))
-        } else {
-            // New day → reset full allowance and write it out.
-            freeSmartUsesRemainingToday = maxFreeSmartUsesPerDay
-            defaults.set(today, forKey: smartUsesDateKey)
-            defaults.set(freeSmartUsesRemainingToday, forKey: smartUsesKey)
-        }
-    }
-
-    /// Save current remaining uses + associate it with "today".
-    private func saveSmartUses() {
-        let defaults = UserDefaults.standard
-        defaults.set(Self.todayString(), forKey: smartUsesDateKey)
-        defaults.set(freeSmartUsesRemainingToday, forKey: smartUsesKey)
-    }
-
-    /// Simple "yyyy-MM-dd" day stamp used to reset the daily allowance.
-    private static func todayString() -> String {
+    
+    // MARK: - Published State
+    
+    @Published private(set) var isPlus: Bool = false
+    @Published private(set) var isInTrial: Bool = false
+    @Published private(set) var trialDaysRemaining: Int = 0
+    
+    // Free tier limits
+    @Published private(set) var freeSmartUsesRemainingToday: Int = 2
+    @Published private(set) var freeShufflesRemainingToday: Int = 10
+    @Published private(set) var freeFilterSavesRemaining: Int = 1
+    
+    // Engagement metrics for smart upselling
+    @Published private(set) var totalSmartPicksUsedAllTime: Int = 0
+    @Published private(set) var totalMoviesDiscovered: Int = 0
+    @Published private(set) var daysActiveThisMonth: Int = 0
+    @Published private(set) var paywallDismissCount: Int = 0
+    
+    // MARK: - Keys
+    
+    private let prefix = "ff.entitlements."
+    private var isPlusKey: String { prefix + "isPlus" }
+    private var trialStartKey: String { prefix + "trialStart" }
+    private var smartUsesTodayKey: String { prefix + "smartUsesToday.\(todayKey)" }
+    private var shufflesTodayKey: String { prefix + "shufflesToday.\(todayKey)" }
+    private var filterSavesKey: String { prefix + "filterSaves" }
+    private var totalSmartKey: String { prefix + "totalSmartPicks" }
+    private var totalDiscoveredKey: String { prefix + "totalDiscovered" }
+    private var daysActiveKey: String { prefix + "daysActive.\(monthKey)" }
+    private var paywallDismissKey: String { prefix + "paywallDismiss" }
+    private var lastActiveKey: String { prefix + "lastActive" }
+    
+    // MARK: - Constants
+    
+    private let freeSmartPicksPerDay = 2
+    private let freeShufflesPerDay = 10
+    private let freeFilterSaves = 1
+    private let trialDurationDays = 3
+    
+    // Thresholds for upsell triggers
+    let heavyUserSmartPickThreshold = 10 // If they've used 10+ smart picks, they're engaged
+    let frequentUserDaysThreshold = 5 // If active 5+ days this month, they're frequent
+    
+    // MARK: - Computed Properties
+    
+    var todayKey: String {
         let formatter = DateFormatter()
-        formatter.calendar = Calendar(identifier: .gregorian)
         formatter.dateFormat = "yyyy-MM-dd"
         return formatter.string(from: Date())
+    }
+    
+    var monthKey: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM"
+        return formatter.string(from: Date())
+    }
+    
+    var isHeavyUser: Bool {
+        totalSmartPicksUsedAllTime >= heavyUserSmartPickThreshold
+    }
+    
+    var isFrequentUser: Bool {
+        daysActiveThisMonth >= frequentUserDaysThreshold
+    }
+    
+    var shouldShowAggressiveUpsell: Bool {
+        // Show more aggressive upsell if they're engaged but haven't converted
+        isHeavyUser && !isPlus && paywallDismissCount >= 2
+    }
+    
+    var hasExhaustedFreeTier: Bool {
+        freeSmartUsesRemainingToday == 0 && totalSmartPicksUsedAllTime > 5
+    }
+    
+    var eligibleForTrial: Bool {
+        // Only offer trial if they haven't had one before
+        UserDefaults.standard.object(forKey: trialStartKey) == nil && !isPlus
+    }
+    
+    var trialExpired: Bool {
+        guard let trialStart = UserDefaults.standard.object(forKey: trialStartKey) as? Date else {
+            return false
+        }
+        let daysSinceStart = Calendar.current.dateComponents([.day], from: trialStart, to: Date()).day ?? 0
+        return daysSinceStart >= trialDurationDays
+    }
+    
+    // MARK: - Init
+    
+    init() {
+        loadState()
+        checkAndResetDailyLimits()
+        recordDailyActivity()
+    }
+    
+    // MARK: - State Management
+    
+    private func loadState() {
+        isPlus = UserDefaults.standard.bool(forKey: isPlusKey)
+        
+        // Check trial state
+        if let trialStart = UserDefaults.standard.object(forKey: trialStartKey) as? Date {
+            let daysSinceStart = Calendar.current.dateComponents([.day], from: trialStart, to: Date()).day ?? 0
+            if daysSinceStart < trialDurationDays {
+                isInTrial = true
+                trialDaysRemaining = trialDurationDays - daysSinceStart
+            } else {
+                isInTrial = false
+                trialDaysRemaining = 0
+            }
+        }
+        
+        // Load usage metrics
+        totalSmartPicksUsedAllTime = UserDefaults.standard.integer(forKey: totalSmartKey)
+        totalMoviesDiscovered = UserDefaults.standard.integer(forKey: totalDiscoveredKey)
+        daysActiveThisMonth = UserDefaults.standard.integer(forKey: daysActiveKey)
+        paywallDismissCount = UserDefaults.standard.integer(forKey: paywallDismissKey)
+        freeFilterSavesRemaining = max(0, freeFilterSaves - UserDefaults.standard.integer(forKey: filterSavesKey))
+    }
+    
+    private func checkAndResetDailyLimits() {
+        let smartUsesToday = UserDefaults.standard.integer(forKey: smartUsesTodayKey)
+        let shufflesToday = UserDefaults.standard.integer(forKey: shufflesTodayKey)
+        
+        freeSmartUsesRemainingToday = max(0, freeSmartPicksPerDay - smartUsesToday)
+        freeShufflesRemainingToday = max(0, freeShufflesPerDay - shufflesToday)
+    }
+    
+    private func recordDailyActivity() {
+        let lastActive = UserDefaults.standard.string(forKey: lastActiveKey)
+        
+        if lastActive != todayKey {
+            // New day - increment days active
+            daysActiveThisMonth += 1
+            UserDefaults.standard.set(daysActiveThisMonth, forKey: daysActiveKey)
+            UserDefaults.standard.set(todayKey, forKey: lastActiveKey)
+        }
+    }
+    
+    // MARK: - Plus Status
+    
+    func setPlus(_ value: Bool) {
+        isPlus = value
+        UserDefaults.standard.set(value, forKey: isPlusKey)
+        
+        if value {
+            // Reset limits when upgrading
+            freeSmartUsesRemainingToday = 999
+            freeShufflesRemainingToday = 999
+        }
+    }
+    
+    // MARK: - Trial
+    
+    func startTrial() {
+        guard eligibleForTrial else { return }
+        
+        let now = Date()
+        UserDefaults.standard.set(now, forKey: trialStartKey)
+        isInTrial = true
+        trialDaysRemaining = trialDurationDays
+        
+        // Grant Plus-like access during trial
+        freeSmartUsesRemainingToday = 999
+        freeShufflesRemainingToday = 999
+    }
+    
+    // MARK: - Consumption
+    
+    /// Attempts to consume a free smart pick. Returns true if successful.
+    func consumeFreeSmartModeUseIfNeeded() -> Bool {
+        // Plus users and trial users have unlimited
+        if isPlus || isInTrial {
+            return true
+        }
+        
+        if freeSmartUsesRemainingToday > 0 {
+            freeSmartUsesRemainingToday -= 1
+            
+            let usedToday = freeSmartPicksPerDay - freeSmartUsesRemainingToday
+            UserDefaults.standard.set(usedToday, forKey: smartUsesTodayKey)
+            
+            // Track all-time usage
+            totalSmartPicksUsedAllTime += 1
+            UserDefaults.standard.set(totalSmartPicksUsedAllTime, forKey: totalSmartKey)
+            
+            return true
+        }
+        
+        return false
+    }
+    
+    /// Attempts to consume a free shuffle. Returns true if successful.
+    func consumeFreeShuffle() -> Bool {
+        if isPlus || isInTrial {
+            return true
+        }
+        
+        if freeShufflesRemainingToday > 0 {
+            freeShufflesRemainingToday -= 1
+            
+            let usedToday = freeShufflesPerDay - freeShufflesRemainingToday
+            UserDefaults.standard.set(usedToday, forKey: shufflesTodayKey)
+            
+            return true
+        }
+        
+        return false
+    }
+    
+    /// Attempts to save a filter preset (free users get 1). Returns true if successful.
+    func consumeFilterSave() -> Bool {
+        if isPlus || isInTrial {
+            return true
+        }
+        
+        if freeFilterSavesRemaining > 0 {
+            freeFilterSavesRemaining -= 1
+            
+            let usedTotal = freeFilterSaves - freeFilterSavesRemaining
+            UserDefaults.standard.set(usedTotal, forKey: filterSavesKey)
+            
+            return true
+        }
+        
+        return false
+    }
+    
+    /// Track movie discovery for engagement metrics
+    func recordMovieDiscovered() {
+        totalMoviesDiscovered += 1
+        UserDefaults.standard.set(totalMoviesDiscovered, forKey: totalDiscoveredKey)
+    }
+    
+    /// Track paywall dismissal for upsell optimization
+    func recordPaywallDismiss() {
+        paywallDismissCount += 1
+        UserDefaults.standard.set(paywallDismissCount, forKey: paywallDismissKey)
+    }
+    
+    // MARK: - Bonus Grants
+    
+    /// Grant bonus smart picks (e.g., from achievements, streaks)
+    func grantBonusSmartPicks(_ count: Int) {
+        freeSmartUsesRemainingToday += count
+    }
+    
+    /// Grant bonus shuffles
+    func grantBonusShuffles(_ count: Int) {
+        freeShufflesRemainingToday += count
+    }
+    
+    // MARK: - Feature Access Checks
+    
+    func canAccessFeature(_ feature: PremiumFeature) -> Bool {
+        if isPlus || isInTrial {
+            return true
+        }
+        
+        switch feature {
+        case .unlimitedSmartPicks:
+            return freeSmartUsesRemainingToday > 0
+        case .unlimitedShuffles:
+            return freeShufflesRemainingToday > 0
+        case .hiddenGems, .advancedFilters, .actorDirectorSearch, .customRuntime:
+            return false
+        case .filterPresets:
+            return freeFilterSavesRemaining > 0
+        }
+    }
+    
+    // MARK: - Upsell Messaging
+    
+    var personalizedUpsellMessage: String {
+        if hasExhaustedFreeTier {
+            return "You've used all your free smart picks today. Upgrade for unlimited!"
+        } else if isHeavyUser {
+            return "You've discovered \(totalMoviesDiscovered) movies! Unlock unlimited access."
+        } else if isFrequentUser {
+            return "You're on a roll! Get unlimited features to keep discovering."
+        } else if eligibleForTrial {
+            return "Try FilmFuel+ free for \(trialDurationDays) days!"
+        } else {
+            return "Upgrade to unlock all features and unlimited smart picks."
+        }
+    }
+    
+    var urgentUpsellMessage: String? {
+        if freeSmartUsesRemainingToday == 1 {
+            return "Only 1 smart pick left today!"
+        } else if freeSmartUsesRemainingToday == 0 {
+            return "No smart picks remaining. Upgrade now!"
+        } else if trialDaysRemaining == 1 && isInTrial {
+            return "Trial ends tomorrow! Subscribe to keep Plus features."
+        }
+        return nil
+    }
+}
+
+// MARK: - Premium Features
+
+enum PremiumFeature: String, CaseIterable {
+    case unlimitedSmartPicks
+    case unlimitedShuffles
+    case hiddenGems
+    case advancedFilters
+    case actorDirectorSearch
+    case customRuntime
+    case filterPresets
+    
+    var displayName: String {
+        switch self {
+        case .unlimitedSmartPicks: return "Unlimited Smart Picks"
+        case .unlimitedShuffles:   return "Unlimited Shuffles"
+        case .hiddenGems:          return "Hidden Gems Mode"
+        case .advancedFilters:     return "Advanced Filters"
+        case .actorDirectorSearch: return "Actor/Director Search"
+        case .customRuntime:       return "Custom Runtime Filter"
+        case .filterPresets:       return "Saved Filter Presets"
+        }
+    }
+    
+    var icon: String {
+        switch self {
+        case .unlimitedSmartPicks: return "infinity"
+        case .unlimitedShuffles:   return "shuffle"
+        case .hiddenGems:          return "diamond.fill"
+        case .advancedFilters:     return "slider.horizontal.3"
+        case .actorDirectorSearch: return "person.fill.questionmark"
+        case .customRuntime:       return "timer"
+        case .filterPresets:       return "star.fill"
+        }
     }
 }
