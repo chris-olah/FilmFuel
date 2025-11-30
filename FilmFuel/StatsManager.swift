@@ -2,7 +2,8 @@
 //  StatsManager.swift
 //  FilmFuel
 //
-//  Enhanced with gamification, streaks, XP, achievements, and engagement triggers
+//  Enhanced with gamification, streaks, XP, achievements, and engagement triggers.
+//  Now integrated with AchievementDefinition system for comprehensive achievement tracking.
 //
 
 import Foundation
@@ -28,7 +29,7 @@ final class StatsManager {
     private let prefix = "ff.stats."
     
     // Core stats
-    private var totalTriviaQuestionsAnsweredKey: String { prefix + "totalTriviaQuestionsAnswered" }
+    private var totalTriviaQuestionsAnsweredKey: String { prefix + "totalTriviaAnswered" }
     private var totalTriviaCorrectKey: String { prefix + "totalTriviaCorrect" }
     private var dailyTriviaSessionsCompletedKey: String { prefix + "dailyTriviaSessionsCompleted" }
     private var endlessTriviaSessionsCompletedKey: String { prefix + "endlessTriviaSessionsCompleted" }
@@ -38,14 +39,19 @@ final class StatsManager {
     private var lastLaunchDateKey: String { prefix + "lastLaunchDate" }
     private var discoverCardsViewedKey: String { prefix + "discoverCardsViewed" }
     private var totalQuotesFavoritedKey: String { prefix + "totalQuotesFavorited" }
+    private var sharesCountKey: String { prefix + "sharesCount" }
+    private var watchlistCountKey: String { prefix + "watchlistCount" }
+    private var userLevelKey: String { prefix + "userLevel" }
+    private var achievementsUnlockedCountKey: String { prefix + "achievementsUnlocked" }
     
     // Gamification
     private var totalXPKey: String { prefix + "totalXP" }
     private var currentStreakKey: String { prefix + "currentStreak" }
     private var longestStreakKey: String { prefix + "longestStreak" }
-    private var lastActiveDate: String { prefix + "lastActiveDate" }
+    private var lastActiveDateKey: String { prefix + "lastActiveDate" }
     private var unlockedAchievementsKey: String { prefix + "unlockedAchievements" }
     private var perfectRoundsKey: String { prefix + "perfectRounds" }
+    private var perfectWeeksKey: String { prefix + "perfectWeeks" }
     private var totalMoviesFavoritedKey: String { prefix + "totalMoviesFavorited" }
     private var totalWatchlistAddsKey: String { prefix + "totalWatchlistAdds" }
     private var totalSeenMarkedKey: String { prefix + "totalSeenMarked" }
@@ -53,6 +59,12 @@ final class StatsManager {
     private var totalSmartPicksUsedKey: String { prefix + "totalSmartPicksUsed" }
     private var moodsExploredKey: String { prefix + "moodsExplored" }
     private var genresExploredKey: String { prefix + "genresExplored" }
+    private var packsPlayedKey: String { prefix + "packsPlayed" }
+    
+    // Time-based achievements
+    private var nightOwlPlaysKey: String { prefix + "nightOwlPlays" }
+    private var earlyBirdPlaysKey: String { prefix + "earlyBirdPlays" }
+    private var weekendStreakKey: String { prefix + "weekendStreak" }
     
     // Engagement
     private var sessionCountTodayKey: String { prefix + "sessionCountToday.\(todayKey)" }
@@ -64,9 +76,15 @@ final class StatsManager {
     private var lastVersionPromptedForReviewKey: String { prefix + "lastVersionPromptedForReview" }
     private var hasRatedAppKey: String { prefix + "hasRatedApp" }
     
+    // Weekly tracking for perfect weeks
+    private var weeklyCorrectCountKey: String { prefix + "weeklyCorrectCount" }
+    private var weeklyTotalCountKey: String { prefix + "weeklyTotalCount" }
+    private var lastWeekNumberKey: String { prefix + "lastWeekNumber" }
+    
     private init() {
         ensureFirstLaunchDate()
         checkAndUpdateStreak()
+        syncWithUserStreakManager()
     }
     
     // MARK: - Date Helpers
@@ -98,6 +116,32 @@ final class StatsManager {
     
     private func isYesterday(_ date: Date) -> Bool {
         Calendar.current.isDateInYesterday(date)
+    }
+    
+    private func currentWeekNumber() -> Int {
+        Calendar.current.component(.weekOfYear, from: Date())
+    }
+    
+    private func currentHour() -> Int {
+        Calendar.current.component(.hour, from: Date())
+    }
+    
+    private func isWeekend() -> Bool {
+        let weekday = Calendar.current.component(.weekday, from: Date())
+        return weekday == 1 || weekday == 7 // Sunday or Saturday
+    }
+    
+    // MARK: - Sync with UserStreakManager
+    
+    private func syncWithUserStreakManager() {
+        // Get streak from UserStreakManager if it exists and is higher
+        let userStreak = UserStreakManager.bumpForToday()
+        if userStreak.current > currentStreak {
+            currentStreak = userStreak.current
+        }
+        if userStreak.best > longestStreak {
+            longestStreak = userStreak.best
+        }
     }
     
     // MARK: - Core Stats (Read-Only)
@@ -144,6 +188,14 @@ final class StatsManager {
         defaults.integer(forKey: totalQuotesFavoritedKey)
     }
     
+    var sharesCount: Int {
+        defaults.integer(forKey: sharesCountKey)
+    }
+    
+    var watchlistCount: Int {
+        defaults.integer(forKey: watchlistCountKey)
+    }
+    
     var firstLaunchDate: Date? {
         defaults.object(forKey: firstLaunchDateKey) as? Date
     }
@@ -167,7 +219,11 @@ final class StatsManager {
     
     var currentStreak: Int {
         get { defaults.integer(forKey: currentStreakKey) }
-        set { defaults.set(newValue, forKey: currentStreakKey) }
+        set {
+            defaults.set(newValue, forKey: currentStreakKey)
+            // Also update the daily streak key used by AchievementDefinition
+            defaults.set(newValue, forKey: "ff.dailyStreak")
+        }
     }
     
     var longestStreak: Int {
@@ -180,6 +236,14 @@ final class StatsManager {
         set { defaults.set(newValue, forKey: perfectRoundsKey) }
     }
     
+    var perfectWeeks: Int {
+        get { defaults.integer(forKey: perfectWeeksKey) }
+        set {
+            defaults.set(newValue, forKey: perfectWeeksKey)
+            defaults.set(newValue, forKey: "ff.stats.perfectWeeks")
+        }
+    }
+    
     var totalMoviesFavorited: Int {
         get { defaults.integer(forKey: totalMoviesFavoritedKey) }
         set { defaults.set(newValue, forKey: totalMoviesFavoritedKey) }
@@ -187,7 +251,10 @@ final class StatsManager {
     
     var totalWatchlistAdds: Int {
         get { defaults.integer(forKey: totalWatchlistAddsKey) }
-        set { defaults.set(newValue, forKey: totalWatchlistAddsKey) }
+        set {
+            defaults.set(newValue, forKey: totalWatchlistAddsKey)
+            defaults.set(newValue, forKey: "ff.stats.watchlistCount")
+        }
     }
     
     var totalSeenMarked: Int {
@@ -203,6 +270,41 @@ final class StatsManager {
     var totalSmartPicksUsed: Int {
         get { defaults.integer(forKey: totalSmartPicksUsedKey) }
         set { defaults.set(newValue, forKey: totalSmartPicksUsedKey) }
+    }
+    
+    var nightOwlPlays: Int {
+        get { defaults.integer(forKey: nightOwlPlaysKey) }
+        set {
+            defaults.set(newValue, forKey: nightOwlPlaysKey)
+            defaults.set(newValue, forKey: "ff.stats.nightOwlPlays")
+        }
+    }
+    
+    var earlyBirdPlays: Int {
+        get { defaults.integer(forKey: earlyBirdPlaysKey) }
+        set {
+            defaults.set(newValue, forKey: earlyBirdPlaysKey)
+            defaults.set(newValue, forKey: "ff.stats.earlyBirdPlays")
+        }
+    }
+    
+    var weekendStreak: Int {
+        get { defaults.integer(forKey: weekendStreakKey) }
+        set {
+            defaults.set(newValue, forKey: weekendStreakKey)
+            defaults.set(newValue, forKey: "ff.stats.weekendStreak")
+        }
+    }
+    
+    var packsPlayed: Set<String> {
+        get {
+            let array = defaults.stringArray(forKey: packsPlayedKey) ?? []
+            return Set(array)
+        }
+        set {
+            defaults.set(Array(newValue), forKey: packsPlayedKey)
+            defaults.set(newValue.count, forKey: "ff.stats.packsPlayed")
+        }
     }
     
     var unlockedAchievements: Set<String> {
@@ -232,6 +334,7 @@ final class StatsManager {
         }
         set {
             defaults.set(Array(newValue), forKey: genresExploredKey)
+            defaults.set(newValue.count, forKey: "ff.stats.genresExplored")
         }
     }
     
@@ -240,40 +343,68 @@ final class StatsManager {
     var userLevel: Int {
         // Calculate level based on XP thresholds
         let xp = totalXP
-        if xp >= 2500 { return 5 } // Elite
-        if xp >= 1000 { return 4 } // Connoisseur
-        if xp >= 400 { return 3 }  // Cinephile
-        if xp >= 150 { return 2 }  // Enthusiast
-        if xp >= 50 { return 1 }   // Explorer
-        return 0                    // Newbie
+        let level: Int
+        if xp >= 5000 { level = 10 }      // Legend
+        else if xp >= 3500 { level = 9 }  // Master
+        else if xp >= 2500 { level = 8 }  // Expert
+        else if xp >= 1800 { level = 7 }  // Advanced
+        else if xp >= 1200 { level = 6 }  // Elite
+        else if xp >= 800 { level = 5 }   // Connoisseur
+        else if xp >= 500 { level = 4 }   // Cinephile
+        else if xp >= 300 { level = 3 }   // Enthusiast
+        else if xp >= 150 { level = 2 }   // Explorer
+        else if xp >= 50 { level = 1 }    // Beginner
+        else { level = 0 }                 // Newbie
+        
+        // Update the stored level for achievement tracking
+        defaults.set(level, forKey: "ff.stats.userLevel")
+        return level
     }
     
     var userLevelTitle: String {
         switch userLevel {
         case 0: return "Film Newbie"
-        case 1: return "Explorer"
-        case 2: return "Enthusiast"
-        case 3: return "Cinephile"
-        case 4: return "Connoisseur"
-        case 5: return "Elite Curator"
+        case 1: return "Beginner"
+        case 2: return "Explorer"
+        case 3: return "Enthusiast"
+        case 4: return "Cinephile"
+        case 5: return "Connoisseur"
+        case 6: return "Elite Curator"
+        case 7: return "Advanced Critic"
+        case 8: return "Expert"
+        case 9: return "Master"
+        case 10: return "FilmFuel Legend"
         default: return "Film Newbie"
         }
     }
     
     var xpToNextLevel: Int {
-        let thresholds = [50, 150, 400, 1000, 2500]
+        let thresholds = [50, 150, 300, 500, 800, 1200, 1800, 2500, 3500, 5000]
         let currentLevel = userLevel
         guard currentLevel < thresholds.count else { return 0 }
         return thresholds[currentLevel] - totalXP
     }
     
+    var xpProgressToNextLevel: Double {
+        let thresholds = [0, 50, 150, 300, 500, 800, 1200, 1800, 2500, 3500, 5000]
+        let currentLevel = userLevel
+        guard currentLevel < thresholds.count - 1 else { return 1.0 }
+        
+        let currentThreshold = thresholds[currentLevel]
+        let nextThreshold = thresholds[currentLevel + 1]
+        let xpInLevel = totalXP - currentThreshold
+        let xpNeeded = nextThreshold - currentThreshold
+        
+        return Double(xpInLevel) / Double(xpNeeded)
+    }
+    
     // MARK: - Streak Management
     
     private func checkAndUpdateStreak() {
-        guard let lastActive = defaults.object(forKey: lastActiveDate) as? Date else {
+        guard let lastActive = defaults.object(forKey: lastActiveDateKey) as? Date else {
             // First time - start streak
             currentStreak = 1
-            defaults.set(Date(), forKey: lastActiveDate)
+            defaults.set(Date(), forKey: lastActiveDateKey)
             return
         }
         
@@ -283,7 +414,7 @@ final class StatsManager {
         } else if isYesterday(lastActive) {
             // Yesterday - extend streak!
             currentStreak += 1
-            defaults.set(Date(), forKey: lastActiveDate)
+            defaults.set(Date(), forKey: lastActiveDateKey)
             
             if currentStreak > longestStreak {
                 longestStreak = currentStreak
@@ -294,7 +425,13 @@ final class StatsManager {
         } else {
             // Streak broken
             currentStreak = 1
-            defaults.set(Date(), forKey: lastActiveDate)
+            defaults.set(Date(), forKey: lastActiveDateKey)
+        }
+        
+        // Also update best correct streak key for achievement tracking
+        let bestCorrect = defaults.integer(forKey: "ff.bestCorrectStreak")
+        if currentStreak > bestCorrect {
+            defaults.set(currentStreak, forKey: "ff.bestCorrectStreak")
         }
     }
     
@@ -311,6 +448,25 @@ final class StatsManager {
                 object: nil,
                 userInfo: ["streak": currentStreak, "bonusXP": bonusXP]
             )
+            
+            // Check achievements for this streak
+            checkAchievementsForStreak(currentStreak)
+        }
+    }
+    
+    private func checkAchievementsForStreak(_ streak: Int) {
+        let streakAchievements: [Int: String] = [
+            3: "streak_3",
+            7: "streak_7",
+            14: "streak_14",
+            30: "streak_30",
+            100: "streak_100"
+        ]
+        
+        for (threshold, achievementId) in streakAchievements {
+            if streak >= threshold {
+                AchievementDefinition.unlock(achievementId)
+            }
         }
     }
     
@@ -336,118 +492,132 @@ final class StatsManager {
                 object: nil,
                 userInfo: ["oldLevel": oldLevel, "newLevel": newLevel]
             )
+            
+            // Check level achievements
+            if newLevel >= 10 {
+                AchievementDefinition.unlock("legend")
+            }
         }
         
         return totalXP
     }
     
-    // MARK: - Achievement System
+    // MARK: - Achievement System (Integration with AchievementDefinition)
     
-    func unlockAchievement(_ id: String) {
-        guard !unlockedAchievements.contains(id) else { return }
-        
-        var achievements = unlockedAchievements
-        achievements.insert(id)
-        unlockedAchievements = achievements
-        
-        // Get XP reward for this achievement
-        let xpReward = achievementXPReward(for: id)
-        if xpReward > 0 {
-            addXP(xpReward, reason: "Achievement: \(id)")
-        }
-        
-        NotificationCenter.default.post(
-            name: Self.achievementUnlocked,
-            object: nil,
-            userInfo: ["id": id, "xp": xpReward]
-        )
-    }
-    
-    func isAchievementUnlocked(_ id: String) -> Bool {
-        unlockedAchievements.contains(id)
-    }
-    
-    private func achievementXPReward(for id: String) -> Int {
-        // Define XP rewards for each achievement
-        let rewards: [String: Int] = [
-            "first_trivia": 10,
-            "trivia_10": 25,
-            "trivia_50": 50,
-            "trivia_100": 100,
-            "trivia_500": 300,
-            "perfect_round": 75,
-            "perfect_5": 150,
-            "streak_3": 30,
-            "streak_7": 75,
-            "streak_14": 150,
-            "streak_30": 300,
-            "streak_100": 1000,
-            "first_favorite": 10,
-            "favorites_10": 30,
-            "favorites_50": 75,
-            "first_watchlist": 10,
-            "watchlist_25": 50,
-            "first_seen": 10,
-            "seen_10": 30,
-            "seen_50": 100,
-            "explorer_100": 40,
-            "explorer_500": 150,
-            "all_moods": 50,
-            "genre_explorer": 40,
-            "accuracy_80": 50,
-            "accuracy_90": 100,
-            "early_adopter": 25,
-            "week_warrior": 75,
-            "monthly_master": 200,
-        ]
-        return rewards[id] ?? 25
-    }
-    
-    private func checkAchievements() {
+    /// Check and unlock achievements based on current stats
+    func checkAllAchievements() {
         // Trivia achievements
-        if totalTriviaQuestionsAnswered >= 1 { unlockAchievement("first_trivia") }
-        if totalTriviaCorrect >= 10 { unlockAchievement("trivia_10") }
-        if totalTriviaCorrect >= 50 { unlockAchievement("trivia_50") }
-        if totalTriviaCorrect >= 100 { unlockAchievement("trivia_100") }
-        if totalTriviaCorrect >= 500 { unlockAchievement("trivia_500") }
-        
-        // Perfect rounds
-        if perfectRounds >= 1 { unlockAchievement("perfect_round") }
-        if perfectRounds >= 5 { unlockAchievement("perfect_5") }
+        checkTriviaAchievements()
         
         // Streak achievements
-        if currentStreak >= 3 { unlockAchievement("streak_3") }
-        if currentStreak >= 7 { unlockAchievement("streak_7") }
-        if currentStreak >= 14 { unlockAchievement("streak_14") }
-        if currentStreak >= 30 { unlockAchievement("streak_30") }
-        if currentStreak >= 100 { unlockAchievement("streak_100") }
+        checkStreakAchievements()
         
-        // Favorites
-        if totalMoviesFavorited >= 1 { unlockAchievement("first_favorite") }
-        if totalMoviesFavorited >= 10 { unlockAchievement("favorites_10") }
-        if totalMoviesFavorited >= 50 { unlockAchievement("favorites_50") }
+        // Discovery achievements
+        checkDiscoveryAchievements()
         
-        // Watchlist
-        if totalWatchlistAdds >= 1 { unlockAchievement("first_watchlist") }
-        if totalWatchlistAdds >= 25 { unlockAchievement("watchlist_25") }
+        // Dedication achievements
+        checkDedicationAchievements()
         
-        // Seen
-        if totalSeenMarked >= 1 { unlockAchievement("first_seen") }
-        if totalSeenMarked >= 10 { unlockAchievement("seen_10") }
-        if totalSeenMarked >= 50 { unlockAchievement("seen_50") }
+        // Social achievements
+        checkSocialAchievements()
+        
+        // Elite achievements
+        checkEliteAchievements()
+    }
+    
+    private func checkTriviaAchievements() {
+        let answered = totalTriviaQuestionsAnswered
+        let correct = totalTriviaCorrect
+        let accuracy = triviaAccuracy
+        let bestEndless = defaults.integer(forKey: "ff.bestEndlessRound")
+        
+        // Questions answered
+        if answered >= 1 { AchievementDefinition.unlock("trivia_first") }
+        if answered >= 10 { AchievementDefinition.unlock("trivia_10") }
+        if answered >= 50 { AchievementDefinition.unlock("trivia_50") }
+        if answered >= 100 { AchievementDefinition.unlock("trivia_100") }
+        if answered >= 500 { AchievementDefinition.unlock("trivia_500") }
+        
+        // Accuracy (with minimum questions)
+        if answered >= 20 && accuracy >= 80 { AchievementDefinition.unlock("trivia_accuracy_80") }
+        if answered >= 50 && accuracy >= 95 { AchievementDefinition.unlock("trivia_accuracy_95") }
+        
+        // Endless mode
+        if bestEndless >= 10 { AchievementDefinition.unlock("endless_10") }
+        if bestEndless >= 25 { AchievementDefinition.unlock("endless_25") }
+    }
+    
+    private func checkStreakAchievements() {
+        let daily = currentStreak
+        let bestCorrect = defaults.integer(forKey: "ff.bestCorrectStreak")
+        
+        // Daily streaks
+        if daily >= 3 { AchievementDefinition.unlock("streak_3") }
+        if daily >= 7 { AchievementDefinition.unlock("streak_7") }
+        if daily >= 14 { AchievementDefinition.unlock("streak_14") }
+        if daily >= 30 { AchievementDefinition.unlock("streak_30") }
+        if daily >= 100 { AchievementDefinition.unlock("streak_100") }
+        
+        // Correct streaks
+        if bestCorrect >= 5 { AchievementDefinition.unlock("correct_5") }
+        if bestCorrect >= 10 { AchievementDefinition.unlock("correct_10") }
+        if bestCorrect >= 25 { AchievementDefinition.unlock("correct_25") }
+        if bestCorrect >= 50 { AchievementDefinition.unlock("correct_50") }
+    }
+    
+    private func checkDiscoveryAchievements() {
+        let cards = discoverCardsViewed
+        let genres = genresExplored.count
+        let watchlist = totalWatchlistAdds
         
         // Discovery
-        if discoverCardsViewed >= 100 { unlockAchievement("explorer_100") }
-        if discoverCardsViewed >= 500 { unlockAchievement("explorer_500") }
+        if cards >= 10 { AchievementDefinition.unlock("discover_10") }
+        if cards >= 50 { AchievementDefinition.unlock("discover_50") }
+        if cards >= 100 { AchievementDefinition.unlock("discover_100") }
+        if cards >= 500 { AchievementDefinition.unlock("discover_500") }
         
-        // Moods explored
-        if moodsExplored.count >= 7 { unlockAchievement("all_moods") }
+        // Genres
+        if genres >= 5 { AchievementDefinition.unlock("genres_5") }
         
-        // Accuracy
-        if totalTriviaQuestionsAnswered >= 20 {
-            if triviaAccuracy >= 80 { unlockAchievement("accuracy_80") }
-            if triviaAccuracy >= 90 { unlockAchievement("accuracy_90") }
-        }
+        // Watchlist
+        if watchlist >= 10 { AchievementDefinition.unlock("watchlist_10") }
+        if watchlist >= 50 { AchievementDefinition.unlock("watchlist_50") }
+    }
+    
+    private func checkDedicationAchievements() {
+        let launches = appLaunchCount
+        
+        // App launches
+        if launches >= 10 { AchievementDefinition.unlock("launch_10") }
+        if launches >= 50 { AchievementDefinition.unlock("launch_50") }
+        if launches >= 100 { AchievementDefinition.unlock("launch_100") }
+        if launches >= 365 { AchievementDefinition.unlock("launch_365") }
+        
+        // Time-based (checked when playing)
+        if nightOwlPlays >= 1 { AchievementDefinition.unlock("night_owl") }
+        if earlyBirdPlays >= 1 { AchievementDefinition.unlock("early_bird") }
+        if weekendStreak >= 10 { AchievementDefinition.unlock("weekend_warrior") }
+    }
+    
+    private func checkSocialAchievements() {
+        let shares = sharesCount
+        
+        if shares >= 1 { AchievementDefinition.unlock("share_first") }
+        if shares >= 10 { AchievementDefinition.unlock("share_10") }
+        if shares >= 50 { AchievementDefinition.unlock("share_50") }
+    }
+    
+    private func checkEliteAchievements() {
+        let isPlus = defaults.bool(forKey: "ff.entitlements.isPlus")
+        let achievementsCount = AchievementDefinition.unlockedAchievements().count
+        let level = userLevel
+        let packs = packsPlayed.count
+        
+        if isPlus { AchievementDefinition.unlock("plus_member") }
+        if perfectWeeks >= 7 { AchievementDefinition.unlock("perfect_week") }
+        if achievementsCount >= 20 { AchievementDefinition.unlock("completionist") }
+        if level >= 10 { AchievementDefinition.unlock("legend") }
+        if packs >= 10 { AchievementDefinition.unlock("all_packs") }
     }
     
     // MARK: - Tracking Hooks
@@ -459,11 +629,14 @@ final class StatsManager {
         
         // Update streak on launch
         checkAndUpdateStreak()
+        syncWithUserStreakManager()
         
         // Small XP for returning
         if newCount > 1 {
             addXP(1, reason: "Daily return")
         }
+        
+        checkAllAchievements()
     }
     
     func trackTriviaQuestionAnswered(correct: Bool) {
@@ -478,32 +651,86 @@ final class StatsManager {
             addXP(1, reason: "Attempted question")
         }
         
-        checkAchievements()
+        // Check time-based achievements
+        let hour = currentHour()
+        if hour >= 0 && hour < 5 {
+            nightOwlPlays += 1
+        }
+        if hour >= 5 && hour < 7 {
+            earlyBirdPlays += 1
+        }
+        
+        // Track weekly progress for perfect week
+        trackWeeklyProgress(correct: correct)
+        
+        checkAllAchievements()
         maybeRequestReviewIfNeeded()
+    }
+    
+    private func trackWeeklyProgress(correct: Bool) {
+        let currentWeek = currentWeekNumber()
+        let lastWeek = defaults.integer(forKey: lastWeekNumberKey)
+        
+        if currentWeek != lastWeek {
+            // New week - check if last week was perfect
+            let weeklyCorrect = defaults.integer(forKey: weeklyCorrectCountKey)
+            let weeklyTotal = defaults.integer(forKey: weeklyTotalCountKey)
+            
+            if weeklyTotal >= 7 && weeklyCorrect == weeklyTotal {
+                perfectWeeks += 1
+            }
+            
+            // Reset for new week
+            defaults.set(0, forKey: weeklyCorrectCountKey)
+            defaults.set(0, forKey: weeklyTotalCountKey)
+            defaults.set(currentWeek, forKey: lastWeekNumberKey)
+        }
+        
+        // Update weekly counts
+        let weeklyTotal = defaults.integer(forKey: weeklyTotalCountKey) + 1
+        defaults.set(weeklyTotal, forKey: weeklyTotalCountKey)
+        
+        if correct {
+            let weeklyCorrect = defaults.integer(forKey: weeklyCorrectCountKey) + 1
+            defaults.set(weeklyCorrect, forKey: weeklyCorrectCountKey)
+        }
     }
     
     func trackDailyTriviaSessionCompleted() {
         let newValue = dailyTriviaSessionsCompleted + 1
         defaults.set(newValue, forKey: dailyTriviaSessionsCompletedKey)
         addXP(10, reason: "Daily trivia completed")
-        checkAchievements()
+        
+        // Track weekend play
+        if isWeekend() {
+            weekendStreak += 1
+        }
+        
+        checkAllAchievements()
     }
     
     func trackEndlessTriviaSessionCompleted() {
         let newValue = endlessTriviaSessionsCompleted + 1
         defaults.set(newValue, forKey: endlessTriviaSessionsCompletedKey)
         addXP(15, reason: "Endless session completed")
-        checkAchievements()
+        checkAllAchievements()
     }
     
     func trackPerfectRound() {
         perfectRounds += 1
         addXP(25, reason: "Perfect round!")
-        checkAchievements()
+        checkAllAchievements()
     }
     
     func trackEndlessTriviaAnswer(correct: Bool) {
         trackTriviaQuestionAnswered(correct: correct)
+    }
+    
+    func trackPackPlayed(_ packId: String) {
+        var packs = packsPlayed
+        packs.insert(packId)
+        packsPlayed = packs
+        checkAllAchievements()
     }
     
     func trackFavoritesOpened() {
@@ -520,7 +747,7 @@ final class StatsManager {
             addXP(2, reason: "Exploring movies")
         }
         
-        checkAchievements()
+        checkAllAchievements()
     }
     
     func trackQuoteFavorited() {
@@ -528,22 +755,29 @@ final class StatsManager {
         defaults.set(newValue, forKey: totalQuotesFavoritedKey)
     }
     
+    func trackShare() {
+        let newValue = sharesCount + 1
+        defaults.set(newValue, forKey: sharesCountKey)
+        addXP(5, reason: "Shared content")
+        checkAllAchievements()
+    }
+    
     func trackMovieFavorited() {
         totalMoviesFavorited += 1
         addXP(3, reason: "Favorited movie")
-        checkAchievements()
+        checkAllAchievements()
     }
     
     func trackWatchlistAdd() {
         totalWatchlistAdds += 1
         addXP(2, reason: "Added to watchlist")
-        checkAchievements()
+        checkAllAchievements()
     }
     
     func trackSeenMarked() {
         totalSeenMarked += 1
         addXP(5, reason: "Marked as seen")
-        checkAchievements()
+        checkAllAchievements()
     }
     
     func trackShuffle() {
@@ -563,13 +797,14 @@ final class StatsManager {
         var moods = moodsExplored
         moods.insert(mood)
         moodsExplored = moods
-        checkAchievements()
+        checkAllAchievements()
     }
     
     func trackGenreExplored(_ genreID: Int) {
         var genres = genresExplored
         genres.insert(genreID)
         genresExplored = genres
+        checkAllAchievements()
     }
     
     // MARK: - Engagement Metrics
@@ -663,60 +898,76 @@ final class StatsManager {
     }
 }
 
-// MARK: - Achievement Definitions
+// MARK: - UserStreakManager (Integrated)
 
-struct AchievementDefinition {
-    let id: String
-    let title: String
-    let description: String
-    let icon: String
-    let xpReward: Int
-    let category: AchievementCategory
-    
-    enum AchievementCategory: String {
-        case trivia = "Trivia"
-        case discovery = "Discovery"
-        case engagement = "Engagement"
-        case collection = "Collection"
-        case mastery = "Mastery"
+struct UserStreak {
+    let current: Int
+    let best: Int
+}
+
+enum UserStreakManager {
+    private static let currentKey = "ff.streak.current"
+    private static let bestKey = "ff.streak.best"
+    private static let lastDateKey = "ff.streak.lastDate"
+
+    /// Bumps the streak for "today" and returns the current streak info.
+    @discardableResult
+    static func bumpForToday() -> UserStreak {
+        let defaults = UserDefaults.standard
+        let today = Self.dayString(from: Date())
+
+        let lastDate = defaults.string(forKey: lastDateKey)
+        var current = defaults.integer(forKey: currentKey)
+        var best = defaults.integer(forKey: bestKey)
+
+        if let lastDate, lastDate == today {
+            // Already counted today; just return existing values (or initialize if 0)
+            if current == 0 {
+                current = 1
+            }
+        } else if let lastDate,
+                  let last = dayDate(from: lastDate),
+                  let todayDate = dayDate(from: today) {
+            let diff = Calendar.current.dateComponents([.day], from: last, to: todayDate).day ?? 0
+            if diff == 1 {
+                // Consecutive day → increment
+                current += 1
+            } else if diff > 1 {
+                // Gap → reset to 1
+                current = 1
+            } else {
+                // Same or negative diff (clock weirdness) → at least 1
+                current = max(current, 1)
+            }
+        } else {
+            // First time opening Discover
+            current = max(current, 1)
+        }
+
+        if current > best {
+            best = current
+        }
+
+        defaults.set(current, forKey: currentKey)
+        defaults.set(best, forKey: bestKey)
+        defaults.set(today, forKey: lastDateKey)
+
+        return UserStreak(current: current, best: best)
     }
-    
-    static let all: [AchievementDefinition] = [
-        // Trivia
-        AchievementDefinition(id: "first_trivia", title: "Quiz Starter", description: "Answer your first trivia question", icon: "star.fill", xpReward: 10, category: .trivia),
-        AchievementDefinition(id: "trivia_10", title: "Getting Started", description: "Answer 10 questions correctly", icon: "brain.fill", xpReward: 25, category: .trivia),
-        AchievementDefinition(id: "trivia_50", title: "Trivia Enthusiast", description: "Answer 50 questions correctly", icon: "brain.fill", xpReward: 50, category: .trivia),
-        AchievementDefinition(id: "trivia_100", title: "Trivia Master", description: "Answer 100 questions correctly", icon: "graduationcap.fill", xpReward: 100, category: .trivia),
-        AchievementDefinition(id: "trivia_500", title: "Trivia Legend", description: "Answer 500 questions correctly", icon: "trophy.fill", xpReward: 300, category: .trivia),
-        AchievementDefinition(id: "perfect_round", title: "Perfect Round", description: "Get all questions right in a session", icon: "crown.fill", xpReward: 75, category: .trivia),
-        AchievementDefinition(id: "perfect_5", title: "Perfectionist", description: "Complete 5 perfect rounds", icon: "crown.fill", xpReward: 150, category: .trivia),
-        AchievementDefinition(id: "accuracy_80", title: "Sharp Mind", description: "Maintain 80%+ accuracy (20+ questions)", icon: "target", xpReward: 50, category: .mastery),
-        AchievementDefinition(id: "accuracy_90", title: "Elite Accuracy", description: "Maintain 90%+ accuracy (20+ questions)", icon: "scope", xpReward: 100, category: .mastery),
-        
-        // Streaks
-        AchievementDefinition(id: "streak_3", title: "Getting Hooked", description: "3-day streak", icon: "flame.fill", xpReward: 30, category: .engagement),
-        AchievementDefinition(id: "streak_7", title: "Week Warrior", description: "7-day streak", icon: "flame.fill", xpReward: 75, category: .engagement),
-        AchievementDefinition(id: "streak_14", title: "Two Week Triumph", description: "14-day streak", icon: "flame.fill", xpReward: 150, category: .engagement),
-        AchievementDefinition(id: "streak_30", title: "Monthly Master", description: "30-day streak", icon: "flame.fill", xpReward: 300, category: .engagement),
-        AchievementDefinition(id: "streak_100", title: "Centurion", description: "100-day streak", icon: "bolt.fill", xpReward: 1000, category: .engagement),
-        
-        // Collection
-        AchievementDefinition(id: "first_favorite", title: "First Love", description: "Favorite your first movie", icon: "heart.fill", xpReward: 10, category: .collection),
-        AchievementDefinition(id: "favorites_10", title: "Building a List", description: "Favorite 10 movies", icon: "heart.fill", xpReward: 30, category: .collection),
-        AchievementDefinition(id: "favorites_50", title: "Curator", description: "Favorite 50 movies", icon: "heart.circle.fill", xpReward: 75, category: .collection),
-        AchievementDefinition(id: "first_watchlist", title: "Planning Ahead", description: "Add first movie to watchlist", icon: "bookmark.fill", xpReward: 10, category: .collection),
-        AchievementDefinition(id: "watchlist_25", title: "Movie Queue", description: "Add 25 movies to watchlist", icon: "bookmark.fill", xpReward: 50, category: .collection),
-        AchievementDefinition(id: "first_seen", title: "Movie Watcher", description: "Mark first movie as seen", icon: "eye.fill", xpReward: 10, category: .collection),
-        AchievementDefinition(id: "seen_10", title: "Film Fan", description: "Mark 10 movies as seen", icon: "eye.fill", xpReward: 30, category: .collection),
-        AchievementDefinition(id: "seen_50", title: "Avid Viewer", description: "Mark 50 movies as seen", icon: "eye.circle.fill", xpReward: 100, category: .collection),
-        
-        // Discovery
-        AchievementDefinition(id: "explorer_100", title: "Explorer", description: "View 100 movie cards", icon: "binoculars.fill", xpReward: 40, category: .discovery),
-        AchievementDefinition(id: "explorer_500", title: "Adventurer", description: "View 500 movie cards", icon: "map.fill", xpReward: 150, category: .discovery),
-        AchievementDefinition(id: "all_moods", title: "Mood Explorer", description: "Try all mood filters", icon: "theatermasks.fill", xpReward: 50, category: .discovery),
-    ]
-    
-    static func definition(for id: String) -> AchievementDefinition? {
-        all.first { $0.id == id }
+
+    // MARK: - Helpers
+
+    private static func dayString(from date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter.string(from: date)
+    }
+
+    private static func dayDate(from string: String) -> Date? {
+        let formatter = DateFormatter()
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter.date(from: string)
     }
 }

@@ -13,14 +13,20 @@ struct HomeView: View {
     @State private var showMilestoneToast = false
     @State private var milestoneText = ""
     
-    // New engagement states
+    // Entrance / CTA
     @State private var quoteAppeared = false
     @State private var statsAppeared = false
     @State private var ctaAppeared = false
     @State private var pulseQuizButton = false
-    @State private var showStreakRisk = false
     
+    // Achievements navigation
+    @State private var showAllAchievements = false
+    
+    /// Daily quiz
     var onStartQuiz: (() -> Void)? = nil
+    
+    /// Endless trivia (used by "Play More Trivia")
+    var onStartEndlessTrivia: (() -> Void)? = nil
 
     // MARK: - Computed Properties
     
@@ -49,75 +55,26 @@ struct HomeView: View {
     }
     
     private var streakAtRisk: Bool {
-        // Show risk indicator if user hasn't played today and has an active streak
         !appModel.quizCompletedToday && appModel.dailyStreak > 0
     }
 
+    // MARK: - Body
+    
     var body: some View {
         ZStack {
-            // Animated gradient background
             AnimatedGradientBackground()
-            
-            ScrollView(.vertical, showsIndicators: false) {
-                VStack(alignment: .leading, spacing: 0) {
-                    
-                    // ===== HEADER AREA =====
-                    headerSection
-                        .padding(.horizontal, 20)
-                        .padding(.top, 16)
-                    
-                    // ===== STREAK PILLS =====
-                    streakPillsSection
-                        .padding(.top, 12)
-                    
-                    // ===== HERO QUOTE CARD =====
-                    QuoteCard(
-                        text: appModel.todayQuote.text,
-                        movie: appModel.todayQuote.movie,
-                        year: appModel.todayQuote.year
-                    )
-                    .opacity(quoteAppeared ? 1 : 0)
-                    .offset(y: quoteAppeared ? 0 : 20)
-                    .padding(.top, 20)
-                    
-                    // ===== QUICK STATS =====
-                    quickStatsBar
-                        .padding(.top, 16)
-                        .opacity(statsAppeared ? 1 : 0)
-                        .offset(y: statsAppeared ? 0 : 15)
-                    
-                    // ===== CTA SECTION =====
-                    ctaSection
-                        .padding(.top, 24)
-                        .opacity(ctaAppeared ? 1 : 0)
-                        .scaleEffect(ctaAppeared ? 1 : 0.95)
-                    
-                    // ===== PREMIUM TEASER (if not subscribed) =====
-                    if !entitlements.isPlus {
-                        premiumTeaser
-                            .padding(.top, 24)
-                    }
-                    
-                    // ===== ACHIEVEMENTS PREVIEW =====
-                    achievementsPreview
-                        .padding(.top, 24)
-                        .padding(.bottom, 32)
-                }
-            }
-
-            // Toast overlay
-            if showMilestoneToast {
-                VStack {
-                    MilestoneToast(text: milestoneText)
-                        .transition(.move(edge: .top).combined(with: .opacity))
-                        .padding(.top, 8)
-                    Spacer()
-                }
-                .padding(.horizontal)
-            }
+            mainScrollView
+            toastOverlay
         }
         .sheet(isPresented: $showingShare) {
             ShareSheet(activityItems: [shareText()])
+        }
+        .sheet(isPresented: $showAllAchievements) {
+            NavigationStack {
+                AchievementsView()
+                    .environmentObject(appModel)
+                    .environmentObject(entitlements)
+            }
         }
         .onReceive(NotificationCenter.default.publisher(for: .filmFuelShareQuote)) { _ in
             showingShare = true
@@ -128,31 +85,135 @@ struct HomeView: View {
             appModel.refreshDailyStateIfNeeded()
         }
         .onAppear {
-            appModel.refreshDailyStateIfNeeded()
-            handleCorrectStreakChange(appModel.correctStreak)
-            prevBestCorrectStreak = appModel.bestCorrectStreak
-            
-            // Staggered entrance animations
-            withAnimation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.1)) {
-                quoteAppeared = true
-            }
-            withAnimation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.25)) {
-                statsAppeared = true
-            }
-            withAnimation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.4)) {
-                ctaAppeared = true
-            }
-            
-            // Start pulse animation for CTA if quiz not completed
-            if !appModel.quizCompletedToday {
-                startPulseAnimation()
-            }
+            handleOnAppear()
         }
         .onChange(of: appModel.correctStreak) {
             handleCorrectStreakChange(appModel.correctStreak)
         }
         .onChange(of: appModel.bestCorrectStreak) {
             prevBestCorrectStreak = appModel.bestCorrectStreak
+        }
+    }
+    
+    // MARK: - Main Scroll View
+    
+    private var mainScrollView: some View {
+        ScrollView(.vertical, showsIndicators: false) {
+            VStack(alignment: .leading, spacing: 0) {
+                headerSection
+                    .padding(.horizontal, 20)
+                    .padding(.top, 16)
+                
+                streakPillsSection
+                    .padding(.top, 12)
+                
+                quoteCardSection
+                
+                quickStatsBar
+                    .padding(.top, 16)
+                    .opacity(statsAppeared ? 1 : 0)
+                    .offset(y: statsAppeared ? 0 : 15)
+                
+                ctaSection
+                    .padding(.top, 24)
+                    .opacity(ctaAppeared ? 1 : 0)
+                    .scaleEffect(ctaAppeared ? 1 : 0.95)
+                
+                if !entitlements.isPlus {
+                    premiumTeaser
+                        .padding(.top, 24)
+                }
+                
+                achievementsCard
+                    .padding(.top, 24)
+                    .padding(.bottom, 32)
+            }
+        }
+    }
+    
+    private var quoteCardSection: some View {
+        QuoteCard(
+            text: appModel.todayQuote.text,
+            movie: appModel.todayQuote.movie,
+            year: appModel.todayQuote.year
+        )
+        .opacity(quoteAppeared ? 1 : 0)
+        .offset(y: quoteAppeared ? 0 : 20)
+        .padding(.top, 20)
+    }
+    
+    // MARK: - Simple Achievements Card (no heavy generics)
+    
+    private var achievementsCard: some View {
+        Button {
+            showAllAchievements = true
+        } label: {
+            HStack(spacing: 12) {
+                ZStack {
+                    Circle()
+                        .fill(Color.orange.opacity(0.12))
+                        .frame(width: 44, height: 44)
+                    Image(systemName: "trophy.fill")
+                        .foregroundStyle(.orange)
+                }
+                
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("View Achievements")
+                        .font(.subheadline.weight(.semibold))
+                    
+                    Text("Track streaks, XP, and more")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                
+                Spacer()
+                
+                Image(systemName: "chevron.right")
+                    .imageScale(.small)
+                    .foregroundStyle(.secondary)
+            }
+            .padding()
+            .background(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(Color(.secondarySystemBackground))
+            )
+        }
+        .buttonStyle(.plain)
+        .padding(.horizontal, 20)
+    }
+    
+    // MARK: - Toast Overlay
+    
+    @ViewBuilder
+    private var toastOverlay: some View {
+        if showMilestoneToast {
+            VStack {
+                MilestoneToast(text: milestoneText)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+                    .padding(.top, 8)
+                Spacer()
+            }
+            .padding(.horizontal)
+        }
+    }
+    
+    private func handleOnAppear() {
+        appModel.refreshDailyStateIfNeeded()
+        handleCorrectStreakChange(appModel.correctStreak)
+        prevBestCorrectStreak = appModel.bestCorrectStreak
+        
+        withAnimation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.1)) {
+            quoteAppeared = true
+        }
+        withAnimation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.25)) {
+            statsAppeared = true
+        }
+        withAnimation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.4)) {
+            ctaAppeared = true
+        }
+        
+        if !appModel.quizCompletedToday {
+            startPulseAnimation()
         }
     }
     
@@ -226,7 +287,6 @@ struct HomeView: View {
                         && appModel.correctStreak == appModel.bestCorrectStreak
                 )
                 
-                // New: Best streak pill
                 if appModel.bestCorrectStreak > 0 {
                     StreakPill(
                         title: "Best",
@@ -299,137 +359,165 @@ struct HomeView: View {
     
     // MARK: - CTA Section
     
+    @ViewBuilder
     private var ctaSection: some View {
-        Group {
-            if !appModel.quizCompletedToday {
-                Button {
-                    #if os(iOS)
-                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-                    #endif
-                    onStartQuiz?()
-                } label: {
-                    VStack(spacing: 6) {
-                        HStack(spacing: 8) {
-                            Image(systemName: "gamecontroller.fill")
-                                .imageScale(.medium)
-                            
-                            Text("Take Today's Quiz")
-                                .font(.headline.weight(.bold))
-                            
-                            if streakAtRisk {
-                                Text("🔥")
-                                    .font(.caption)
-                            }
-                        }
-                        
-                        Text("1 quick question • keep your streak alive")
-                            .font(.caption2)
-                            .foregroundStyle(.white.opacity(0.8))
-                    }
-                    .padding(.vertical, 16)
-                    .frame(maxWidth: .infinity)
-                    .background(
-                        ZStack {
-                            LinearGradient(
-                                colors: [Color.orange, Color.red.opacity(0.9)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                            
-                            // Shimmer effect
-                            if pulseQuizButton {
-                                LinearGradient(
-                                    colors: [.clear, .white.opacity(0.2), .clear],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                                .offset(x: pulseQuizButton ? 200 : -200)
-                            }
-                        }
-                        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-                    )
-                    .foregroundStyle(.white)
-                    .shadow(color: .orange.opacity(0.4), radius: 12, y: 6)
-                    .scaleEffect(pulseQuizButton ? 1.02 : 1.0)
-                }
-                .buttonStyle(.plain)
-                .padding(.horizontal, 20)
-                .accessibilityIdentifier("startQuizButton")
-                
-                // Streak risk warning
-                if streakAtRisk {
-                    HStack(spacing: 6) {
-                        Image(systemName: "exclamationmark.triangle.fill")
-                            .foregroundStyle(.orange)
-                            .imageScale(.small)
-                        
-                        Text("Don't lose your \(appModel.dailyStreak)-day streak!")
-                            .font(.caption.weight(.medium))
-                            .foregroundStyle(.secondary)
-                    }
-                    .padding(.top, 8)
-                    .transition(.opacity)
-                }
-                
-            } else {
-                // Completed state with encouragement
-                VStack(spacing: 12) {
-                    HStack(spacing: 8) {
-                        Image(systemName: "checkmark.seal.fill")
-                            .font(.title2)
-                            .foregroundStyle(.green)
-                        
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Quiz Complete!")
-                                .font(.subheadline.weight(.semibold))
-                            
-                            Text("Come back tomorrow for a new challenge")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                    .padding()
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(
-                        RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .fill(Color.green.opacity(0.1))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                    .stroke(Color.green.opacity(0.3), lineWidth: 1)
-                            )
-                    )
-                    
-                    // Encourage endless mode
-                    Button {
-                        // Navigate to endless trivia
-                    } label: {
-                        HStack {
-                            Image(systemName: "infinity")
-                            Text("Play More Trivia")
-                                .font(.subheadline.weight(.semibold))
-                            Spacer()
-                            Image(systemName: "chevron.right")
-                                .imageScale(.small)
-                        }
-                        .padding()
-                        .background(
-                            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                .fill(.ultraThinMaterial)
-                        )
-                    }
-                    .buttonStyle(.plain)
-                    .foregroundStyle(.primary)
-                }
-                .padding(.horizontal, 20)
+        if !appModel.quizCompletedToday {
+            ctaNotCompletedSection
+        } else {
+            ctaCompletedSection
+        }
+    }
+    
+    private var ctaNotCompletedSection: some View {
+        VStack(spacing: 0) {
+            quizButton
+            
+            if streakAtRisk {
+                streakRiskWarning
             }
         }
+    }
+    
+    private var quizButton: some View {
+        Button {
+            #if os(iOS)
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+            #endif
+            onStartQuiz?()
+        } label: {
+            ctaButtonLabel
+        }
+        .buttonStyle(.plain)
+        .padding(.horizontal, 20)
+        .accessibilityIdentifier("startQuizButton")
+    }
+    
+    private var ctaButtonLabel: some View {
+        VStack(spacing: 6) {
+            HStack(spacing: 8) {
+                Image(systemName: "gamecontroller.fill")
+                    .imageScale(.medium)
+                
+                Text("Take Today's Quiz")
+                    .font(.headline.weight(.bold))
+                
+                if streakAtRisk {
+                    Text("🔥")
+                        .font(.caption)
+                }
+            }
+            
+            Text("1 quick question • keep your streak alive")
+                .font(.caption2)
+                .foregroundStyle(.white.opacity(0.8))
+        }
+        .padding(.vertical, 16)
+        .frame(maxWidth: .infinity)
+        .background(ctaButtonBackground)
+        .foregroundStyle(.white)
+        .shadow(color: .orange.opacity(0.4), radius: 12, y: 6)
+        .scaleEffect(pulseQuizButton ? 1.02 : 1.0)
+    }
+    
+    private var ctaButtonBackground: some View {
+        ZStack {
+            LinearGradient(
+                colors: [Color.orange, Color.red.opacity(0.9)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            
+            if pulseQuizButton {
+                LinearGradient(
+                    colors: [.clear, .white.opacity(0.2), .clear],
+                    startPoint: .leading,
+                    endPoint: .trailing
+                )
+                .offset(x: pulseQuizButton ? 200 : -200)
+            }
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+    }
+    
+    private var streakRiskWarning: some View {
+        HStack(spacing: 6) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .foregroundStyle(.orange)
+                .imageScale(.small)
+            
+            Text("Don't lose your \(appModel.dailyStreak)-day streak!")
+                .font(.caption.weight(.medium))
+                .foregroundStyle(.secondary)
+        }
+        .padding(.top, 8)
+        .transition(.opacity)
+    }
+    
+    private var ctaCompletedSection: some View {
+        VStack(spacing: 12) {
+            completedBanner
+            endlessModeButton
+        }
+        .padding(.horizontal, 20)
+    }
+    
+    private var completedBanner: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "checkmark.seal.fill")
+                .font(.title2)
+                .foregroundStyle(.green)
+            
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Quiz Complete!")
+                    .font(.subheadline.weight(.semibold))
+                
+                Text("Come back tomorrow for a new challenge")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding()
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color.green.opacity(0.1))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .stroke(Color.green.opacity(0.3), lineWidth: 1)
+                )
+        )
+    }
+    
+    private var endlessModeButton: some View {
+        Button {
+            #if os(iOS)
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+            #endif
+            onStartEndlessTrivia?()
+        } label: {
+            HStack {
+                Image(systemName: "infinity")
+                Text("Play More Trivia")
+                    .font(.subheadline.weight(.semibold))
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .imageScale(.small)
+            }
+            .padding()
+            .background(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(.ultraThinMaterial)
+            )
+        }
+        .buttonStyle(.plain)
+        .foregroundStyle(.primary)
     }
     
     // MARK: - Premium Teaser
     
     private var premiumTeaser: some View {
         Button {
-            // Navigate to paywall
+            // show paywall from parent if you want later
         } label: {
             HStack(spacing: 12) {
                 Image(systemName: "crown.fill")
@@ -484,65 +572,6 @@ struct HomeView: View {
             )
         }
         .buttonStyle(.plain)
-        .padding(.horizontal, 20)
-    }
-    
-    // MARK: - Achievements Preview
-    
-    private var achievementsPreview: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Text("Achievements")
-                    .font(.headline.weight(.bold))
-                
-                Spacer()
-                
-                Button {
-                    // Navigate to full achievements
-                } label: {
-                    Text("See All")
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(.orange)
-                }
-            }
-            
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 12) {
-                    AchievementBadge(
-                        icon: "flame.fill",
-                        title: "Hot Streak",
-                        subtitle: "5 correct in a row",
-                        progress: min(1.0, Double(appModel.correctStreak) / 5.0),
-                        isUnlocked: appModel.bestCorrectStreak >= 5
-                    )
-                    
-                    AchievementBadge(
-                        icon: "calendar.badge.checkmark",
-                        title: "Week Warrior",
-                        subtitle: "7-day streak",
-                        progress: min(1.0, Double(appModel.dailyStreak) / 7.0),
-                        isUnlocked: appModel.dailyStreak >= 7
-                    )
-                    
-                    AchievementBadge(
-                        icon: "star.fill",
-                        title: "Rising Star",
-                        subtitle: "10 correct streak",
-                        progress: min(1.0, Double(appModel.bestCorrectStreak) / 10.0),
-                        isUnlocked: appModel.bestCorrectStreak >= 10
-                    )
-                    
-                    AchievementBadge(
-                        icon: "trophy.fill",
-                        title: "Champion",
-                        subtitle: "25 correct streak",
-                        progress: min(1.0, Double(appModel.bestCorrectStreak) / 25.0),
-                        isUnlocked: appModel.bestCorrectStreak >= 25,
-                        isPremium: true
-                    )
-                }
-            }
-        }
         .padding(.horizontal, 20)
     }
 
@@ -655,7 +684,7 @@ private struct AnimatedGradientBackground: View {
     }
 }
 
-// MARK: - Enhanced Streak Pill
+// MARK: - Streak Pill
 
 private struct StreakPill: View {
     let title: String
@@ -675,10 +704,7 @@ private struct StreakPill: View {
                 .font(.footnote.weight(.medium))
                 .opacity(0.85)
                 .lineLimit(1)
-                .allowsTightening(true)
                 .minimumScaleFactor(0.85)
-                .fixedSize(horizontal: true, vertical: false)
-                .layoutPriority(2)
 
             Text("\(max(0, value))")
                 .font(.footnote.monospacedDigit().bold())
@@ -694,46 +720,33 @@ private struct StreakPill: View {
             Capsule()
                 .stroke(isAtRisk ? accentColor.opacity(0.5) : .clear, lineWidth: 1.5)
         )
-        .fixedSize(horizontal: true, vertical: false)
-        .layoutPriority(2)
         .overlay(alignment: .topTrailing) {
             if showRecord {
                 Image(systemName: "trophy.fill")
                     .font(.caption.weight(.bold))
                     .foregroundStyle(.yellow)
                     .offset(x: 6, y: -4)
-                    .accessibilityHidden(true)
-                    .transition(.scale.combined(with: .opacity))
             }
         }
-        .animation(.spring(response: 0.35, dampingFraction: 0.85), value: showRecord)
         .accessibilityLabel("\(title) streak \(value) days\(showRecord ? ", current record" : "")\(isAtRisk ? ", at risk" : "")")
     }
 }
 
-// MARK: - Enhanced Quote Card
+// MARK: - Quote Card
 
 private struct QuoteCard: View {
     let text: String
     let movie: String
     let year: Int
     
-    @State private var isPressed = false
-
     var body: some View {
         VStack(spacing: 20) {
-            // Quote marks decoration
-            Image(systemName: "quote.opening")
-                .font(.title2)
-                .foregroundStyle(.orange.opacity(0.6))
-            
-            Text(text)
+            Text("\"\(text)\"")
                 .font(.title2.weight(.semibold))
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
                 .lineLimit(6)
                 .minimumScaleFactor(0.8)
-                .allowsTightening(true)
 
             VStack(spacing: 4) {
                 Text(movie)
@@ -766,79 +779,6 @@ private struct QuoteCard: View {
                 )
         )
         .padding(.horizontal, 20)
-        .scaleEffect(isPressed ? 0.98 : 1.0)
-        .animation(.spring(response: 0.3, dampingFraction: 0.8), value: isPressed)
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(text) — \(movie) \(String(year))")
-    }
-}
-
-// MARK: - Achievement Badge
-
-private struct AchievementBadge: View {
-    let icon: String
-    let title: String
-    let subtitle: String
-    let progress: Double
-    let isUnlocked: Bool
-    var isPremium: Bool = false
-    
-    var body: some View {
-        VStack(spacing: 8) {
-            ZStack {
-                // Progress ring
-                Circle()
-                    .stroke(Color.secondary.opacity(0.2), lineWidth: 3)
-                    .frame(width: 56, height: 56)
-                
-                Circle()
-                    .trim(from: 0, to: progress)
-                    .stroke(
-                        isUnlocked ? Color.green : Color.orange,
-                        style: StrokeStyle(lineWidth: 3, lineCap: .round)
-                    )
-                    .frame(width: 56, height: 56)
-                    .rotationEffect(.degrees(-90))
-                
-                // Icon
-                Image(systemName: icon)
-                    .font(.title3)
-                    .foregroundStyle(isUnlocked ? .primary : .secondary)
-                
-                // Lock overlay for premium
-                if isPremium && !isUnlocked {
-                    Circle()
-                        .fill(.ultraThinMaterial)
-                        .frame(width: 56, height: 56)
-                    
-                    Image(systemName: "lock.fill")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-            }
-            
-            VStack(spacing: 2) {
-                Text(title)
-                    .font(.caption.weight(.semibold))
-                    .lineLimit(1)
-                
-                Text(subtitle)
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-            }
-        }
-        .frame(width: 90)
-        .padding(.vertical, 12)
-        .padding(.horizontal, 8)
-        .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(isUnlocked ? Color.green.opacity(0.1) : Color(.secondarySystemBackground))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .stroke(isUnlocked ? Color.green.opacity(0.3) : .clear, lineWidth: 1)
-        )
     }
 }
 
@@ -851,7 +791,6 @@ private struct MilestoneToast: View {
         HStack(spacing: 12) {
             Text(text)
                 .font(.subheadline.weight(.bold))
-            
             Spacer(minLength: 0)
         }
         .padding(.horizontal, 16)
@@ -867,6 +806,5 @@ private struct MilestoneToast: View {
                 .stroke(Color.orange.opacity(0.3), lineWidth: 1)
         )
         .padding(.horizontal)
-        .accessibilityLabel(text)
     }
 }
