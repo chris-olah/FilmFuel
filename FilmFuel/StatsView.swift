@@ -2,7 +2,7 @@
 //  StatsView.swift
 //  FilmFuel
 //
-//  Redesigned with gamification, achievements, and engagement hooks
+//  UPDATED: Better level display, cleaner cards, improved animations
 //
 
 import SwiftUI
@@ -27,7 +27,6 @@ struct StatsView: View {
     }
     
     private var totalXP: Int {
-        // Calculate XP from various activities
         let triviaXP = stats.totalTriviaCorrect * 5
         let discoveryXP = stats.discoverCardsViewed * 1
         let engagementXP = stats.uniqueDaysUsed * 10
@@ -48,7 +47,12 @@ struct StatsView: View {
         let current = userLevel.requiredXP
         let needed = next.requiredXP - current
         let progress = totalXP - current
-        return Double(progress) / Double(needed)
+        return min(1.0, Double(progress) / Double(needed))
+    }
+    
+    private var xpToNextLevel: Int {
+        guard let next = userLevel.next else { return 0 }
+        return max(0, next.requiredXP - totalXP)
     }
     
     var body: some View {
@@ -98,8 +102,22 @@ struct StatsView: View {
     
     private var levelHeroCard: some View {
         VStack(spacing: 16) {
-            // Level badge
+            // Level badge with glow
             ZStack {
+                // Glow effect
+                Circle()
+                    .fill(
+                        RadialGradient(
+                            colors: [Color.accentColor.opacity(0.3), .clear],
+                            center: .center,
+                            startRadius: 20,
+                            endRadius: 60
+                        )
+                    )
+                    .frame(width: 120, height: 120)
+                    .blur(radius: 15)
+                    .opacity(animateProgress ? 1 : 0)
+                
                 Circle()
                     .fill(
                         LinearGradient(
@@ -114,14 +132,20 @@ struct StatsView: View {
                     .font(.system(size: 36))
                     .foregroundColor(.accentColor)
             }
+            .scaleEffect(animateProgress ? 1 : 0.8)
+            .opacity(animateProgress ? 1 : 0)
             
             VStack(spacing: 4) {
                 Text(userLevel.title)
                     .font(.title2.weight(.bold))
                 
-                Text("\(totalXP) XP")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
+                HStack(spacing: 4) {
+                    Image(systemName: "sparkles")
+                        .font(.caption)
+                    Text("\(totalXP) XP")
+                }
+                .font(.subheadline)
+                .foregroundColor(.secondary)
             }
             
             // Progress to next level
@@ -146,7 +170,7 @@ struct StatsView: View {
                     .frame(height: 10)
                     
                     HStack {
-                        Text("\(next.requiredXP - totalXP) XP to \(next.title)")
+                        Text("\(xpToNextLevel) XP to \(next.title)")
                             .font(.caption)
                             .foregroundColor(.secondary)
                         
@@ -158,9 +182,13 @@ struct StatsView: View {
                     }
                 }
             } else {
-                Text("Maximum level reached! 🎉")
-                    .font(.caption)
-                    .foregroundColor(.green)
+                HStack(spacing: 6) {
+                    Image(systemName: "crown.fill")
+                        .foregroundColor(.yellow)
+                    Text("Maximum level reached!")
+                        .font(.caption.weight(.medium))
+                        .foregroundColor(.green)
+                }
             }
         }
         .padding(20)
@@ -239,16 +267,16 @@ struct StatsView: View {
             
             QuickStatCard(
                 icon: "target",
-                value: "\(stats.overallAccuracyPercent)%",
+                value: "\(stats.triviaAccuracy)%",
                 label: "Accuracy",
                 color: .orange
             )
             
             QuickStatCard(
-                icon: "sun.max.fill",
+                icon: "calendar",
                 value: "\(stats.uniqueDaysUsed)",
                 label: "Days Active",
-                color: .yellow
+                color: .purple
             )
         }
     }
@@ -256,71 +284,27 @@ struct StatsView: View {
     // MARK: - Detailed Stats List
     
     private var detailedStatsList: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            // Trivia Section
-            StatSection(title: "Trivia", icon: "gamecontroller.fill") {
-                StatRow(
-                    icon: "questionmark.circle.fill",
-                    title: "Questions answered",
-                    value: "\(stats.totalTriviaQuestionsAnswered)"
-                )
-                StatRow(
-                    icon: "checkmark.circle.fill",
-                    title: "Correct answers",
-                    value: "\(stats.totalTriviaCorrect)"
-                )
-                StatRow(
-                    icon: "calendar",
-                    title: "Daily sessions",
-                    value: "\(stats.dailyTriviaSessionsCompleted)"
-                )
-                StatRow(
-                    icon: "infinity",
-                    title: "Endless sessions",
-                    value: "\(stats.endlessTriviaSessionsCompleted)"
-                )
+        VStack(spacing: 16) {
+            // Trivia stats
+            StatSection(title: "Trivia", icon: "brain.fill") {
+                StatRow(icon: "questionmark.circle", title: "Total Answered", value: "\(stats.totalTriviaAnswered)")
+                StatRow(icon: "checkmark.circle", title: "Correct Answers", value: "\(stats.totalTriviaCorrect)")
+                StatRow(icon: "percent", title: "Accuracy Rate", value: "\(stats.triviaAccuracy)%")
             }
             
-            // Discovery Section
+            // Discovery stats
             StatSection(title: "Discovery", icon: "sparkles") {
-                StatRow(
-                    icon: "rectangle.stack.fill",
-                    title: "Cards viewed",
-                    value: "\(stats.discoverCardsViewed)"
-                )
-                StatRow(
-                    icon: "heart.fill",
-                    title: "Quotes favorited",
-                    value: "\(stats.totalQuotesFavorited)"
-                )
-                StatRow(
-                    icon: "bookmark.fill",
-                    title: "Favorites opened",
-                    value: "\(stats.favoritesOpenedCount)"
-                )
+                StatRow(icon: "eye", title: "Movies Viewed", value: "\(stats.discoverCardsViewed)")
+                // Placeholder for favorites until StatsManager supports it
+                StatRow(icon: "heart.fill", title: "Favorites", value: "—")
+                StatRow(icon: "bookmark.fill", title: "Watchlist", value: "\(stats.watchlistCount)")
             }
             
-            // App Usage Section
-            StatSection(title: "App Usage", icon: "iphone") {
-                StatRow(
-                    icon: "flame.fill",
-                    title: "App launches",
-                    value: "\(stats.appLaunchCount)"
-                )
-                if let first = stats.firstLaunchDate {
-                    StatRow(
-                        icon: "clock.arrow.circlepath",
-                        title: "Member since",
-                        value: dateFormatter.string(from: first)
-                    )
-                }
-                if let last = stats.lastLaunchDate {
-                    StatRow(
-                        icon: "clock.fill",
-                        title: "Last session",
-                        value: dateFormatter.string(from: last)
-                    )
-                }
+            // Engagement stats
+            StatSection(title: "Engagement", icon: "chart.line.uptrend.xyaxis") {
+                StatRow(icon: "calendar", title: "Days Used", value: "\(stats.uniqueDaysUsed)")
+                StatRow(icon: "flame", title: "Current Streak", value: "\(currentStreak) days")
+                StatRow(icon: "trophy", title: "Best Streak", value: "\(longestStreak) days")
             }
         }
     }
@@ -331,16 +315,22 @@ struct StatsView: View {
         Button {
             showingAchievements = true
         } label: {
-            HStack {
-                Image(systemName: "trophy.fill")
-                    .font(.title2)
-                    .foregroundColor(.yellow)
+            HStack(spacing: 12) {
+                ZStack {
+                    Circle()
+                        .fill(Color.orange.opacity(0.15))
+                        .frame(width: 44, height: 44)
+                    
+                    Image(systemName: "trophy.fill")
+                        .font(.title3)
+                        .foregroundColor(.orange)
+                }
                 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Achievements")
+                    Text("View Achievements")
                         .font(.headline)
-                        .foregroundColor(.primary)
-                    Text("View all your unlocked badges")
+                    
+                    Text("Track your progress and unlock rewards")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -348,6 +338,7 @@ struct StatsView: View {
                 Spacer()
                 
                 Image(systemName: "chevron.right")
+                    .font(.caption.weight(.semibold))
                     .foregroundColor(.secondary)
             }
             .padding()
@@ -360,7 +351,7 @@ struct StatsView: View {
     }
 }
 
-// MARK: - Supporting Views
+// MARK: - Quick Stat Card
 
 private struct QuickStatCard: View {
     let icon: String
@@ -391,6 +382,8 @@ private struct QuickStatCard: View {
     }
 }
 
+// MARK: - Stat Section
+
 private struct StatSection<Content: View>: View {
     let title: String
     let icon: String
@@ -416,6 +409,8 @@ private struct StatSection<Content: View>: View {
         }
     }
 }
+
+// MARK: - Stat Row
 
 private struct StatRow: View {
     let icon: String
@@ -446,7 +441,7 @@ private struct StatRow: View {
 struct AchievementsFullView: View {
     @Environment(\.dismiss) private var dismiss
     
-    // Sample achievements - integrate with your actual achievement system
+    // Sample achievements
     private let achievements: [AchievementItem] = [
         AchievementItem(id: "first_trivia", title: "Quiz Starter", description: "Complete your first trivia", icon: "star.fill", xp: 10, isUnlocked: true),
         AchievementItem(id: "streak_3", title: "Getting Hooked", description: "3-day streak", icon: "flame.fill", xp: 30, isUnlocked: true),
@@ -545,68 +540,9 @@ private struct AchievementRow: View {
     }
 }
 
-// Note: UserLevel enum is defined in DiscoverVM.swift
-// If you need StatsView to work independently, uncomment the UserLevel enum below
-
-/*
-enum UserLevel: Int, CaseIterable {
-    case newbie = 0
-    case explorer = 1
-    case enthusiast = 2
-    case cinephile = 3
-    case connoisseur = 4
-    case elite = 5
-    
-    var title: String {
-        switch self {
-        case .newbie:      return "Film Newbie"
-        case .explorer:    return "Explorer"
-        case .enthusiast:  return "Enthusiast"
-        case .cinephile:   return "Cinephile"
-        case .connoisseur: return "Connoisseur"
-        case .elite:       return "Elite Curator"
-        }
-    }
-    
-    var icon: String {
-        switch self {
-        case .newbie:      return "person.fill"
-        case .explorer:    return "binoculars.fill"
-        case .enthusiast:  return "star.fill"
-        case .cinephile:   return "film.fill"
-        case .connoisseur: return "crown.fill"
-        case .elite:       return "sparkles"
-        }
-    }
-    
-    var requiredXP: Int {
-        switch self {
-        case .newbie:      return 0
-        case .explorer:    return 50
-        case .enthusiast:  return 150
-        case .cinephile:   return 400
-        case .connoisseur: return 1000
-        case .elite:       return 2500
-        }
-    }
-    
-    static func level(for xp: Int) -> UserLevel {
-        for level in Self.allCases.reversed() {
-            if xp >= level.requiredXP {
-                return level
-            }
-        }
-        return .newbie
-    }
-    
-    var next: UserLevel? {
-        UserLevel(rawValue: rawValue + 1)
-    }
-}
-*/
-
 #Preview {
     NavigationStack {
         StatsView()
+            .environmentObject(FilmFuelEntitlements())
     }
 }

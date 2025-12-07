@@ -1,3 +1,11 @@
+//
+//  HomeView.swift
+//  FilmFuel
+//
+//  UPDATED: Fixed premium teaser, removed duplicate streak display,
+//  improved "Play More Trivia" CTA, fixed string encoding
+//
+
 import SwiftUI
 #if canImport(UIKit)
 import UIKit
@@ -6,6 +14,7 @@ import UIKit
 struct HomeView: View {
     @EnvironmentObject private var appModel: AppModel
     @EnvironmentObject private var entitlements: FilmFuelEntitlements
+    @EnvironmentObject private var store: FilmFuelStore
 
     @State private var showingShare = false
     @State private var prevCorrectStreak: Int = 0
@@ -21,6 +30,9 @@ struct HomeView: View {
     
     // Achievements navigation
     @State private var showAllAchievements = false
+    
+    // NEW: Paywall state (was missing!)
+    @State private var showPaywall = false
     
     /// Daily quiz
     var onStartQuiz: (() -> Void)? = nil
@@ -76,6 +88,12 @@ struct HomeView: View {
                     .environmentObject(entitlements)
             }
         }
+        // NEW: Paywall sheet
+        .sheet(isPresented: $showPaywall) {
+            FilmFuelPlusPaywallView()
+                .environmentObject(store)
+                .environmentObject(entitlements)
+        }
         .onReceive(NotificationCenter.default.publisher(for: .filmFuelShareQuote)) { _ in
             showingShare = true
         }
@@ -104,8 +122,8 @@ struct HomeView: View {
                     .padding(.horizontal, 20)
                     .padding(.top, 16)
                 
-                streakPillsSection
-                    .padding(.top, 12)
+                // REMOVED: streakPillsSection (was duplicate)
+                // Stats bar alone is sufficient
                 
                 quoteCardSection
                 
@@ -142,7 +160,7 @@ struct HomeView: View {
         .padding(.top, 20)
     }
     
-    // MARK: - Simple Achievements Card (no heavy generics)
+    // MARK: - Achievements Card
     
     private var achievementsCard: some View {
         Button {
@@ -267,83 +285,56 @@ struct HomeView: View {
         }
     }
     
-    // MARK: - Streak Pills Section
-    
-    private var streakPillsSection: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 10) {
-                StreakPill(
-                    title: "Daily",
-                    value: appModel.dailyStreak,
-                    icon: "calendar",
-                    isAtRisk: streakAtRisk
-                )
-                
-                StreakPill(
-                    title: "Correct",
-                    value: appModel.correctStreak,
-                    icon: "flame.fill",
-                    showRecord: appModel.correctStreak > 0
-                        && appModel.correctStreak == appModel.bestCorrectStreak
-                )
-                
-                if appModel.bestCorrectStreak > 0 {
-                    StreakPill(
-                        title: "Best",
-                        value: appModel.bestCorrectStreak,
-                        icon: "trophy.fill",
-                        accentColor: .yellow
-                    )
-                }
-            }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 4)
-        }
-    }
-    
-    // MARK: - Quick Stats Bar
+    // MARK: - Quick Stats Bar (Single source of streak info)
     
     private var quickStatsBar: some View {
         HStack(spacing: 0) {
             quickStatItem(
                 icon: "calendar",
-                label: "Day",
-                value: "\(appModel.dailyStreak)"
+                label: "Day Streak",
+                value: "\(appModel.dailyStreak)",
+                color: streakAtRisk ? .orange : .secondary
             )
             
             Divider()
-                .frame(height: 24)
+                .frame(height: 28)
                 .opacity(0.3)
             
             quickStatItem(
                 icon: "flame.fill",
-                label: "Streak",
-                value: "\(appModel.correctStreak)"
+                label: "Correct",
+                value: "\(appModel.correctStreak)",
+                color: appModel.correctStreak > 0 ? .orange : .secondary
             )
             
             Divider()
-                .frame(height: 24)
+                .frame(height: 28)
                 .opacity(0.3)
             
             quickStatItem(
-                icon: "trophy",
+                icon: "trophy.fill",
                 label: "Best",
-                value: "\(appModel.bestCorrectStreak)"
+                value: "\(appModel.bestCorrectStreak)",
+                color: .yellow
             )
         }
-        .padding(.vertical, 12)
+        .padding(.vertical, 14)
         .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .fill(.ultraThinMaterial)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .stroke(Color.primary.opacity(0.05), lineWidth: 1)
         )
         .padding(.horizontal, 20)
     }
     
-    private func quickStatItem(icon: String, label: String, value: String) -> some View {
+    private func quickStatItem(icon: String, label: String, value: String, color: Color = .secondary) -> some View {
         HStack(spacing: 6) {
             Image(systemName: icon)
                 .imageScale(.small)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(color)
             
             VStack(alignment: .leading, spacing: 1) {
                 Text(value)
@@ -488,6 +479,7 @@ struct HomeView: View {
         )
     }
     
+    // IMPROVED: More compelling "Play More Trivia" button
     private var endlessModeButton: some View {
         Button {
             #if os(iOS)
@@ -495,29 +487,57 @@ struct HomeView: View {
             #endif
             onStartEndlessTrivia?()
         } label: {
-            HStack {
-                Image(systemName: "infinity")
-                Text("Play More Trivia")
-                    .font(.subheadline.weight(.semibold))
+            HStack(spacing: 12) {
+                // Icon with gradient background
+                ZStack {
+                    Circle()
+                        .fill(
+                            LinearGradient(
+                                colors: [.purple, .indigo],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: 44, height: 44)
+                    
+                    Image(systemName: "infinity")
+                        .font(.title3.weight(.semibold))
+                        .foregroundColor(.white)
+                }
+                
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Endless Trivia")
+                        .font(.headline.weight(.bold))
+                    
+                    Text("Keep the movie magic going")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                
                 Spacer()
-                Image(systemName: "chevron.right")
-                    .imageScale(.small)
+                
+                Image(systemName: "play.circle.fill")
+                    .font(.title2)
+                    .foregroundStyle(.purple)
             }
             .padding()
             .background(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .fill(.ultraThinMaterial)
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(Color.purple.opacity(0.08))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 18, style: .continuous)
+                            .stroke(Color.purple.opacity(0.2), lineWidth: 1)
+                    )
             )
         }
         .buttonStyle(.plain)
-        .foregroundStyle(.primary)
     }
     
-    // MARK: - Premium Teaser
+    // MARK: - Premium Teaser (FIXED: Now actually opens paywall!)
     
     private var premiumTeaser: some View {
         Button {
-            // show paywall from parent if you want later
+            showPaywall = true  // FIXED: Was empty before!
         } label: {
             HStack(spacing: 12) {
                 Image(systemName: "crown.fill")
@@ -531,19 +551,32 @@ struct HomeView: View {
                     )
                 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Unlock FilmFuel Pro")
+                    Text("Unlock FilmFuel Plus")
                         .font(.subheadline.weight(.bold))
                     
-                    Text("Ad-free • Unlimited trivia • Exclusive packs")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                    // Personalized based on usage
+                    if appModel.correctStreak > 0 {
+                        Text("Keep your \(appModel.correctStreak)-streak going strong")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    } else {
+                        Text("Unlimited trivia • Smart discovery • No ads")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
                 }
                 
                 Spacer()
                 
-                Image(systemName: "chevron.right")
-                    .imageScale(.small)
-                    .foregroundStyle(.secondary)
+                Text("Try Free")
+                    .font(.caption.weight(.semibold))
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(
+                        Capsule()
+                            .fill(Color.orange.opacity(0.2))
+                    )
+                    .foregroundStyle(.orange)
             }
             .padding()
             .background(
@@ -684,54 +717,6 @@ private struct AnimatedGradientBackground: View {
     }
 }
 
-// MARK: - Streak Pill
-
-private struct StreakPill: View {
-    let title: String
-    let value: Int
-    let icon: String
-    var showRecord: Bool = false
-    var isAtRisk: Bool = false
-    var accentColor: Color = .orange
-
-    var body: some View {
-        HStack(spacing: 6) {
-            Image(systemName: icon)
-                .imageScale(.small)
-                .symbolEffect(.pulse, options: .repeating, isActive: isAtRisk)
-
-            Text(title)
-                .font(.footnote.weight(.medium))
-                .opacity(0.85)
-                .lineLimit(1)
-                .minimumScaleFactor(0.85)
-
-            Text("\(max(0, value))")
-                .font(.footnote.monospacedDigit().bold())
-        }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 10)
-        .background(
-            Capsule()
-                .fill(accentColor.opacity(isAtRisk ? 0.2 : 0.12))
-        )
-        .foregroundStyle(accentColor)
-        .overlay(
-            Capsule()
-                .stroke(isAtRisk ? accentColor.opacity(0.5) : .clear, lineWidth: 1.5)
-        )
-        .overlay(alignment: .topTrailing) {
-            if showRecord {
-                Image(systemName: "trophy.fill")
-                    .font(.caption.weight(.bold))
-                    .foregroundStyle(.yellow)
-                    .offset(x: 6, y: -4)
-            }
-        }
-        .accessibilityLabel("\(title) streak \(value) days\(showRecord ? ", current record" : "")\(isAtRisk ? ", at risk" : "")")
-    }
-}
-
 // MARK: - Quote Card
 
 private struct QuoteCard: View {
@@ -763,12 +748,12 @@ private struct QuoteCard: View {
         .padding(.vertical, 32)
         .frame(maxWidth: .infinity)
         .background(
-            RoundedRectangle(cornerRadius: 28, style: .continuous)
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
                 .fill(.ultraThinMaterial)
                 .shadow(color: .black.opacity(0.08), radius: 20, y: 10)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 28, style: .continuous)
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
                 .stroke(
                     LinearGradient(
                         colors: [.white.opacity(0.3), .white.opacity(0.1)],

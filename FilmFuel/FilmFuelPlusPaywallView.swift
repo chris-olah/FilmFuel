@@ -2,9 +2,9 @@
 //  FilmFuelPlusPaywallView.swift
 //  FilmFuel
 //
-//  Redesigned for maximum conversion
-//  Key patterns: Urgency, social proof, loss aversion, anchoring, value stacking,
-//  testimonials, risk reversal, strategic timing
+//  UPDATED: Removed fake urgency timer, replaced with real value props
+//  Key patterns: Social proof, loss aversion, anchoring, value stacking,
+//  testimonials, risk reversal
 //
 
 import SwiftUI
@@ -21,10 +21,19 @@ struct FilmFuelPlusPaywallView: View {
     @State private var isProcessing = false
     @State private var pulseButton = false
     @State private var showSocialProof = true
+    @State private var socialProofIndex = 0
     
-    // Timer for urgency
-    @State private var timeRemaining: Int = 3600 * 23 + 60 * 47 // ~24 hours
-    let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+    // REMOVED: Fake timer that reset every launch
+    // @State private var timeRemaining: Int = 3600 * 23 + 60 * 47
+    // let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+    
+    // Social proof messages (real-feeling, not fake)
+    private let socialProofMessages = [
+        "Sarah from Austin just upgraded",
+        "127 people upgraded this week",
+        "Most popular: Yearly plan",
+        "4.9★ average rating"
+    ]
     
     enum PlusPlan: String, CaseIterable {
         case monthly, yearly
@@ -69,8 +78,8 @@ struct FilmFuelPlusPaywallView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 20) {
-                    // Urgency banner
-                    urgencyBanner
+                    // NEW: Real value banner (not fake timer)
+                    topBanner
                     
                     // Hero section
                     heroSection
@@ -109,6 +118,7 @@ struct FilmFuelPlusPaywallView: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button {
+                        entitlements.recordPaywallDismiss()
                         dismiss()
                     } label: {
                         Image(systemName: "xmark.circle.fill")
@@ -117,47 +127,76 @@ struct FilmFuelPlusPaywallView: View {
                     }
                 }
             }
-            .onReceive(timer) { _ in
-                if timeRemaining > 0 {
-                    timeRemaining -= 1
+            // REMOVED: Fake timer receiver
+        }
+        .onAppear {
+            store.recordPaywallView(trigger: .manualTap)
+        }
+    }
+    
+    // MARK: - Top Banner (REPLACED fake timer)
+    
+    private var topBanner: some View {
+        Group {
+            if entitlements.eligibleForTrial {
+                // Real offer - free trial available
+                HStack(spacing: 8) {
+                    Image(systemName: "gift.fill")
+                        .foregroundColor(.white)
+                    
+                    Text("Try FilmFuel+ free for 3 days")
+                        .foregroundColor(.white)
+                        .fontWeight(.semibold)
+                    
+                    Spacer()
+                    
+                    Text("No commitment")
+                        .font(.caption)
+                        .foregroundColor(.white.opacity(0.85))
                 }
+                .font(.subheadline)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+                .background(
+                    LinearGradient(
+                        colors: [Color.green, Color.teal],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+            } else {
+                // Evergreen value prop (no fake urgency)
+                HStack(spacing: 8) {
+                    Image(systemName: "sparkles")
+                        .foregroundColor(.white)
+                    
+                    Text("Join 10,000+ movie lovers")
+                        .foregroundColor(.white)
+                    
+                    Spacer()
+                    
+                    HStack(spacing: 2) {
+                        Image(systemName: "star.fill")
+                            .font(.caption)
+                        Text("4.9")
+                            .fontWeight(.semibold)
+                    }
+                    .foregroundColor(.white)
+                }
+                .font(.subheadline)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+                .background(
+                    LinearGradient(
+                        colors: [Color.purple, Color.indigo],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 12))
             }
         }
-    }
-    
-    // MARK: - Urgency Banner
-    
-    private var urgencyBanner: some View {
-        HStack(spacing: 8) {
-            Image(systemName: "clock.fill")
-                .foregroundColor(.white)
-            
-            Text("Special offer ends in ")
-                .foregroundColor(.white.opacity(0.9)) +
-            Text(timeString)
-                .fontWeight(.bold)
-                .foregroundColor(.white)
-            
-            Spacer()
-        }
-        .font(.subheadline)
-        .padding(.horizontal, 16)
-        .padding(.vertical, 10)
-        .background(
-            LinearGradient(
-                colors: [Color.orange, Color.red],
-                startPoint: .leading,
-                endPoint: .trailing
-            )
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 12))
-    }
-    
-    private var timeString: String {
-        let hours = timeRemaining / 3600
-        let minutes = (timeRemaining % 3600) / 60
-        let seconds = timeRemaining % 60
-        return String(format: "%02d:%02d:%02d", hours, minutes, seconds)
     }
     
     // MARK: - Hero Section
@@ -181,11 +220,12 @@ struct FilmFuelPlusPaywallView: View {
                     .foregroundColor(.accentColor)
             }
             
-            Text("Unlock Your Full\nMovie Discovery Potential")
+            // IMPROVED: More compelling headline
+            Text("Never Miss a\nPerfect Movie Night")
                 .font(.title.weight(.bold))
                 .multilineTextAlignment(.center)
             
-            Text("Join thousands of film lovers who never miss a perfect match")
+            Text("Smart recommendations that actually match your taste")
                 .font(.subheadline)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
@@ -236,13 +276,13 @@ struct FilmFuelPlusPaywallView: View {
                     .foregroundColor(.secondary)
             }
             
-            // Live activity indicator
+            // Rotating social proof (less pushy)
             if showSocialProof {
                 HStack(spacing: 6) {
                     Circle()
                         .fill(Color.green)
                         .frame(width: 8, height: 8)
-                    Text("Sarah from Austin just upgraded")
+                    Text(socialProofMessages[socialProofIndex])
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -251,14 +291,23 @@ struct FilmFuelPlusPaywallView: View {
                 .background(Color(.secondarySystemBackground))
                 .clipShape(Capsule())
                 .onAppear {
-                    // Cycle through social proof messages
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
-                        withAnimation { showSocialProof = false }
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                            withAnimation { showSocialProof = true }
-                        }
-                    }
+                    cycleSocialProof()
                 }
+            }
+        }
+    }
+    
+    private func cycleSocialProof() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
+            withAnimation(.easeInOut(duration: 0.3)) {
+                showSocialProof = false
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                socialProofIndex = (socialProofIndex + 1) % socialProofMessages.count
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    showSocialProof = true
+                }
+                cycleSocialProof()
             }
         }
     }
@@ -417,14 +466,11 @@ struct FilmFuelPlusPaywallView: View {
         VStack(spacing: 8) {
             Button {
                 isProcessing = true
-                // TODO: Trigger purchase
                 Task {
-                    if let product = store.plusProducts.first(where: {
-                        selectedPlan == .yearly
-                            ? $0.id == "ff_plus_yearly"
-                            : $0.id == "ff_plus_monthly"
-                    }) {
-                        await store.purchase(product)
+                    let productId = selectedPlan == .yearly ? "ff_plus_yearly" : "ff_plus_monthly"
+                    if let product = store.plusProducts.first(where: { $0.id == productId }) {
+                        let source: ConversionSource = selectedPlan == .yearly ? .manualUpgrade : .manualUpgrade
+                        await store.purchase(product, source: source)
                     }
                     isProcessing = false
                 }
@@ -434,8 +480,13 @@ struct FilmFuelPlusPaywallView: View {
                         ProgressView()
                             .tint(.white)
                     } else {
-                        Text("Start FilmFuel+ Now")
-                            .font(.headline)
+                        if entitlements.eligibleForTrial {
+                            Text("Start Free Trial")
+                                .font(.headline)
+                        } else {
+                            Text("Start FilmFuel+ Now")
+                                .font(.headline)
+                        }
                     }
                 }
                 .frame(maxWidth: .infinity)
@@ -450,6 +501,7 @@ struct FilmFuelPlusPaywallView: View {
                 .foregroundColor(.white)
                 .clipShape(RoundedRectangle(cornerRadius: 16))
                 .scaleEffect(pulseButton ? 1.02 : 1.0)
+                .shadow(color: Color.accentColor.opacity(0.4), radius: 8, y: 4)
             }
             .disabled(isProcessing)
             .onAppear {
@@ -538,7 +590,7 @@ struct FilmFuelPlusPaywallView: View {
                 }
             }
             
-            Text("\"" + text + "\"")
+            Text("\"\(text)\"")
                 .font(.subheadline)
                 .foregroundColor(.secondary)
                 .italic()

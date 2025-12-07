@@ -2,8 +2,7 @@
 //  AppRootView.swift
 //  FilmFuel
 //
-//  Root with gamification overlays, smart upsells, and engagement hooks.
-//  Stats has been moved out of the bottom tab bar and into Settings → Insights.
+//  UPDATED: Improved achievement overlay animation, better streak warning timing
 //
 
 import SwiftUI
@@ -40,22 +39,31 @@ struct AppRootView: View {
     // Streak warning
     @State private var showStreakWarning: Bool = false
     
+    // Achievement animation
+    @State private var animateAchievementIcon: Bool = false
+    
     var body: some View {
         ZStack {
             NavigationStack {
                 TabView(selection: $selectedTab) {
                     
                     // HOME
-                    HomeView(onStartQuiz: { selectedTab = .quiz })
-                        .environmentObject(appModel)
-                        .tabItem {
-                            Label("Home", systemImage: "house.fill")
-                        }
-                        .tag(RootTab.home)
+                    HomeView(
+                        onStartQuiz: { selectedTab = .quiz },
+                        onStartEndlessTrivia: { selectedTab = .quiz }
+                    )
+                    .environmentObject(appModel)
+                    .environmentObject(entitlements)
+                    .environmentObject(store)
+                    .tabItem {
+                        Label("Home", systemImage: "house.fill")
+                    }
+                    .tag(RootTab.home)
                     
                     // QUIZ
                     QuizView()
                         .environmentObject(appModel)
+                        .environmentObject(entitlements)
                         .tabItem {
                             Label("Quiz", systemImage: "popcorn.fill")
                         }
@@ -73,7 +81,7 @@ struct AppRootView: View {
                         }
                         .tag(RootTab.discover)
                     
-                    // SETTINGS (Stats now lives here under “Insights”)
+                    // SETTINGS
                     SettingsView(onShowTipJar: { showTipJar = true })
                         .environmentObject(appModel)
                         .tabItem {
@@ -135,7 +143,7 @@ struct AppRootView: View {
                     .zIndex(100)
             }
             
-            // Achievement Unlocked
+            // Achievement Unlocked (IMPROVED)
             if appModel.showAchievementUnlocked,
                let achievementId = appModel.lastUnlockedAchievement {
                 achievementOverlay(achievementId)
@@ -151,7 +159,7 @@ struct AppRootView: View {
                     .zIndex(102)
             }
             
-            // Streak Warning
+            // Streak Warning (IMPROVED timing)
             if showStreakWarning {
                 streakWarningOverlay
                     .transition(.move(edge: .bottom).combined(with: .opacity))
@@ -195,47 +203,113 @@ struct AppRootView: View {
         }
     }
     
-    // MARK: - Achievement Overlay
+    // MARK: - Achievement Overlay (IMPROVED with better animation)
     
     private func achievementOverlay(_ id: String) -> some View {
         let definition = AchievementDefinition.definition(for: id)
         
-        return VStack {
-            Spacer()
-            
-            VStack(spacing: 16) {
-                Image(systemName: definition?.icon ?? "trophy.fill")
-                    .font(.system(size: 48))
-                    .foregroundColor(.yellow)
-                
-                Text("Achievement Unlocked!")
-                    .font(.headline)
-                    .foregroundColor(.secondary)
-                
-                Text(definition?.title ?? "Achievement")
-                    .font(.title2.weight(.bold))
-                
-                Text(definition?.description ?? "")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                    .multilineTextAlignment(.center)
-                
-                if let xp = definition?.xpReward {
-                    Text("+\(xp) XP")
-                        .font(.headline)
-                        .foregroundColor(.green)
+        return ZStack {
+            // Dimmed background
+            Color.black.opacity(0.5)
+                .ignoresSafeArea()
+                .onTapGesture {
+                    withAnimation(.spring()) {
+                        appModel.showAchievementUnlocked = false
+                    }
                 }
-            }
-            .padding(24)
-            .background(.ultraThickMaterial)
-            .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-            .padding(.horizontal, 40)
             
-            Spacer()
+            // Card
+            VStack(spacing: 20) {
+                // Animated icon with glow
+                ZStack {
+                    // Glow effect
+                    Circle()
+                        .fill(
+                            RadialGradient(
+                                colors: [.yellow.opacity(0.6), .clear],
+                                center: .center,
+                                startRadius: 10,
+                                endRadius: 60
+                            )
+                        )
+                        .frame(width: 120, height: 120)
+                        .blur(radius: 15)
+                        .opacity(animateAchievementIcon ? 1 : 0)
+                    
+                    // Icon with bounce
+                    Image(systemName: definition?.icon ?? "trophy.fill")
+                        .font(.system(size: 56))
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [.yellow, .orange],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        )
+                        .shadow(color: .yellow.opacity(0.5), radius: 10)
+                        .scaleEffect(animateAchievementIcon ? 1 : 0.5)
+                }
+                
+                VStack(spacing: 8) {
+                    Text("🎉 Achievement Unlocked!")
+                        .font(.headline)
+                        .foregroundColor(.secondary)
+                    
+                    Text(definition?.title ?? "Achievement")
+                        .font(.title.weight(.bold))
+                    
+                    Text(definition?.description ?? "")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
+                }
+                
+                if let xp = definition?.xpReward, xp > 0 {
+                    HStack(spacing: 4) {
+                        Image(systemName: "sparkles")
+                        Text("+\(xp) XP")
+                    }
+                    .font(.title3.weight(.bold))
+                    .foregroundColor(.green)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .background(Color.green.opacity(0.15))
+                    .clipShape(Capsule())
+                }
+                
+                Button {
+                    withAnimation(.spring()) {
+                        appModel.showAchievementUnlocked = false
+                    }
+                } label: {
+                    Text("Awesome!")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.accentColor)
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                }
+                .padding(.horizontal)
+            }
+            .padding(28)
+            .background(.ultraThickMaterial)
+            .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+            .shadow(color: .black.opacity(0.2), radius: 30, y: 20)
+            .padding(.horizontal, 32)
         }
-        .background(Color.black.opacity(0.4).ignoresSafeArea())
-        .onTapGesture {
-            appModel.showAchievementUnlocked = false
+        .onAppear {
+            // Haptic feedback
+            UINotificationFeedbackGenerator().notificationOccurred(.success)
+            
+            // Animate icon
+            withAnimation(.spring(response: 0.5, dampingFraction: 0.6)) {
+                animateAchievementIcon = true
+            }
+        }
+        .onDisappear {
+            animateAchievementIcon = false
         }
     }
     
@@ -282,6 +356,9 @@ struct AppRootView: View {
             Spacer()
         }
         .background(Color.black.opacity(0.5).ignoresSafeArea())
+        .onAppear {
+            UINotificationFeedbackGenerator().notificationOccurred(.success)
+        }
     }
     
     // MARK: - Streak Warning Overlay
@@ -348,15 +425,18 @@ struct AppRootView: View {
         }
     }
     
+    // IMPROVED: Better streak warning timing
     private func checkStreakStatus() {
         let streak = StatsManager.shared.currentStreak
         let hour = Calendar.current.component(.hour, from: Date())
         
         // Show warning if:
         // - Has a streak of 3+ days
-        // - It's evening (after 7 PM)
+        // - It's late evening (after 9 PM for casual, 8 PM for high-value streaks)
         // - Quiz not completed today
-        if streak >= 3 && hour >= 19 && !appModel.quizCompletedToday {
+        let warningHour = streak >= 7 ? 20 : 21  // Earlier warning for longer streaks
+        
+        if streak >= 3 && hour >= warningHour && !appModel.quizCompletedToday {
             DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
                 showStreakWarning = true
             }
@@ -373,7 +453,6 @@ struct AppRootView: View {
             case "discover":
                 selectedTab = .discover
             case "stats":
-                // Stats moved into Settings → Insights
                 selectedTab = .settings
             case "share-quote":
                 selectedTab = .home
@@ -394,7 +473,6 @@ struct AppRootView: View {
         case "discover":
             selectedTab = .discover
         case "stats":
-            // Deep links to stats now land on Settings tab
             selectedTab = .settings
         case "settings":
             selectedTab = .settings
@@ -417,7 +495,6 @@ struct AppRootView: View {
         case "daily_trivia_reminder", "streak_at_risk":
             selectedTab = .quiz
         case "weekly_recap":
-            // Used to open Stats tab; now route to Settings where Stats lives
             selectedTab = .settings
         case "new_movies_alert":
             selectedTab = .discover

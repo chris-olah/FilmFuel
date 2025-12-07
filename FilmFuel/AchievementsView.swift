@@ -2,13 +2,13 @@
 //  AchievementsView.swift
 //  FilmFuel
 //
-//  A premium achievements gallery with immersive animations,
-//  category filtering, progress tracking, and reward celebration.
+//  UPDATED: Better unlock animations, clearer progress indicators,
+//  improved card design, haptic feedback
 //
 
 import SwiftUI
 
-// MARK: - Pressable Button Style (for nice tap feedback without breaking scroll)
+// MARK: - Pressable Button Style
 
 struct PressableButtonStyle: ButtonStyle {
     var scale: CGFloat = 0.96
@@ -70,6 +70,14 @@ struct AchievementsView: View {
         AchievementDefinition.totalXPFromAchievements
     }
     
+    // NEW: Achievements close to unlocking
+    private var nearlyUnlockedCount: Int {
+        AchievementDefinition.all.filter { achievement in
+            !AchievementDefinition.isUnlocked(achievement.id) &&
+            AchievementDefinition.progress(for: achievement) >= 0.7
+        }.count
+    }
+    
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
             VStack(spacing: 0) {
@@ -83,6 +91,12 @@ struct AchievementsView: View {
                 // Filter Toggle
                 filterToggle
                     .padding(.top, 12)
+                
+                // Near completion hint
+                if nearlyUnlockedCount > 0 && !showUnlockedOnly {
+                    nearCompletionHint
+                        .padding(.top, 12)
+                }
                 
                 // Achievements Grid
                 achievementsGrid
@@ -247,6 +261,31 @@ struct AchievementsView: View {
         }
     }
     
+    // MARK: - Near Completion Hint
+    
+    private var nearCompletionHint: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "flame.fill")
+                .foregroundColor(.orange)
+            
+            Text("\(nearlyUnlockedCount) achievement\(nearlyUnlockedCount == 1 ? "" : "s") almost unlocked!")
+                .font(.caption.weight(.medium))
+            
+            Spacer()
+            
+            Image(systemName: "chevron.right")
+                .imageScale(.small)
+                .foregroundColor(.secondary)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .background(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(Color.orange.opacity(0.1))
+        )
+        .padding(.horizontal)
+    }
+    
     // MARK: - Category Pills
     
     private var categoryPillsSection: some View {
@@ -255,38 +294,36 @@ struct AchievementsView: View {
                 // All category
                 CategoryPill(
                     title: "All",
-                    icon: "square.grid.2x2.fill",
-                    color: .gray,
+                    icon: "square.grid.2x2",
                     isSelected: selectedCategory == nil,
-                    count: AchievementDefinition.all.filter {
-                        !$0.isSecret || AchievementDefinition.isUnlocked($0.id)
-                    }.count
+                    color: .accentColor
                 ) {
-                    withAnimation(.spring(response: 0.35)) {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                         selectedCategory = nil
                     }
+                    #if os(iOS)
+                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    #endif
                 }
                 
-                ForEach(AchievementCategory.allCases) { category in
-                    let achievements = AchievementDefinition.achievements(for: category)
-                    let visibleCount = achievements.filter {
-                        !$0.isSecret || AchievementDefinition.isUnlocked($0.id)
-                    }.count
-                    
+                // Category pills
+                ForEach(AchievementCategory.allCases, id: \.self) { category in
                     CategoryPill(
                         title: category.rawValue,
                         icon: category.icon,
-                        color: category.color,
                         isSelected: selectedCategory == category,
-                        count: visibleCount
+                        color: category.color
                     ) {
-                        withAnimation(.spring(response: 0.35)) {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                             selectedCategory = category
                         }
+                        #if os(iOS)
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        #endif
                     }
                 }
             }
-            .padding(.horizontal, 20)
+            .padding(.horizontal)
         }
     }
     
@@ -294,29 +331,17 @@ struct AchievementsView: View {
     
     private var filterToggle: some View {
         HStack {
-            Button {
-                withAnimation(.spring(response: 0.3)) {
-                    showUnlockedOnly.toggle()
-                }
-            } label: {
-                HStack(spacing: 6) {
-                    Image(systemName: showUnlockedOnly ? "checkmark.circle.fill" : "circle")
-                        .foregroundStyle(showUnlockedOnly ? .green : .secondary)
-                    
-                    Text("Show unlocked only")
-                        .font(.subheadline)
-                        .foregroundStyle(showUnlockedOnly ? .primary : .secondary)
-                }
-            }
-            .buttonStyle(.plain)
+            Text("Show unlocked only")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
             
             Spacer()
             
-            Text("\(filteredAchievements.count) achievements")
-                .font(.caption)
-                .foregroundStyle(.tertiary)
+            Toggle("", isOn: $showUnlockedOnly)
+                .labelsHidden()
+                .tint(.orange)
         }
-        .padding(.horizontal, 20)
+        .padding(.horizontal)
     }
     
     // MARK: - Achievements Grid
@@ -330,21 +355,16 @@ struct AchievementsView: View {
             spacing: 12
         ) {
             ForEach(filteredAchievements) { achievement in
-                AchievementCard(
-                    achievement: achievement,
-                    isUnlocked: AchievementDefinition.isUnlocked(achievement.id),
-                    progress: AchievementDefinition.progress(for: achievement),
-                    isPremiumUser: entitlements.isPlus
-                ) {
-                    if achievement.isPremium && !entitlements.isPlus {
-                        showPaywall = true
-                    } else {
+                AchievementCard(achievement: achievement)
+                    .onTapGesture {
                         selectedAchievement = achievement
+                        #if os(iOS)
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        #endif
                     }
-                }
             }
         }
-        .padding(.horizontal, 16)
+        .padding(.horizontal)
     }
 }
 
@@ -353,185 +373,139 @@ struct AchievementsView: View {
 private struct CategoryPill: View {
     let title: String
     let icon: String
-    let color: Color
     let isSelected: Bool
-    let count: Int
+    let color: Color
     let action: () -> Void
     
     var body: some View {
         Button(action: action) {
-            pillContent
-        }
-        .buttonStyle(PressableButtonStyle(scale: 0.97))
-    }
-    
-    private var pillContent: some View {
-        HStack(spacing: 6) {
-            Image(systemName: icon)
-                .imageScale(.small)
-            
-            Text(title)
-                .font(.subheadline.weight(.medium))
-            
-            countBadge
-        }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 10)
-        .background(pillBackground)
-        .foregroundStyle(isSelected ? .white : .primary)
-        .overlay(pillOverlay)
-    }
-    
-    private var countBadge: some View {
-        Text("\(count)")
-            .font(.caption2.weight(.bold))
-            .padding(.horizontal, 6)
-            .padding(.vertical, 2)
+            HStack(spacing: 6) {
+                Image(systemName: icon)
+                    .imageScale(.small)
+                Text(title)
+                    .font(.subheadline.weight(isSelected ? .semibold : .regular))
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 8)
             .background(
                 Capsule()
-                    .fill(isSelected ? .white.opacity(0.2) : Color(.systemGray5))
+                    .fill(isSelected ? color.opacity(0.15) : Color(.secondarySystemBackground))
             )
-    }
-    
-    private var pillBackground: some View {
-        Capsule()
-            .fill(isSelected ? color : Color(.secondarySystemBackground))
-    }
-    
-    private var pillOverlay: some View {
-        Capsule()
-            .stroke(isSelected ? color.opacity(0.5) : .clear, lineWidth: 1)
-    }
-}
-
-// MARK: - Achievement Card
-
-private struct AchievementCard: View {
-    let achievement: AchievementDefinition
-    let isUnlocked: Bool
-    let progress: Double
-    let isPremiumUser: Bool
-    let action: () -> Void
-    
-    private var isLocked: Bool {
-        achievement.isPremium && !isPremiumUser && !isUnlocked
-    }
-    
-    var body: some View {
-        Button(action: action) {
-            cardContent
+            .foregroundStyle(isSelected ? color : .primary)
+            .overlay(
+                Capsule()
+                    .stroke(isSelected ? color.opacity(0.3) : .clear, lineWidth: 1)
+            )
         }
         .buttonStyle(PressableButtonStyle())
     }
+}
+
+// MARK: - Achievement Card (IMPROVED)
+
+private struct AchievementCard: View {
+    let achievement: AchievementDefinition
     
-    private var cardContent: some View {
-        VStack(spacing: 12) {
-            iconSection
-            titleSection
-            xpRewardSection
-            rarityBadge
-        }
-        .padding(.vertical, 16)
-        .padding(.horizontal, 12)
-        .frame(maxWidth: .infinity)
-        .background(cardBackground)
-        .overlay(cardOverlay)
+    private var isUnlocked: Bool {
+        AchievementDefinition.isUnlocked(achievement.id)
     }
     
-    // MARK: - Icon Section
+    private var progress: Double {
+        AchievementDefinition.progress(for: achievement)
+    }
+    
+    // NEW: Check if nearly complete
+    private var isNearlyComplete: Bool {
+        !isUnlocked && progress >= 0.7
+    }
+    
+    var body: some View {
+        VStack(spacing: 12) {
+            // Icon with progress ring
+            iconSection
+            
+            // Title and description
+            textSection
+            
+            // XP reward
+            xpRewardSection
+            
+            // Rarity badge
+            rarityBadge
+        }
+        .padding(16)
+        .background(cardBackground)
+        .overlay(cardOverlay)
+        .opacity(isUnlocked ? 1.0 : 0.7)
+    }
+    
+    // MARK: - Icon with Progress Ring
     
     private var iconSection: some View {
         ZStack {
-            progressRing
-            iconCircle
-            unlockedCheckmark
-            premiumBadge
-        }
-    }
-    
-    private var progressRing: some View {
-        ZStack {
-            // Progress ring background
-            Circle()
-                .stroke(Color(.systemGray5), lineWidth: 4)
-                .frame(width: 64, height: 64)
+            // Progress ring for locked achievements
+            if !isUnlocked {
+                Circle()
+                    .stroke(Color(.systemGray5), lineWidth: 3)
+                    .frame(width: 56, height: 56)
+                
+                Circle()
+                    .trim(from: 0, to: progress)
+                    .stroke(
+                        achievement.category.color,
+                        style: StrokeStyle(lineWidth: 3, lineCap: .round)
+                    )
+                    .frame(width: 56, height: 56)
+                    .rotationEffect(.degrees(-90))
+            }
             
-            // Progress ring fill
-            Circle()
-                .trim(from: 0, to: isUnlocked ? 1.0 : progress)
-                .stroke(
-                    isUnlocked ? achievement.rarity.color : achievement.category.color,
-                    style: StrokeStyle(lineWidth: 4, lineCap: .round)
-                )
-                .frame(width: 64, height: 64)
-                .rotationEffect(.degrees(-90))
-        }
-    }
-    
-    private var iconCircle: some View {
-        ZStack {
+            // Icon background
             Circle()
                 .fill(
                     isUnlocked
                         ? achievement.rarity.color.opacity(0.15)
-                        : Color(.systemGray6)
+                        : Color(.systemGray5)
                 )
-                .frame(width: 52, height: 52)
+                .frame(width: 48, height: 48)
             
-            if isLocked {
-                Image(systemName: "lock.fill")
-                    .font(.title3)
-                    .foregroundStyle(.secondary)
-            } else {
-                Image(systemName: achievement.icon)
-                    .font(.title2)
-                    .foregroundStyle(
-                        isUnlocked
-                            ? achievement.rarity.color
-                            : .secondary
-                    )
+            // Icon
+            Image(systemName: achievement.icon)
+                .font(.title2)
+                .foregroundStyle(
+                    isUnlocked ? achievement.rarity.color : .secondary
+                )
+            
+            // Checkmark for unlocked
+            if isUnlocked {
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.caption)
+                    .foregroundStyle(.green)
+                    .background(Circle().fill(Color(.systemBackground)).padding(-2))
+                    .offset(x: 18, y: 18)
+            }
+            
+            // "Almost there" indicator
+            if isNearlyComplete {
+                Image(systemName: "flame.fill")
+                    .font(.caption2)
+                    .foregroundStyle(.orange)
+                    .background(Circle().fill(Color(.systemBackground)).padding(-2))
+                    .offset(x: 18, y: -18)
             }
         }
     }
     
-    @ViewBuilder
-    private var unlockedCheckmark: some View {
-        if isUnlocked {
-            Circle()
-                .fill(.green)
-                .frame(width: 20, height: 20)
-                .overlay(
-                    Image(systemName: "checkmark")
-                        .font(.caption2.weight(.bold))
-                        .foregroundStyle(.white)
-                )
-                .offset(x: 24, y: -24)
-        }
-    }
+    // MARK: - Text Section
     
-    @ViewBuilder
-    private var premiumBadge: some View {
-        if achievement.isPremium && !isUnlocked {
-            Image(systemName: "crown.fill")
-                .font(.caption2)
-                .foregroundStyle(.yellow)
-                .padding(4)
-                .background(Circle().fill(Color(.systemBackground)))
-                .offset(x: -24, y: -24)
-        }
-    }
-    
-    // MARK: - Title Section
-    
-    private var titleSection: some View {
+    private var textSection: some View {
         VStack(spacing: 4) {
             Text(achievement.title)
                 .font(.subheadline.weight(.semibold))
                 .lineLimit(1)
-                .foregroundStyle(isLocked ? .secondary : .primary)
+                .minimumScaleFactor(0.9)
             
             Text(achievement.description)
-                .font(.caption2)
+                .font(.caption)
                 .foregroundStyle(.secondary)
                 .lineLimit(2)
                 .multilineTextAlignment(.center)
@@ -544,7 +518,7 @@ private struct AchievementCard: View {
         HStack(spacing: 4) {
             Image(systemName: "sparkles")
                 .imageScale(.small)
-            Text("+\(achievement.xpReward) XP")
+            Text(isUnlocked ? "Earned" : "+\(achievement.xpReward) XP")
                 .font(.caption.weight(.semibold))
         }
         .foregroundStyle(isUnlocked ? .green : .orange.opacity(0.8))
@@ -581,7 +555,7 @@ private struct AchievementCard: View {
             .stroke(
                 isUnlocked
                     ? achievement.rarity.color.opacity(0.3)
-                    : .clear,
+                    : isNearlyComplete ? Color.orange.opacity(0.3) : .clear,
                 lineWidth: 1
             )
     }

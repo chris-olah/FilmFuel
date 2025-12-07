@@ -1,3 +1,11 @@
+//
+//  QuizView.swift
+//  FilmFuel
+//
+//  UPDATED: Clearer hint button, better "Play More Trivia" CTA,
+//  improved timer visibility, share button always visible
+//
+
 import SwiftUI
 #if canImport(UIKit)
 import UIKit
@@ -21,7 +29,7 @@ struct QuizView: View {
     @State private var showMoreTriviaSheet = false
     @State private var showMoreButton = false
     
-    // New engagement states
+    // Engagement states
     @State private var headerAppeared = false
     @State private var cardAppeared = false
     @State private var showHint = false
@@ -30,6 +38,9 @@ struct QuizView: View {
     @State private var timerActive = false
     @State private var showTimerWarning = false
     @State private var streakAnimation = false
+    
+    // NEW: Paywall for hint upsell
+    @State private var showPaywall = false
     
     // Timer for optional timed mode
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
@@ -41,7 +52,6 @@ struct QuizView: View {
     // Computed difficulty indicator
     private var difficultyLevel: String {
         guard let t = trivia else { return "Medium" }
-        // You can customize this based on your trivia data
         return t.options.count > 4 ? "Hard" : "Medium"
     }
     
@@ -70,7 +80,7 @@ struct QuizView: View {
                             .opacity(cardAppeared ? 1 : 0)
                             .scaleEffect(cardAppeared ? 1 : 0.95)
 
-                        // Hint button (premium feature teaser)
+                        // Hint button (premium feature teaser) - IMPROVED
                         if !reveal && !reviewMode && !hintUsed {
                             hintButton(trivia: trivia)
                                 .padding(.horizontal)
@@ -160,6 +170,10 @@ struct QuizView: View {
         .sheet(isPresented: $showShare) {
             ShareSheet(activityItems: [shareMessage()])
         }
+        .sheet(isPresented: $showPaywall) {
+            FilmFuelPlusPaywallView()
+                .environmentObject(entitlements)
+        }
         .fullScreenCover(isPresented: $showMoreTriviaSheet) {
             TriviaPlaygroundView()
                 .environmentObject(appModel)
@@ -171,6 +185,16 @@ struct QuizView: View {
                     Image(systemName: "chevron.left")
                         .imageScale(.medium)
                         .fontWeight(.semibold)
+                }
+            }
+            
+            // NEW: Share button always visible in toolbar
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    showShare = true
+                } label: {
+                    Image(systemName: "square.and.arrow.up")
+                        .imageScale(.medium)
                 }
             }
         }
@@ -232,21 +256,6 @@ struct QuizView: View {
                             .fill(Color.orange.opacity(0.15))
                     )
                 }
-
-                // Share button
-                Button {
-                    showShare = true
-                } label: {
-                    Image(systemName: "square.and.arrow.up")
-                        .imageScale(.medium)
-                        .font(.body.weight(.semibold))
-                        .padding(10)
-                        .background(
-                            Circle()
-                                .fill(.ultraThinMaterial)
-                        )
-                }
-                .accessibilityLabel("Share today's quiz")
             }
             .padding(.horizontal)
             .padding(.top, 16)
@@ -441,7 +450,7 @@ struct QuizView: View {
         )
     }
     
-    // MARK: - Hint Button (Premium Teaser)
+    // MARK: - Hint Button (IMPROVED - clearer premium teaser)
     
     @ViewBuilder
     private func hintButton(trivia: TriviaQuestion) -> some View {
@@ -455,21 +464,30 @@ struct QuizView: View {
                 UIImpactFeedbackGenerator(style: .light).impactOccurred()
                 #endif
             } else {
-                // Show premium upsell
-                // You can trigger your paywall here
+                // Show paywall for hint access
+                showPaywall = true
             }
         } label: {
             HStack(spacing: 8) {
-                Image(systemName: entitlements.isPlus ? "lightbulb.fill" : "lock.fill")
-                    .imageScale(.small)
-                
-                Text(entitlements.isPlus ? "Use Hint" : "Unlock Hints with Pro")
-                    .font(.caption.weight(.semibold))
-                
-                if !entitlements.isPlus {
-                    Image(systemName: "crown.fill")
+                if entitlements.isPlus {
+                    Image(systemName: "lightbulb.fill")
                         .imageScale(.small)
-                        .foregroundStyle(.yellow)
+                    Text("Use Hint")
+                        .font(.caption.weight(.semibold))
+                } else {
+                    Image(systemName: "lightbulb.fill")
+                        .imageScale(.small)
+                    Text("Hint")
+                        .font(.caption.weight(.semibold))
+                    
+                    // Clear "Plus" indicator
+                    Text("Plus")
+                        .font(.caption2.weight(.bold))
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(Color.yellow)
+                        .foregroundColor(.black)
+                        .clipShape(Capsule())
                 }
             }
             .padding(.horizontal, 16)
@@ -552,27 +570,52 @@ struct QuizView: View {
                     .foregroundStyle(.secondary)
                 }
 
-                // Primary CTA: More Trivia
+                // IMPROVED: Primary CTA - More Trivia (more compelling)
                 Button {
                     showMoreTriviaSheet = true
                 } label: {
-                    HStack(spacing: 8) {
-                        Image(systemName: "infinity")
-                        Text("Play More Trivia")
-                            .font(.headline.weight(.bold))
+                    HStack(spacing: 12) {
+                        ZStack {
+                            Circle()
+                                .fill(
+                                    LinearGradient(
+                                        colors: [.purple, .indigo],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                                .frame(width: 40, height: 40)
+                            
+                            Image(systemName: "infinity")
+                                .font(.body.weight(.semibold))
+                                .foregroundColor(.white)
+                        }
+                        
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Endless Trivia")
+                                .font(.headline.weight(.bold))
+                            Text("Test your movie knowledge")
+                                .font(.caption)
+                                .foregroundColor(.white.opacity(0.8))
+                        }
+                        
+                        Spacer()
+                        
+                        Image(systemName: "play.circle.fill")
+                            .font(.title2)
                     }
+                    .padding()
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 16)
                     .background(
                         LinearGradient(
-                            colors: [Color.black, Color(.darkGray)],
+                            colors: [Color.purple, Color.indigo],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
                         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
                     )
                     .foregroundStyle(.white)
-                    .shadow(radius: 8, y: 4)
+                    .shadow(color: .purple.opacity(0.4), radius: 12, y: 6)
                 }
                 .buttonStyle(.plain)
                 .scaleEffect(showMoreButton ? 1.0 : 0.9)
@@ -1100,39 +1143,6 @@ struct EnhancedConfettiView: View {
     }
 }
 
-// MARK: - Banner Toast (kept for compatibility)
-
-struct BannerToast: View {
-    let text: String
-    
-    var body: some View {
-        HStack(spacing: 10) {
-            Image(systemName: "trophy.fill")
-                .imageScale(.medium)
-                .foregroundStyle(.yellow)
-            
-            Text(text)
-                .font(.subheadline.weight(.semibold))
-                .lineLimit(2)
-            
-            Spacer(minLength: 0)
-        }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 10)
-        .frame(maxWidth: .infinity)
-        .background(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .fill(.ultraThinMaterial)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
-        )
-        .shadow(radius: 8, y: 4)
-        .padding(.horizontal)
-    }
-}
-
 // MARK: - Simple Confetti (kept for compatibility)
 
 struct ConfettiView: View {
@@ -1164,5 +1174,38 @@ struct ConfettiView: View {
         }
         .ignoresSafeArea()
         .allowsHitTesting(false)
+    }
+}
+
+// MARK: - Banner Toast (kept for compatibility)
+
+struct BannerToast: View {
+    let text: String
+    
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "trophy.fill")
+                .imageScale(.medium)
+                .foregroundStyle(.yellow)
+            
+            Text(text)
+                .font(.subheadline.weight(.semibold))
+                .lineLimit(2)
+            
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
+        .frame(maxWidth: .infinity)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(.ultraThinMaterial)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
+        )
+        .shadow(radius: 8, y: 4)
+        .padding(.horizontal)
     }
 }
