@@ -15,7 +15,7 @@ struct DiscoverView: View {
     @StateObject private var vm: DiscoverVM
     @State private var showingFilters = false
     @State private var showingPlusPaywall = false
-    @State private var showingSearch = false
+    @State private var selectedMovie: TMDBMovie? = nil
     
     @EnvironmentObject var store: FilmFuelStore
     @EnvironmentObject var entitlements: FilmFuelEntitlements
@@ -34,23 +34,27 @@ struct DiscoverView: View {
         NavigationStack {
             ScrollView {
                 LazyVStack(spacing: 0) {
-                    // Clean header with mode selection
-                    headerSection
-                    
-                    // Mood filters
-                    moodFilterSection
-                    
-                    // Premium features row (shows value)
-                    if !entitlements.isPlus {
-                        premiumFeaturesTeaser
+                    // Inline search bar
+                    inlineSearchBar
+                        .padding(.horizontal)
+                        .padding(.top, 8)
+                        .padding(.bottom, 4)
+
+                    // Mode/mood selectors — hidden while searching
+                    if !vm.isSearching {
+                        headerSection
+                        moodFilterSection
+
+                        if !entitlements.isPlus {
+                            premiumFeaturesTeaser
+                        }
+
+                        if entitlements.isPlus {
+                            smartMatchBanner
+                        }
                     }
-                    
-                    // Smart Match banner for Plus users
-                    if entitlements.isPlus {
-                        smartMatchBanner
-                    }
-                    
-                    // Movie content
+
+                    // Movie content (grid or search results)
                     movieContent
                 }
             }
@@ -75,8 +79,14 @@ struct DiscoverView: View {
                     .environmentObject(store)
                     .environmentObject(entitlements)
             }
-            .sheet(isPresented: $showingSearch) {
-                searchSheet
+            // Single movie detail sheet — discoverVM (vm) is always in scope here
+            .sheet(item: $selectedMovie) { movie in
+                NavigationStack {
+                    MovieDetailView(movie: movie)
+                        .environmentObject(vm)
+                        .environmentObject(entitlements)
+                        .environmentObject(store)
+                }
             }
             .onAppear {
                 if vm.movies.isEmpty {
@@ -84,6 +94,32 @@ struct DiscoverView: View {
                 }
             }
         }
+    }
+
+    // MARK: - Inline Search Bar
+
+    private var inlineSearchBar: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "magnifyingglass")
+                .foregroundColor(.secondary)
+
+            TextField("Search movies…", text: $vm.searchQuery)
+                .autocorrectionDisabled()
+                .textInputAutocapitalization(.words)
+                .submitLabel(.search)
+
+            if !vm.searchQuery.isEmpty {
+                Button {
+                    vm.searchQuery = ""
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundColor(.secondary)
+                }
+            }
+        }
+        .padding(10)
+        .background(Color(.secondarySystemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
     
     // MARK: - Header
@@ -300,11 +336,9 @@ struct DiscoverView: View {
             spacing: 16
         ) {
             ForEach(Array(vm.displayedMovies.enumerated()), id: \.element.id) { index, movie in
-                NavigationLink {
-                    MovieDetailView(movie: movie)
-                        .environmentObject(vm)
-                        .environmentObject(entitlements)
-                        .environmentObject(store)
+                Button {
+                    selectedMovie = movie
+                    haptic(.light)
                 } label: {
                     MovieDiscoverCard(
                         movie: movie,
@@ -312,7 +346,7 @@ struct DiscoverView: View {
                         showMatchScore: entitlements.isPlus && vm.mode == .forYou
                     )
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.ffPressable)
                 
                 // Insert upsell card after every 6 movies for free users
                 if !entitlements.isPlus && (index + 1) % 6 == 0 && index < vm.displayedMovies.count - 1 {
@@ -477,14 +511,6 @@ struct DiscoverView: View {
     
     private var trailingButtons: some View {
         HStack(spacing: 16) {
-            Button {
-                showingSearch = true
-                haptic(.light)
-            } label: {
-                Image(systemName: "magnifyingglass")
-                    .font(.body.weight(.medium))
-            }
-            
             // Plus badge or upgrade button
             if entitlements.isPlus {
                 Image(systemName: "checkmark.seal.fill")
@@ -708,104 +734,6 @@ struct DiscoverView: View {
         .buttonStyle(.plain)
     }
     
-    // MARK: - Search Sheet
-    
-    private var searchSheet: some View {
-        NavigationStack {
-            VStack(spacing: 0) {
-                // Search field
-                HStack(spacing: 12) {
-                    Image(systemName: "magnifyingglass")
-                        .foregroundColor(.secondary)
-                    
-                    TextField("Search movies...", text: $vm.searchQuery)
-                        .textInputAutocapitalization(.words)
-                        .disableAutocorrection(true)
-                        .onSubmit {
-                            vm.loadInitial()
-                        }
-                    
-                    if !vm.searchQuery.isEmpty {
-                        Button {
-                            vm.searchQuery = ""
-                        } label: {
-                            Image(systemName: "xmark.circle.fill")
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                }
-                .padding()
-                .background(Color(.secondarySystemBackground))
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-                .padding()
-                
-                // Results
-                if vm.searchQuery.isEmpty {
-                    quickSearchSuggestions
-                } else {
-                    searchResults
-                }
-            }
-            .navigationTitle("Search")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Done") {
-                        showingSearch = false
-                    }
-                }
-            }
-        }
-    }
-    
-    private var quickSearchSuggestions: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("Quick Search")
-                .font(.headline)
-                .padding(.horizontal)
-            
-            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
-                ForEach(["Action", "Comedy", "Horror", "Sci-Fi", "Drama", "Romance"], id: \.self) { genre in
-                    Button {
-                        vm.searchQuery = genre
-                        vm.loadInitial()
-                    } label: {
-                        Text(genre)
-                            .font(.subheadline)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 12)
-                            .background(Color(.secondarySystemBackground))
-                            .clipShape(RoundedRectangle(cornerRadius: 10))
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
-            .padding(.horizontal)
-            
-            Spacer()
-        }
-        .padding(.top)
-    }
-    
-    private var searchResults: some View {
-        ScrollView {
-            LazyVStack(spacing: 10) {
-                ForEach(vm.displayedMovies.prefix(20)) { movie in
-                    NavigationLink {
-                        MovieDetailView(movie: movie)
-                            .environmentObject(vm)
-                            .environmentObject(entitlements)
-                            .environmentObject(store)
-                    } label: {
-                        SearchResultRow(movie: movie)
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
-            .padding()
-        }
-    }
-    
     // MARK: - Helpers
     
     private var genreOptions: [(id: Int, name: String)] {
@@ -837,8 +765,6 @@ struct MovieDiscoverCard: View {
     let movie: TMDBMovie
     @ObservedObject var vm: DiscoverVM
     let showMatchScore: Bool
-    
-    @State private var isPressed = false
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -927,11 +853,6 @@ struct MovieDiscoverCard: View {
                     .foregroundColor(.secondary)
             }
         }
-        .scaleEffect(isPressed ? 0.97 : 1.0)
-        .animation(.easeInOut(duration: 0.1), value: isPressed)
-        .onLongPressGesture(minimumDuration: 0, pressing: { pressing in
-            isPressed = pressing
-        }, perform: {})
     }
 }
 

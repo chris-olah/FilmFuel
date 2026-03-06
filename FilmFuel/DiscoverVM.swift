@@ -379,7 +379,7 @@ final class DiscoverVM: ObservableObject {
     // MARK: - Private State
     
     private let client: TMDBClientProtocol
-    fileprivate var isSearching: Bool = false
+    @Published private(set) var isSearching: Bool = false
     private let randomPagesToLoad = 5
     private let maxRandomMovies = 40
     private var sessionSeenRandomMovieIDs: Set<Int> = []
@@ -390,6 +390,7 @@ final class DiscoverVM: ObservableObject {
     
     // MARK: - Init
     
+    @MainActor
     init(client: TMDBClientProtocol = TMDBClient()) {
         self.client = client
         self.randomBaseSeed = Int.random(in: 0...999_999)

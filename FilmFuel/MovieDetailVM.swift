@@ -70,6 +70,7 @@ final class MovieDetailVM: ObservableObject {
 
     // MARK: - Init
 
+    @MainActor
     init(movie: TMDBMovie, client: TMDBClientProtocol = TMDBClient()) {
         self.movie = movie
         self.client = client

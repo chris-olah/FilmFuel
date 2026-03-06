@@ -33,6 +33,9 @@ struct MovieDetailView: View {
     // Animation states
     @State private var animateHeader = false
     @State private var animateContent = false
+    
+    // Recommendation drill-in (sheets can't push NavigationLinks reliably)
+    @State private var selectedRecommendation: TMDBMovie? = nil
 
     // Convenience
     private var movie: TMDBMovie { vm.movie }
@@ -133,6 +136,14 @@ struct MovieDetailView: View {
             FilmFuelPlusPaywallView()
                 .environmentObject(store)
                 .environmentObject(entitlements)
+        }
+        .sheet(item: $selectedRecommendation) { rec in
+            NavigationStack {
+                MovieDetailView(movie: rec)
+                    .environmentObject(discoverVM)
+                    .environmentObject(entitlements)
+                    .environmentObject(store)
+            }
         }
     }
 
@@ -938,11 +949,8 @@ struct MovieDetailView: View {
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: 12) {
                                 ForEach(recs) { rec in
-                                    NavigationLink {
-                                        MovieDetailView(movie: rec)
-                                            .environmentObject(discoverVM)
-                                            .environmentObject(entitlements)
-                                            .environmentObject(store)
+                                    Button {
+                                        selectedRecommendation = rec
                                     } label: {
                                         recommendationCard(movie: rec)
                                     }
