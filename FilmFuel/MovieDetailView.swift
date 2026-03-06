@@ -105,6 +105,7 @@ struct MovieDetailView: View {
         .task {
             await vm.loadIfNeeded()
             discoverVM.recordDetailOpen(movie)
+            StatsManager.shared.trackDiscoverCardViewed()
             
             // Stagger animations
             withAnimation(.easeOut(duration: 0.5)) {
@@ -278,6 +279,7 @@ struct MovieDetailView: View {
                 activeColor: .accentColor
             ) {
                 discoverVM.toggleWatchlist(movie)
+                if discoverVM.isInWatchlist(movie) { StatsManager.shared.trackWatchlistAdd() }
                 hapticFeedback(.light)
             }
             
@@ -292,6 +294,7 @@ struct MovieDetailView: View {
                 activeColor: .green
             ) {
                 discoverVM.toggleSeen(movie)
+                if discoverVM.isSeen(movie) { StatsManager.shared.trackSeenMarked() }
                 hapticFeedback(.rigid)
             }
             

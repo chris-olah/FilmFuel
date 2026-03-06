@@ -35,11 +35,11 @@ struct StatsView: View {
     }
     
     private var currentStreak: Int {
-        UserDefaults.standard.integer(forKey: "ff.engagement.streak")
+        stats.currentStreak
     }
     
     private var longestStreak: Int {
-        UserDefaults.standard.integer(forKey: "ff.engagement.longestStreak")
+        stats.longestStreak
     }
     
     private var levelProgress: Double {
@@ -294,10 +294,10 @@ struct StatsView: View {
             
             // Discovery stats
             StatSection(title: "Discovery", icon: "sparkles") {
-                StatRow(icon: "eye", title: "Movies Viewed", value: "\(stats.discoverCardsViewed)")
-                // Placeholder for favorites until StatsManager supports it
-                StatRow(icon: "heart.fill", title: "Favorites", value: "—")
-                StatRow(icon: "bookmark.fill", title: "Watchlist", value: "\(stats.watchlistCount)")
+                StatRow(icon: "eye", title: "Movies Explored", value: "\(stats.discoverCardsViewed)")
+                StatRow(icon: "heart.fill", title: "Favorites", value: "\(stats.totalMoviesFavorited)")
+                StatRow(icon: "bookmark.fill", title: "Watchlist Adds", value: "\(stats.totalWatchlistAdds)")
+                StatRow(icon: "checkmark.circle", title: "Marked Seen", value: "\(stats.totalSeenMarked)")
             }
             
             // Engagement stats
@@ -440,49 +440,42 @@ private struct StatRow: View {
 
 struct AchievementsFullView: View {
     @Environment(\.dismiss) private var dismiss
-    
-    // Sample achievements
-    private let achievements: [AchievementItem] = [
-        AchievementItem(id: "first_trivia", title: "Quiz Starter", description: "Complete your first trivia", icon: "star.fill", xp: 10, isUnlocked: true),
-        AchievementItem(id: "streak_3", title: "Getting Hooked", description: "3-day streak", icon: "flame.fill", xp: 30, isUnlocked: true),
-        AchievementItem(id: "streak_7", title: "Week Warrior", description: "7-day streak", icon: "flame.fill", xp: 75, isUnlocked: false),
-        AchievementItem(id: "trivia_50", title: "Trivia Master", description: "Answer 50 questions correctly", icon: "brain.fill", xp: 50, isUnlocked: false),
-        AchievementItem(id: "explorer_100", title: "Movie Explorer", description: "View 100 movies", icon: "binoculars.fill", xp: 40, isUnlocked: false),
-        AchievementItem(id: "perfect_round", title: "Perfect Round", description: "Get all questions right in a session", icon: "crown.fill", xp: 100, isUnlocked: false),
-        AchievementItem(id: "streak_30", title: "Monthly Master", description: "30-day streak", icon: "trophy.fill", xp: 300, isUnlocked: false),
-        AchievementItem(id: "trivia_500", title: "Trivia Legend", description: "Answer 500 questions correctly", icon: "star.circle.fill", xp: 500, isUnlocked: false),
-    ]
-    
+
+    private var unlocked: [AchievementDefinition] { AchievementDefinition.unlockedAchievements() }
+    private var locked: [AchievementDefinition]   { AchievementDefinition.lockedAchievements() }
+    private var total: Int { AchievementDefinition.all.count }
+
     var body: some View {
         NavigationStack {
             List {
+                // Summary header
                 Section {
-                    let unlocked = achievements.filter { $0.isUnlocked }.count
-                    let total = achievements.count
-                    
                     VStack(spacing: 8) {
-                        Text("\(unlocked)/\(total)")
+                        Text("\(unlocked.count)/\(total)")
                             .font(.largeTitle.weight(.bold))
                         Text("Achievements Unlocked")
                             .font(.subheadline)
                             .foregroundColor(.secondary)
-                        
-                        ProgressView(value: Double(unlocked), total: Double(total))
+                        ProgressView(value: Double(unlocked.count), total: Double(total))
                             .tint(.accentColor)
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical)
                 }
-                
-                Section("Unlocked") {
-                    ForEach(achievements.filter { $0.isUnlocked }) { achievement in
-                        AchievementRow(achievement: achievement)
+
+                if !unlocked.isEmpty {
+                    Section("Unlocked (\(unlocked.count))") {
+                        ForEach(unlocked, id: \.id) { a in
+                            RealAchievementRow(achievement: a, isUnlocked: true)
+                        }
                     }
                 }
-                
-                Section("Locked") {
-                    ForEach(achievements.filter { !$0.isUnlocked }) { achievement in
-                        AchievementRow(achievement: achievement)
+
+                if !locked.isEmpty {
+                    Section("Locked (\(locked.count))") {
+                        ForEach(locked, id: \.id) { a in
+                            RealAchievementRow(achievement: a, isUnlocked: false)
+                        }
                     }
                 }
             }
@@ -497,46 +490,51 @@ struct AchievementsFullView: View {
     }
 }
 
-private struct AchievementItem: Identifiable {
-    let id: String
-    let title: String
-    let description: String
-    let icon: String
-    let xp: Int
+private struct RealAchievementRow: View {
+    let achievement: AchievementDefinition
     let isUnlocked: Bool
-}
 
-private struct AchievementRow: View {
-    let achievement: AchievementItem
-    
+    private var progress: Double { AchievementDefinition.progress(for: achievement) }
+    private var current: Int    { AchievementDefinition.currentValue(for: achievement) }
+
     var body: some View {
         HStack(spacing: 12) {
             Image(systemName: achievement.icon)
                 .font(.title2)
-                .foregroundColor(achievement.isUnlocked ? .accentColor : .secondary)
+                .foregroundColor(isUnlocked ? achievement.category.color : .secondary)
                 .frame(width: 40)
-            
-            VStack(alignment: .leading, spacing: 2) {
+
+            VStack(alignment: .leading, spacing: 4) {
                 Text(achievement.title)
                     .font(.subheadline.weight(.semibold))
-                    .foregroundColor(achievement.isUnlocked ? .primary : .secondary)
+                    .foregroundColor(isUnlocked ? .primary : .secondary)
                 Text(achievement.description)
                     .font(.caption)
                     .foregroundColor(.secondary)
+
+                if !isUnlocked {
+                    HStack(spacing: 6) {
+                        ProgressView(value: progress)
+                            .tint(achievement.category.color)
+                        Text("\(current)/\(achievement.requirement)")
+                            .font(.caption2.monospacedDigit())
+                            .foregroundColor(.secondary)
+                    }
+                }
             }
-            
+
             Spacer()
-            
-            if achievement.isUnlocked {
+
+            if isUnlocked {
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundColor(.green)
             } else {
-                Text("+\(achievement.xp) XP")
+                Text("+\(achievement.xpReward) XP")
                     .font(.caption.weight(.semibold))
                     .foregroundColor(.secondary)
             }
         }
-        .opacity(achievement.isUnlocked ? 1.0 : 0.6)
+        .opacity(isUnlocked ? 1.0 : 0.65)
     }
 }
 

@@ -426,6 +426,7 @@ final class DiscoverVM: ObservableObject {
                 tasteProfile.record(genreIDs: ids)
             }
             tasteProfile.recordDecade(from: movie)
+            StatsManager.shared.trackMovieFavorited()
         }
     }
     
