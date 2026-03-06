@@ -2,9 +2,8 @@
 //  DiscoverView.swift
 //  FilmFuel
 //
-//  Redesigned for maximum retention & monetization
-//  Key patterns: Visual progress, social proof, streak anxiety, variable rewards,
-//  strategic friction, FOMO triggers, gamification
+//  REDESIGNED: Modern, clean interface with natural premium value moments
+//  Philosophy: Show users the VALUE of premium, don't manipulate with urgency
 //
 
 import SwiftUI
@@ -16,12 +15,7 @@ struct DiscoverView: View {
     @StateObject private var vm: DiscoverVM
     @State private var showingFilters = false
     @State private var showingPlusPaywall = false
-    @State private var showingProfile = false
-    @State private var showingAchievements = false
-    @State private var shuffleSpin = false
-    @State private var pulseStreak = false
-    @State private var showMatchAnimation = false
-    @State private var celebratedMovieID: Int?
+    @State private var showingSearch = false
     
     @EnvironmentObject var store: FilmFuelStore
     @EnvironmentObject var entitlements: FilmFuelEntitlements
@@ -38,285 +32,117 @@ struct DiscoverView: View {
     
     var body: some View {
         NavigationStack {
-            ZStack {
-                Color(.systemBackground).ignoresSafeArea()
-                
-                VStack(spacing: 0) {
+            ScrollView {
+                LazyVStack(spacing: 0) {
+                    // Clean header with mode selection
                     headerSection
-                    content
-                }
-                
-                // Floating overlays
-                if vm.showTipNudge {
-                    tipNudgeOverlay
-                        .transition(.move(edge: .bottom).combined(with: .opacity))
-                }
-                
-                if vm.showStreakAtRisk {
-                    streakAtRiskOverlay
-                        .transition(.scale.combined(with: .opacity))
-                }
-                
-                if vm.showRewardAnimation, let reward = vm.pendingReward {
-                    rewardCelebration(reward)
-                        .transition(.scale.combined(with: .opacity))
-                }
-                
-                if vm.showLevelUp, let level = vm.newLevelReached {
-                    levelUpCelebration(level)
-                        .transition(.scale.combined(with: .opacity))
+                    
+                    // Mood filters
+                    moodFilterSection
+                    
+                    // Premium features row (shows value)
+                    if !entitlements.isPlus {
+                        premiumFeaturesTeaser
+                    }
+                    
+                    // Smart Match banner for Plus users
+                    if entitlements.isPlus {
+                        smartMatchBanner
+                    }
+                    
+                    // Movie content
+                    movieContent
                 }
             }
-            .navigationTitle("")
+            .background(Color(.systemBackground))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     filterButton
                 }
                 ToolbarItem(placement: .principal) {
-                    streakBadge
+                    logoTitle
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    profileButton
+                    trailingButtons
                 }
             }
-            .sheet(isPresented: $showingFilters, onDismiss: { vm.loadInitial() }) {
-                DiscoverFiltersSheet(
-                    filters: $vm.filters,
-                    isPremiumUnlocked: entitlements.isPlus,
-                    onUpgradeTapped: { showingPlusPaywall = true }
-                )
-                .presentationDetents([.medium, .large])
+            .sheet(isPresented: $showingFilters) {
+                filtersSheet
             }
             .sheet(isPresented: $showingPlusPaywall) {
                 FilmFuelPlusPaywallView()
                     .environmentObject(store)
                     .environmentObject(entitlements)
             }
-            .sheet(isPresented: $showingProfile) {
-                ProfileSheet(vm: vm, entitlements: entitlements)
-            }
-            .sheet(isPresented: $showingAchievements) {
-                AchievementsSheet(achievements: vm.achievements, userXP: vm.userXP, userLevel: vm.userLevel)
+            .sheet(isPresented: $showingSearch) {
+                searchSheet
             }
             .onAppear {
                 if vm.movies.isEmpty {
                     vm.loadInitial()
                 }
             }
-            .animation(.spring(), value: vm.showTipNudge)
-            .animation(.spring(), value: vm.showStreakAtRisk)
-            .animation(.spring(), value: vm.showRewardAnimation)
-            .animation(.spring(), value: vm.showLevelUp)
         }
     }
     
-    // MARK: - Header Section
+    // MARK: - Header
+    
+    private var logoTitle: some View {
+        HStack(spacing: 6) {
+            Text("Discover")
+                .font(.headline)
+            
+            if entitlements.isPlus {
+                Image(systemName: "sparkles")
+                    .font(.caption)
+                    .foregroundColor(.accentColor)
+            }
+        }
+    }
     
     private var headerSection: some View {
         VStack(spacing: 12) {
-            // More compact hero card
-            heroCard
-            
             // Mode selector
-            modeSegmentedControl
-            
-            // Mood + flavor rail
-            moodAndFlavorSection
-            
-            // Taste summary with progress
-            if !vm.topGenreNames.isEmpty || vm.favoriteDecadeLabel != nil {
-                tasteSummary
-            }
-            
-            // Social proof bar
-            socialProofBar
-        }
-        .padding(.top, 8)
-    }
-    
-    private var heroCard: some View {
-        VStack(spacing: 10) {
-            // Top row: Title + Smart picks remaining
-            HStack(alignment: .firstTextBaseline) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Find your next watch")
-                        .font(.title2.weight(.bold))
-                    
-                    Text(subtitleForMode(vm.mode))
-                        .font(.footnote)
-                        .foregroundColor(.secondary)
-                }
-                
-                Spacer()
-                
-                // Smart picks indicator (creates urgency)
-                smartPicksIndicator
-            }
-            
-            // Level + XP progress + weekly goal summary in one tight row
-            HStack(alignment: .center, spacing: 12) {
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack {
-                        Image(systemName: vm.userLevel.icon)
-                            .font(.caption.weight(.semibold))
-                            .foregroundColor(.accentColor)
-                        
-                        Text(vm.userLevel.title)
-                            .font(.caption.weight(.semibold))
-                    }
-                    
-                    GeometryReader { geo in
-                        ZStack(alignment: .leading) {
-                            RoundedRectangle(cornerRadius: 4)
-                                .fill(Color(.tertiarySystemFill))
-                            
-                            RoundedRectangle(cornerRadius: 4)
-                                .fill(
-                                    LinearGradient(
-                                        colors: [.accentColor, .accentColor.opacity(0.7)],
-                                        startPoint: .leading,
-                                        endPoint: .trailing
-                                    )
-                                )
-                                .frame(width: geo.size.width * vm.levelProgress)
-                        }
-                    }
-                    .frame(height: 6)
-                    
-                    if let next = vm.userLevel.next {
-                        Text("\(vm.xpToNextLevel) XP to \(next.title)")
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                    }
-                }
-                
-                Spacer()
-                
-                VStack(alignment: .trailing, spacing: 2) {
-                    HStack(spacing: 4) {
-                        Image(systemName: "flame.fill")
-                            .foregroundColor(.orange)
-                            .font(.caption)
-                        Text("\(vm.weeklyProgress)/\(vm.weeklyGoal)")
-                            .font(.caption.weight(.semibold))
-                    }
-                    Text("this week")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                }
-            }
-            
-            // Search + Plus chip in one row
             HStack(spacing: 8) {
-                HStack(spacing: 6) {
-                    Image(systemName: "magnifyingglass")
-                        .foregroundColor(.secondary)
-                    TextField("Search movies…", text: $vm.searchQuery)
-                        .textInputAutocapitalization(.words)
-                        .disableAutocorrection(true)
-                }
-                .padding(10)
-                .background(Color(.secondarySystemBackground))
-                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                modePill("For You", icon: "sparkles", mode: .forYou)
+                modePill("Trending", icon: "flame", mode: .trending)
+                modePill("Popular", icon: "star", mode: .popular)
                 
-                Button {
-                    if entitlements.isPlus {
-                        // Maybe later: open Plus perks screen
-                    } else {
-                        showingPlusPaywall = true
-                    }
-                } label: {
-                    HStack(spacing: 4) {
-                        Text("FilmFuel+")
-                        Image(systemName: entitlements.isPlus ? "checkmark.seal.fill" : "sparkles")
-                    }
-                    .font(.caption.bold())
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 8)
-                    .background(
-                        entitlements.isPlus
-                            ? Color.accentColor.opacity(0.18)
-                            : Color.accentColor.opacity(0.12)
-                    )
-                    .foregroundColor(entitlements.isPlus ? .accentColor : .accentColor)
-                    .clipShape(Capsule())
-                }
+                // Hidden Gems - Premium feature
+                modePill("Gems", icon: "diamond", mode: .hiddenGems, isPremium: true)
             }
-        }
-        .padding(12)
-        .background(.ultraThinMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-        .padding(.horizontal, 16)
-    }
-    
-    private var smartPicksIndicator: some View {
-        VStack(alignment: .trailing, spacing: 2) {
-            HStack(spacing: 4) {
-                Image(systemName: "sparkles")
-                    .font(.caption.weight(.semibold))
-                Text("\(vm.smartPicksRemaining)")
-                    .font(.title3.weight(.bold))
-            }
-            .foregroundColor(vm.smartPicksRemaining <= 1 ? .orange : .accentColor)
-            
-            Text("smart picks left")
-                .font(.caption2)
-                .foregroundColor(.secondary)
-            
-            if vm.smartPicksRemaining <= 1 && !entitlements.isPlus {
-                Button {
-                    showingPlusPaywall = true
-                } label: {
-                    Text("Get more")
-                        .font(.caption2.weight(.semibold))
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(Color.orange)
-                        .clipShape(Capsule())
-                }
-            }
+            .padding(.horizontal)
+            .padding(.top, 8)
         }
     }
     
-    private var modeSegmentedControl: some View {
-        HStack(spacing: 6) {
-            ForEach(DiscoverVM.Mode.allCases) { mode in
-                modeButton(mode)
-            }
-        }
-        .padding(.horizontal)
-    }
-    
-    private func modeButton(_ mode: DiscoverVM.Mode) -> some View {
+    private func modePill(_ label: String, icon: String, mode: DiscoverVM.Mode, isPremium: Bool = false) -> some View {
         let isSelected = vm.mode == mode
-        let isLocked = mode.isPremium && !entitlements.isPlus
+        let isLocked = isPremium && !entitlements.isPlus
         
         return Button {
             if isLocked {
-                vm.paywallTrigger = .hardPaywall(feature: mode.label)
                 showingPlusPaywall = true
-                #if canImport(UIKit)
-                UINotificationFeedbackGenerator().notificationOccurred(.warning)
-                #endif
+                haptic(.warning)
             } else {
                 withAnimation(.easeInOut(duration: 0.2)) {
                     vm.userSelectedMode(mode)
-                    scrollToTop()
                 }
+                haptic(.light)
             }
         } label: {
             HStack(spacing: 4) {
-                Image(systemName: mode.icon)
-                Text(mode.label)
+                Image(systemName: icon)
+                    .font(.caption.weight(.semibold))
+                Text(label)
+                    .font(.caption.weight(isSelected ? .semibold : .medium))
                 if isLocked {
                     Image(systemName: "lock.fill")
                         .font(.system(size: 8))
                 }
             }
-            .font(.footnote.weight(isSelected ? .semibold : .regular))
-            .frame(maxWidth: .infinity)
+            .padding(.horizontal, 12)
             .padding(.vertical, 8)
             .background(
                 isSelected ? Color.accentColor :
@@ -333,41 +159,21 @@ struct DiscoverView: View {
         .buttonStyle(.plain)
     }
     
-    private var moodAndFlavorSection: some View {
-        VStack(spacing: 10) {
-            // Mood rail
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 8) {
-                    ForEach(MovieMood.allCases) { mood in
-                        moodChip(mood)
-                    }
-                }
-                .padding(.horizontal)
-            }
-            
-            // Flavor chips (in For You mode)
-            if vm.mode == .forYou {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 8) {
-                        ForEach(DiscoverVM.RandomFlavor.allCases) { flavor in
-                            flavorChip(flavor)
-                        }
-                    }
-                    .padding(.horizontal)
+    // MARK: - Mood Filters
+    
+    private var moodFilterSection: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                // All chip (uses .any)
+                moodChip(.any)
+                
+                // Other mood chips (skip .any in the loop)
+                ForEach(MovieMood.allCases.filter { $0 != .any }) { mood in
+                    moodChip(mood)
                 }
             }
-            
-            // Controls row
-            if vm.mode == .forYou {
-                HStack(spacing: 10) {
-                    smartModeToggle
-                    
-                    Spacer()
-                    
-                    shuffleButton
-                }
-                .padding(.horizontal)
-            }
+            .padding(.horizontal)
+            .padding(.vertical, 10)
         }
     }
     
@@ -378,14 +184,15 @@ struct DiscoverView: View {
             withAnimation(.easeInOut(duration: 0.2)) {
                 vm.userSelectedMood(mood)
             }
+            haptic(.light)
         } label: {
             HStack(spacing: 4) {
                 Text(mood.emoji)
                 Text(mood.label)
             }
-            .font(.caption.weight(isSelected ? .semibold : .regular))
-            .padding(.vertical, 6)
+            .font(.subheadline.weight(isSelected ? .semibold : .regular))
             .padding(.horizontal, 12)
+            .padding(.vertical, 6)
             .background(isSelected ? Color.accentColor : Color(.secondarySystemBackground))
             .foregroundColor(isSelected ? .white : .primary)
             .clipShape(Capsule())
@@ -393,210 +200,84 @@ struct DiscoverView: View {
         .buttonStyle(.plain)
     }
     
-    private func flavorChip(_ flavor: DiscoverVM.RandomFlavor) -> some View {
-        let isLocked = flavor.isPremium && !entitlements.isPlus
-        let isSelected = vm.randomFlavor == flavor
-        
-        return Button {
-            if isLocked {
-                showingPlusPaywall = true
-                #if canImport(UIKit)
-                UINotificationFeedbackGenerator().notificationOccurred(.warning)
-                #endif
-            } else {
-                withAnimation(.easeInOut(duration: 0.2)) {
-                    vm.randomFlavor = flavor
-                    vm.loadInitial()
-                    scrollToTop()
-                }
-            }
-        } label: {
-            HStack(spacing: 4) {
-                Text(flavor.shortLabel)
-                    .font(.caption.weight(isSelected && !isLocked ? .semibold : .regular))
-                if isLocked {
-                    Image(systemName: "lock.fill")
-                        .font(.system(size: 9, weight: .bold))
-                }
-            }
-            .padding(.vertical, 6)
-            .padding(.horizontal, 12)
-            .background(
-                (isSelected && !isLocked)
-                    ? Color.accentColor.opacity(0.18)
-                    : Color(.secondarySystemBackground)
-            )
-            .foregroundColor(
-                isLocked ? .secondary :
-                isSelected ? .accentColor :
-                .primary
-            )
-            .clipShape(Capsule())
-        }
-        .buttonStyle(.plain)
-    }
+    // MARK: - Premium Features Teaser (Key Monetization)
     
-    private var smartModeToggle: some View {
-        HStack(spacing: 8) {
-            Toggle(isOn: Binding(
-                get: { vm.useSmartMode },
-                set: handleSmartToggle
-            )) {
-                HStack(spacing: 4) {
-                    Image(systemName: "sparkles")
-                    Text("Smart mode")
-                }
-                .font(.footnote.weight(.semibold))
-            }
-            .toggleStyle(SwitchToggleStyle(tint: .accentColor))
-        }
-    }
-    
-    private var shuffleButton: some View {
+    private var premiumFeaturesTeaser: some View {
         Button {
-            #if canImport(UIKit)
-            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-            #endif
-            shuffleSpin.toggle()
-            vm.shuffleRandomFeed()
-            scrollToTop()
+            showingPlusPaywall = true
+            haptic(.light)
         } label: {
-            HStack(spacing: 6) {
-                Image(systemName: "shuffle")
-                    .rotationEffect(.degrees(shuffleSpin ? 360 : 0))
-                Text("Shuffle")
+            HStack(spacing: 12) {
+                // Icon
+                ZStack {
+                    Circle()
+                        .fill(Color.accentColor.opacity(0.15))
+                        .frame(width: 40, height: 40)
+                    Image(systemName: "sparkles")
+                        .font(.body)
+                        .foregroundColor(.accentColor)
+                }
+                
+                // Text
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Unlock Smart Matching")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundColor(.primary)
+                    Text("Get personalized picks based on your taste")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                
+                Spacer()
+                
+                // CTA
+                Text("Try Free")
+                    .font(.caption.weight(.bold))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(Color.accentColor)
+                    .clipShape(Capsule())
             }
-            .font(.footnote.weight(.semibold))
-            .padding(.vertical, 8)
-            .padding(.horizontal, 14)
-            .background(Color.accentColor)
-            .foregroundColor(.white)
-            .clipShape(Capsule())
+            .padding(12)
+            .background(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(Color(.secondarySystemBackground))
+            )
+            .padding(.horizontal)
+            .padding(.bottom, 8)
         }
         .buttonStyle(.plain)
-        .animation(.spring(response: 0.5, dampingFraction: 0.7), value: shuffleSpin)
     }
     
-    private var tasteSummary: some View {
-        HStack(spacing: 6) {
+    // MARK: - Smart Match Banner (Plus Users)
+    
+    private var smartMatchBanner: some View {
+        HStack(spacing: 10) {
             Image(systemName: "sparkles")
-            Text("Your taste:")
-                .font(.caption.weight(.semibold))
+                .font(.subheadline)
+                .foregroundColor(.accentColor)
             
-            let pieces: [String] = {
-                var parts: [String] = []
-                if !vm.topGenreNames.isEmpty {
-                    parts.append(vm.topGenreNames.joined(separator: " • "))
-                }
-                if let dec = vm.favoriteDecadeLabel {
-                    parts.append("\(dec) era")
-                }
-                return parts
-            }()
-            
-            Text(pieces.joined(separator: " • "))
-                .font(.caption)
-            
-            Spacer()
-            
-            // Taste strength indicator
-            tasteStrengthIndicator
-        }
-        .foregroundColor(.secondary)
-        .padding(.horizontal)
-        .padding(.bottom, 4)
-    }
-    
-    private var tasteStrengthIndicator: some View {
-        HStack(spacing: 2) {
-            ForEach(0..<5) { i in
-                RoundedRectangle(cornerRadius: 1)
-                    .fill(Double(i) / 5.0 < vm.tasteProfile.tasteStrength ? Color.accentColor : Color(.tertiarySystemFill))
-                    .frame(width: 3, height: 8 + Double(i) * 2)
-            }
-        }
-    }
-    
-    private var socialProofBar: some View {
-        HStack(spacing: 16) {
-            HStack(spacing: 4) {
-                Circle()
-                    .fill(Color.green)
-                    .frame(width: 6, height: 6)
-                Text("\(vm.activeUsersNow.formatted()) discovering now")
-                    .font(.caption2)
-            }
-            
-            Text("•")
+            Text("Smart matching enabled")
+                .font(.subheadline)
                 .foregroundColor(.secondary)
             
-            Text("\(vm.moviesDiscoveredToday.formatted()) movies found today")
-                .font(.caption2)
-            
             Spacer()
+            
+            Toggle("", isOn: Binding(
+                get: { vm.useSmartMode },
+                set: { vm.useSmartMode = $0 }
+            ))
+            .toggleStyle(SwitchToggleStyle(tint: .accentColor))
+            .labelsHidden()
         }
-        .foregroundColor(.secondary)
         .padding(.horizontal)
-        .padding(.bottom, 8)
+        .padding(.vertical, 8)
     }
     
-    // MARK: - Toolbar Items
+    // MARK: - Movie Content
     
-    private var filterButton: some View {
-        Button {
-            showingFilters = true
-        } label: {
-            HStack(spacing: 4) {
-                Image(systemName: "line.3.horizontal.decrease.circle")
-                    .font(.system(size: 17, weight: .semibold))
-                
-                if vm.filters.isActive {
-                    Circle()
-                        .fill(Color.accentColor)
-                        .frame(width: 6, height: 6)
-                }
-            }
-        }
-        .accessibilityLabel("Filters")
-    }
-    
-    private var streakBadge: some View {
-        Button {
-            pulseStreak.toggle()
-        } label: {
-            HStack(spacing: 4) {
-                Image(systemName: "flame.fill")
-                    .foregroundColor(vm.currentStreak >= 7 ? .orange : .secondary)
-                Text("\(vm.currentStreak)")
-                    .font(.headline.weight(.bold))
-            }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 6)
-            .background(
-                vm.currentStreak >= 7
-                    ? Color.orange.opacity(0.15)
-                    : Color(.secondarySystemBackground)
-            )
-            .clipShape(Capsule())
-            .scaleEffect(pulseStreak ? 1.1 : 1.0)
-        }
-        .buttonStyle(.plain)
-        .animation(.spring(response: 0.3, dampingFraction: 0.5), value: pulseStreak)
-    }
-    
-    private var profileButton: some View {
-        Button {
-            showingProfile = true
-        } label: {
-            Image(systemName: "person.crop.circle.fill")
-                .font(.system(size: 22))
-                .foregroundColor(.accentColor)
-        }
-    }
-    
-    // MARK: - Content
-    
-    private var content: some View {
+    private var movieContent: some View {
         Group {
             if vm.isLoading && vm.movies.isEmpty {
                 loadingState
@@ -605,795 +286,716 @@ struct DiscoverView: View {
             } else if vm.displayedMovies.isEmpty {
                 emptyState
             } else {
-                movieList
+                movieGrid
             }
         }
     }
     
-    private var loadingState: some View {
-        VStack(spacing: 12) {
-            ProgressView()
-            Text(loadingMessageForMode(vm.mode))
-                .foregroundColor(.secondary)
-                .font(.subheadline)
+    private var movieGrid: some View {
+        LazyVGrid(
+            columns: [
+                GridItem(.flexible(), spacing: 12),
+                GridItem(.flexible(), spacing: 12)
+            ],
+            spacing: 16
+        ) {
+            ForEach(Array(vm.displayedMovies.enumerated()), id: \.element.id) { index, movie in
+                NavigationLink {
+                    MovieDetailView(movie: movie)
+                        .environmentObject(vm)
+                        .environmentObject(entitlements)
+                        .environmentObject(store)
+                } label: {
+                    MovieDiscoverCard(
+                        movie: movie,
+                        vm: vm,
+                        showMatchScore: entitlements.isPlus && vm.mode == .forYou
+                    )
+                }
+                .buttonStyle(.plain)
+                
+                // Insert upsell card after every 6 movies for free users
+                if !entitlements.isPlus && (index + 1) % 6 == 0 && index < vm.displayedMovies.count - 1 {
+                    inlineUpsellCard
+                }
+            }
+            
+            // Load more trigger
+            if vm.hasMorePages {
+                Color.clear
+                    .frame(height: 50)
+                    .onAppear {
+                        vm.loadNextPage()
+                    }
+            }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(.horizontal)
+        .padding(.bottom, 24)
+    }
+    
+    // MARK: - Inline Upsell Card (Natural Discovery Moment)
+    
+    private var inlineUpsellCard: some View {
+        Button {
+            showingPlusPaywall = true
+            haptic(.light)
+        } label: {
+            VStack(spacing: 12) {
+                ZStack {
+                    Circle()
+                        .fill(
+                            LinearGradient(
+                                colors: [.purple.opacity(0.3), .accentColor.opacity(0.3)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: 50, height: 50)
+                    
+                    Image(systemName: "wand.and.stars")
+                        .font(.title3)
+                        .foregroundColor(.accentColor)
+                }
+                
+                Text("Finding the right movie?")
+                    .font(.subheadline.weight(.semibold))
+                    .multilineTextAlignment(.center)
+                
+                Text("Get personalized recommendations")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+                
+                Text("Try FilmFuel+")
+                    .font(.caption.weight(.bold))
+                    .foregroundColor(.accentColor)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 20)
+            .background(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(Color(.secondarySystemBackground))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            .stroke(Color.accentColor.opacity(0.3), lineWidth: 1)
+                    )
+            )
+        }
+        .buttonStyle(.plain)
+    }
+    
+    private var loadingState: some View {
+        VStack(spacing: 16) {
+            ProgressView()
+                .scaleEffect(1.1)
+            Text("Finding movies...")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+        }
+        .frame(maxWidth: .infinity)
+        .frame(minHeight: 300)
     }
     
     private func errorState(_ error: String) -> some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 16) {
+            Image(systemName: "wifi.slash")
+                .font(.largeTitle)
+                .foregroundColor(.secondary)
+            
             Text(error)
+                .font(.subheadline)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
-                .padding(.horizontal)
             
             Button {
                 vm.loadInitial()
             } label: {
-                Text("Try again")
+                Text("Try Again")
                     .font(.subheadline.weight(.semibold))
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
-                    .background(Color.accentColor.opacity(0.15))
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 10)
+                    .background(Color.accentColor)
+                    .foregroundColor(.white)
                     .clipShape(Capsule())
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding()
+        .frame(maxWidth: .infinity)
+        .frame(minHeight: 300)
     }
     
     private var emptyState: some View {
-        VStack(spacing: 12) {
-            Image(systemName: "film.slash")
-                .font(.system(size: 32))
-                .foregroundColor(.secondary)
-            
-            Text(
-                vm.searchQuery.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-                    ? "No movies to show"
-                    : "No matches for \"\(vm.searchQuery)\""
-            )
-            .font(.headline)
-            
-            Text("Try adjusting your filters or mood")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-            
-            if vm.filters.isActive || vm.selectedMood != .any {
-                Button {
-                    vm.searchQuery = ""
-                    vm.filters = .default
-                    vm.selectedMood = .any
-                    vm.loadInitial()
-                } label: {
-                    Text("Clear filters & reset")
-                        .font(.subheadline.weight(.semibold))
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
-                        .background(Color.accentColor.opacity(0.15))
-                        .clipShape(Capsule())
-                }
-            }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-    
-    private var movieList: some View {
-        ScrollView(.vertical, showsIndicators: false) {
-            LazyVStack(spacing: 18) {
-                ForEach(Array(vm.displayedMovies.enumerated()), id: \.element.id) { index, movie in
-                    NavigationLink {
-                        MovieDetailView(movie: movie)
-                            .environmentObject(vm)
-                            .onAppear { vm.recordDetailOpen(movie) }
-                    } label: {
-                        movieFeedCard(movie, index: index)
-                            .transition(.move(edge: .bottom).combined(with: .opacity))
-                    }
-                    .buttonStyle(.plain)
-                }
-                
-                endOfFeedFooter
-            }
-            .padding(.horizontal, 16)
-            .padding(.top, 8)
-            .padding(.bottom, 32)
-        }
-        .animation(.spring(response: 0.45, dampingFraction: 0.85), value: vm.displayedMovies.map(\.id))
-    }
-    
-    private func movieFeedCard(_ movie: TMDBMovie, index: Int) -> some View {
-        let isInWatchlist = vm.isInWatchlist(movie)
-        let isSeen = vm.isSeen(movie)
-        let isDisliked = vm.isDisliked(movie)
-        let isFavorite = vm.isFavorite(movie)
-        let reason = vm.briefReasonFor(movie)
-        let matchBadge = vm.matchBadgeText(for: movie)
-        
-        return VStack(alignment: .leading, spacing: 10) {
-            ZStack(alignment: .bottomLeading) {
-                // Poster/backdrop
-                posterImage(for: movie)
-                
-                // Top overlays
-                VStack {
-                    HStack {
-                        // Match badge (creates excitement)
-                        if let badge = matchBadge {
-                            Text(badge)
-                                .font(.caption2.weight(.bold))
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
-                                .background(
-                                    matchPercentageColor(badge)
-                                )
-                                .foregroundColor(.white)
-                                .clipShape(Capsule())
-                        } else if vm.useSmartMode && vm.mode == .forYou {
-                            Text(vm.randomFlavor == .fromYourTaste ? "Your taste" : "Smart pick")
-                                .font(.caption2.weight(.semibold))
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
-                                .background(Color.accentColor)
-                                .foregroundColor(.white)
-                                .clipShape(Capsule())
-                        }
-                        
-                        Spacer()
-                        
-                        // Favorite button
-                        Button {
-                            vm.toggleFavorite(movie)
-                            #if canImport(UIKit)
-                            UIImpactFeedbackGenerator(style: .soft).impactOccurred()
-                            #endif
-                        } label: {
-                            Image(systemName: isFavorite ? "heart.fill" : "heart")
-                                .font(.system(size: 16, weight: .semibold))
-                                .foregroundColor(isFavorite ? .red : .white)
-                                .padding(10)
-                                .background(.thinMaterial)
-                                .clipShape(Circle())
-                                .shadow(radius: 4)
-                        }
-                    }
-                    Spacer()
-                }
-                .padding(10)
-                
-                // Bottom overlay
-                VStack(alignment: .leading, spacing: 6) {
-                    if let reason, vm.mode == .forYou {
-                        Text(reason)
-                            .font(.caption2.weight(.semibold))
-                            .foregroundColor(.white.opacity(0.95))
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(Color.black.opacity(0.45))
-                            .clipShape(Capsule())
-                            .shadow(radius: 6)
-                    }
-                    
-                    Text(movie.title)
-                        .font(.headline.weight(.semibold))
-                        .foregroundColor(.white)
-                        .lineLimit(2)
-                        .minimumScaleFactor(0.7)
-                        .shadow(radius: 10)
-                    
-                    HStack(spacing: 8) {
-                        if movie.yearText != "—" {
-                            Text(movie.yearText)
-                                .font(.caption.weight(.medium))
-                                .foregroundColor(.white.opacity(0.9))
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
-                                .background(Color.white.opacity(0.18))
-                                .clipShape(Capsule())
-                        }
-                        
-                        Label(String(format: "%.1f", movie.voteAverage), systemImage: "star.fill")
-                            .font(.caption.weight(.medium))
-                            .foregroundColor(.yellow)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(Color.black.opacity(0.55))
-                            .clipShape(Capsule())
-                    }
-                }
-                .padding(14)
-            }
-            
-            // Overview
-            if !movie.overview.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                Text(movie.overview)
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                    .lineLimit(3)
-            }
-            
-            // Meta row
-            HStack(spacing: 8) {
-                if movie.voteCount > 0 {
-                    Label("\(movie.voteCount.formatted()) ratings", systemImage: "person.3.fill")
-                        .font(.caption)
-                        .foregroundColor(.secondary.opacity(0.9))
-                }
-                Spacer()
-            }
-            
-            // Action buttons
-            actionButtons(movie: movie, isInWatchlist: isInWatchlist, isSeen: isSeen, isDisliked: isDisliked)
-        }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 6)
-        .background(
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(Color(.secondarySystemBackground))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .stroke(Color.black.opacity(0.04), lineWidth: 0.5)
-        )
-        .shadow(color: Color.black.opacity(0.10), radius: 6, x: 0, y: 4)
-        .contentShape(Rectangle())
-    }
-    
-    private func posterImage(for movie: TMDBMovie) -> some View {
-        Group {
-            if let url = movie.backdropURL ?? movie.posterURL {
-                AsyncImage(url: url) { phase in
-                    switch phase {
-                    case .empty:
-                        Rectangle().overlay { ProgressView() }
-                    case .success(let image):
-                        image.resizable().scaledToFill()
-                    case .failure:
-                        posterPlaceholder
-                    @unknown default:
-                        posterPlaceholder
-                    }
-                }
-            } else {
-                posterPlaceholder
-            }
-        }
-        .aspectRatio(16/9, contentMode: .fit)
-        .frame(maxWidth: .infinity, alignment: .center)
-        .clipped()
-        .overlay(
-            LinearGradient(
-                colors: [Color.black.opacity(0.15), Color.black.opacity(0.75)],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-    }
-    
-    private func matchPercentageColor(_ badge: String) -> Color {
-        if badge.contains("9") {
-            return .green
-        } else if badge.contains("8") {
-            return .accentColor
-        } else {
-            return .orange
-        }
-    }
-    
-    private func actionButtons(movie: TMDBMovie, isInWatchlist: Bool, isSeen: Bool, isDisliked: Bool) -> some View {
-        HStack(spacing: 10) {
-            Button {
-                vm.toggleWatchlist(movie)
-                #if canImport(UIKit)
-                UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                #endif
-            } label: {
-                HStack(spacing: 4) {
-                    Image(systemName: isInWatchlist ? "bookmark.fill" : "bookmark")
-                    Text("Watchlist")
-                        .font(.caption.weight(.semibold))
-                }
-                .padding(.horizontal, 10)
-                .padding(.vertical, 6)
-                .background(isInWatchlist ? Color.accentColor.opacity(0.18) : Color(.secondarySystemBackground))
-                .foregroundColor(isInWatchlist ? .accentColor : .primary)
-                .clipShape(Capsule())
-            }
-            
-            Button {
-                vm.toggleSeen(movie)
-                #if canImport(UIKit)
-                UIImpactFeedbackGenerator(style: .rigid).impactOccurred()
-                #endif
-            } label: {
-                HStack(spacing: 4) {
-                    Image(systemName: isSeen ? "eye.fill" : "eye")
-                    Text("Seen it")
-                        .font(.caption.weight(.semibold))
-                }
-                .padding(.horizontal, 10)
-                .padding(.vertical, 6)
-                .background(isSeen ? Color.green.opacity(0.18) : Color(.secondarySystemBackground))
-                .foregroundColor(isSeen ? .green : .primary)
-                .clipShape(Capsule())
-            }
-            
-            Button {
-                vm.toggleDisliked(movie)
-                #if canImport(UIKit)
-                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-                #endif
-            } label: {
-                HStack(spacing: 4) {
-                    Image(systemName: isDisliked ? "hand.thumbsdown.fill" : "hand.thumbsdown")
-                    Text("Not for me")
-                        .font(.caption.weight(.semibold))
-                }
-                .padding(.horizontal, 10)
-                .padding(.vertical, 6)
-                .background(isDisliked ? Color.red.opacity(0.16) : Color(.secondarySystemBackground))
-                .foregroundColor(isDisliked ? .red : .primary)
-                .clipShape(Capsule())
-            }
-            
-            Spacer()
-        }
-    }
-    
-    private var posterPlaceholder: some View {
-        ZStack {
-            LinearGradient(
-                colors: [Color(.secondarySystemBackground), Color(.tertiarySystemBackground)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
+        VStack(spacing: 16) {
             Image(systemName: "film")
                 .font(.largeTitle)
                 .foregroundColor(.secondary)
-        }
-    }
-    
-    private var endOfFeedFooter: some View {
-        Group {
-            if vm.mode == .forYou && !vm.displayedMovies.isEmpty {
-                VStack(spacing: 8) {
-                    Text("End of this shuffle")
-                        .font(.subheadline.weight(.semibold))
-                    Text("Hit Shuffle for a fresh batch of picks.")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    
-                    Button {
-                        #if canImport(UIKit)
-                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                        #endif
-                        shuffleSpin.toggle()
-                        vm.shuffleRandomFeed()
-                        scrollToTop()
-                    } label: {
-                        HStack(spacing: 6) {
-                            Image(systemName: "shuffle")
-                            Text("Shuffle again")
-                                .font(.subheadline.weight(.semibold))
-                        }
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
-                        .background(Color.accentColor)
-                        .foregroundColor(.white)
-                        .clipShape(Capsule())
-                    }
-                    
-                    // Upsell at end of feed
-                    if !entitlements.isPlus {
-                        VStack(spacing: 6) {
-                            Text("Want unlimited smart shuffles?")
-                                .font(.caption.weight(.semibold))
-                            Button {
-                                showingPlusPaywall = true
-                            } label: {
-                                Text("Try FilmFuel+")
-                                    .font(.caption.weight(.semibold))
-                                    .foregroundColor(.accentColor)
-                            }
-                        }
-                        .padding(.top, 8)
-                    }
-                }
-                .padding(.top, 4)
-                .padding(.bottom, 32)
-            } else {
-                Spacer(minLength: 24)
-            }
-        }
-    }
-    
-    // MARK: - Overlays
-    
-    private var tipNudgeOverlay: some View {
-        VStack {
-            Spacer()
-            HStack(spacing: 12) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Boost FilmFuel?")
-                        .font(.headline)
-                    if let message = vm.tipNudgeMessage {
-                        Text(message)
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                    }
-                }
-                Spacer()
-                Button { vm.dismissTipNudge() } label: {
-                    Text("Not now")
-                        .font(.subheadline)
-                }
-                if let onTipTapped {
-                    Button {
-                        onTipTapped()
-                        vm.recordTipSuccess()
-                    } label: {
-                        Text("Tip")
-                            .font(.subheadline.weight(.semibold))
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 8)
-                            .background(Color.accentColor)
-                            .foregroundColor(.white)
-                            .clipShape(Capsule())
-                    }
-                }
-            }
-            .padding()
-            .background(.ultraThinMaterial)
-            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-            .padding(.horizontal)
-            .padding(.bottom, 12)
-        }
-    }
-    
-    private var streakAtRiskOverlay: some View {
-        VStack {
-            Spacer()
-            VStack(spacing: 12) {
-                HStack {
-                    Image(systemName: "flame.fill")
-                        .font(.title)
-                        .foregroundColor(.orange)
-                    
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Keep your \(vm.currentStreak)-day streak!")
-                            .font(.headline)
-                        Text("Discover a movie before midnight")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                    }
-                    
-                    Spacer()
-                }
-                
-                HStack {
-                    Button {
-                        vm.showStreakAtRisk = false
-                    } label: {
-                        Text("Got it")
-                            .font(.subheadline.weight(.semibold))
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 10)
-                            .background(Color.orange)
-                            .foregroundColor(.white)
-                            .clipShape(Capsule())
-                    }
-                }
-            }
-            .padding()
-            .background(.ultraThinMaterial)
-            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-            .padding(.horizontal)
-            .padding(.bottom, 50)
-        }
-    }
-    
-    private func rewardCelebration(_ reward: RewardType) -> some View {
-        VStack {
-            Spacer()
             
-            VStack(spacing: 16) {
-                Image(systemName: reward.icon)
-                    .font(.system(size: 48))
-                    .foregroundColor(.accentColor)
-                
-                Text(reward.title)
-                    .font(.title2.weight(.bold))
-                
-                Text("Keep discovering to earn more rewards!")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                    .multilineTextAlignment(.center)
-                
-                Button {
-                    vm.showRewardAnimation = false
-                    vm.pendingReward = nil
-                } label: {
-                    Text("Awesome!")
-                        .font(.headline)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.accentColor)
-                        .foregroundColor(.white)
-                        .clipShape(RoundedRectangle(cornerRadius: 16))
-                }
-            }
-            .padding(24)
-            .background(.ultraThickMaterial)
-            .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-            .padding(.horizontal, 32)
+            Text("No movies found")
+                .font(.headline)
             
-            Spacer()
+            Text("Try adjusting your filters")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+            
+            Button {
+                vm.clearFilters()
+            } label: {
+                Text("Clear Filters")
+                    .font(.subheadline.weight(.semibold))
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 10)
+                    .background(Color.accentColor)
+                    .foregroundColor(.white)
+                    .clipShape(Capsule())
+            }
         }
-        .background(Color.black.opacity(0.4).ignoresSafeArea())
+        .padding()
+        .frame(maxWidth: .infinity)
+        .frame(minHeight: 300)
     }
     
-    private func levelUpCelebration(_ level: UserLevel) -> some View {
-        VStack {
-            Spacer()
-            
-            VStack(spacing: 16) {
-                Image(systemName: level.icon)
-                    .font(.system(size: 56))
-                    .foregroundColor(.accentColor)
+    // MARK: - Toolbar
+    
+    private var filterButton: some View {
+        Button {
+            showingFilters = true
+            haptic(.light)
+        } label: {
+            ZStack(alignment: .topTrailing) {
+                Image(systemName: "slider.horizontal.3")
+                    .font(.body.weight(.medium))
                 
-                Text("Level Up!")
-                    .font(.largeTitle.weight(.bold))
-                
-                Text("You're now a \(level.title)")
-                    .font(.title3)
-                
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("New perks unlocked:")
-                        .font(.subheadline.weight(.semibold))
-                    
-                    ForEach(level.perks, id: \.self) { perk in
-                        HStack(spacing: 8) {
-                            Image(systemName: "checkmark.circle.fill")
-                                .foregroundColor(.green)
-                            Text(perk)
-                                .font(.subheadline)
-                        }
-                    }
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding()
-                .background(Color(.secondarySystemBackground))
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-                
-                Button {
-                    vm.showLevelUp = false
-                    vm.newLevelReached = nil
-                } label: {
-                    Text("Continue")
-                        .font(.headline)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.accentColor)
-                        .foregroundColor(.white)
-                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                if vm.filters.isActive {
+                    Circle()
+                        .fill(Color.accentColor)
+                        .frame(width: 8, height: 8)
+                        .offset(x: 4, y: -4)
                 }
             }
-            .padding(24)
-            .background(.ultraThickMaterial)
-            .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-            .padding(.horizontal, 24)
-            
-            Spacer()
         }
-        .background(Color.black.opacity(0.5).ignoresSafeArea())
     }
     
-    // MARK: - Helpers
-    
-    private func handleSmartToggle(_ newValue: Bool) {
-        if newValue {
+    private var trailingButtons: some View {
+        HStack(spacing: 16) {
+            Button {
+                showingSearch = true
+                haptic(.light)
+            } label: {
+                Image(systemName: "magnifyingglass")
+                    .font(.body.weight(.medium))
+            }
+            
+            // Plus badge or upgrade button
             if entitlements.isPlus {
-                vm.useSmartMode = true
-            } else if vm.consumeSmartPick() {
-                vm.useSmartMode = true
+                Image(systemName: "checkmark.seal.fill")
+                    .font(.body)
+                    .foregroundColor(.accentColor)
             } else {
-                vm.useSmartMode = false
-                vm.paywallTrigger = .limitReached(type: "Smart picks", remaining: 0)
-                showingPlusPaywall = true
+                Button {
+                    showingPlusPaywall = true
+                } label: {
+                    Text("Plus")
+                        .font(.caption.weight(.bold))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 4)
+                        .background(Color.accentColor)
+                        .clipShape(Capsule())
+                }
             }
-        } else {
-            vm.useSmartMode = false
         }
     }
     
-    private func subtitleForMode(_ mode: DiscoverVM.Mode) -> String {
-        switch mode {
-        case .forYou:     return "Personalized picks based on your taste"
-        case .trending:   return "What everyone's watching right now"
-        case .popular:    return "All-time crowd favorites"
-        case .hiddenGems: return "Underrated films you'll love"
-        }
-    }
+    // MARK: - Filters Sheet
     
-    private func loadingMessageForMode(_ mode: DiscoverVM.Mode) -> String {
-        switch mode {
-        case .forYou:     return "Finding your perfect matches…"
-        case .trending:   return "Fetching what's hot right now…"
-        case .popular:    return "Loading all-time favorites…"
-        case .hiddenGems: return "Uncovering hidden treasures…"
-        }
-    }
-    
-    private func scrollToTop() {
-        #if canImport(UIKit)
-        UIApplication.shared.sendAction(
-            #selector(UIScrollView.scrollRectToVisible(_:animated:)),
-            to: nil, from: nil, for: nil
-        )
-        #endif
-    }
-}
-
-// MARK: - Profile Sheet
-
-struct ProfileSheet: View {
-    @ObservedObject var vm: DiscoverVM
-    @ObservedObject var entitlements: FilmFuelEntitlements
-    @Environment(\.dismiss) private var dismiss
-    
-    var body: some View {
+    private var filtersSheet: some View {
         NavigationStack {
             List {
-                Section {
-                    HStack {
-                        Image(systemName: vm.userLevel.icon)
-                            .font(.title)
-                            .foregroundColor(.accentColor)
-                            .frame(width: 50, height: 50)
-                            .background(Color.accentColor.opacity(0.15))
-                            .clipShape(Circle())
-                        
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(vm.userLevel.title)
-                                .font(.headline)
-                            Text("\(vm.userXP) XP")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
+                // Genres
+                Section("Genres") {
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 80))], spacing: 8) {
+                        ForEach(genreOptions, id: \.id) { genre in
+                            genreChip(genre)
                         }
-                        
+                    }
+                    .padding(.vertical, 4)
+                }
+                
+                // Year range
+                Section("Release Year") {
+                    HStack(spacing: 8) {
+                        yearPreset("2020s", range: 2020...2025)
+                        yearPreset("2010s", range: 2010...2019)
+                        yearPreset("2000s", range: 2000...2009)
+                        yearPreset("Classics", range: 1950...1999)
+                    }
+                }
+                
+                // Rating
+                Section("Minimum Rating") {
+                    HStack(spacing: 12) {
+                        ForEach([0.0, 6.0, 7.0, 8.0], id: \.self) { rating in
+                            ratingChip(rating)
+                        }
+                    }
+                }
+                
+                // Premium filters
+                Section {
+                    // Director filter (Premium)
+                    premiumFilterRow(
+                        icon: "person.fill",
+                        title: "Filter by Director",
+                        subtitle: "Find films by your favorite directors"
+                    )
+                    
+                    // Actor filter (Premium)
+                    premiumFilterRow(
+                        icon: "star.fill",
+                        title: "Filter by Actor",
+                        subtitle: "Discover movies with specific actors"
+                    )
+                    
+                    // Runtime filter (Premium)
+                    premiumFilterRow(
+                        icon: "clock.fill",
+                        title: "Filter by Runtime",
+                        subtitle: "Short films, epics, or anything in between"
+                    )
+                } header: {
+                    HStack {
+                        Text("Premium Filters")
                         Spacer()
-                        
-                        VStack(alignment: .trailing) {
-                            HStack {
-                                Image(systemName: "flame.fill")
-                                    .foregroundColor(.orange)
-                                Text("\(vm.currentStreak)")
-                                    .font(.headline)
-                            }
-                            Text("day streak")
+                        if !entitlements.isPlus {
+                            Image(systemName: "lock.fill")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         }
                     }
                 }
-                
-                Section("Stats") {
-                    ProfileStatRow(icon: "heart.fill", color: .red, label: "Favorites", value: "\(vm.favorites.count)")
-                    ProfileStatRow(icon: "bookmark.fill", color: .accentColor, label: "Watchlist", value: "\(vm.watchlistMovieIDs.count)")
-                    ProfileStatRow(icon: "eye.fill", color: .green, label: "Seen", value: "\(vm.seenMovieIDs.count)")
-                }
-                
-                Section("Your Taste") {
-                    if !vm.topGenreNames.isEmpty {
-                        HStack {
-                            Text("Top genres")
-                            Spacer()
-                            Text(vm.topGenreNames.joined(separator: ", "))
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                    if let decade = vm.favoriteDecadeLabel {
-                        HStack {
-                            Text("Favorite era")
-                            Spacer()
-                            Text("\(decade)")
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                }
             }
-            .navigationTitle("Profile")
+            .navigationTitle("Filters")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Done") { dismiss() }
+                    Button("Reset") {
+                        vm.clearFilters()
+                    }
+                    .foregroundColor(.secondary)
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Apply") {
+                        showingFilters = false
+                        vm.loadInitial()
+                    }
+                    .fontWeight(.semibold)
+                }
+            }
+        }
+        .presentationDetents([.medium, .large])
+    }
+    
+    private func premiumFilterRow(icon: String, title: String, subtitle: String) -> some View {
+        Button {
+            if entitlements.isPlus {
+                // Open specific filter
+            } else {
+                showingFilters = false
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    showingPlusPaywall = true
+                }
+            }
+        } label: {
+            HStack(spacing: 12) {
+                Image(systemName: icon)
+                    .font(.body)
+                    .foregroundColor(entitlements.isPlus ? .accentColor : .secondary)
+                    .frame(width: 24)
+                
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                        .font(.subheadline)
+                        .foregroundColor(entitlements.isPlus ? .primary : .secondary)
+                    Text(subtitle)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                
+                Spacer()
+                
+                if entitlements.isPlus {
+                    Image(systemName: "chevron.right")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                } else {
+                    Text("Plus")
+                        .font(.caption2.weight(.bold))
+                        .foregroundColor(.accentColor)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 3)
+                        .background(Color.accentColor.opacity(0.15))
+                        .clipShape(Capsule())
                 }
             }
         }
     }
-}
-
-struct ProfileStatRow: View {
-    let icon: String
-    let color: Color
-    let label: String
-    let value: String
     
-    var body: some View {
-        HStack {
-            Image(systemName: icon)
-                .foregroundColor(color)
-                .frame(width: 24)
-            Text(label)
-            Spacer()
-            Text(value)
-                .foregroundColor(.secondary)
+    private func genreChip(_ genre: (id: Int, name: String)) -> some View {
+        let isSelected = vm.filters.selectedGenreIDs.contains(genre.id)
+        
+        return Button {
+            if isSelected {
+                vm.filters.selectedGenreIDs.remove(genre.id)
+            } else {
+                vm.filters.selectedGenreIDs.insert(genre.id)
+            }
+            haptic(.light)
+        } label: {
+            Text(genre.name)
+                .font(.caption.weight(isSelected ? .semibold : .regular))
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(isSelected ? Color.accentColor : Color(.tertiarySystemBackground))
+                .foregroundColor(isSelected ? .white : .primary)
+                .clipShape(Capsule())
         }
+        .buttonStyle(.plain)
+    }
+    
+    private func yearPreset(_ label: String, range: ClosedRange<Int>) -> some View {
+        let isSelected = vm.filters.minYear == range.lowerBound
+        
+        return Button {
+            vm.filters.minYear = range.lowerBound
+            vm.filters.maxYear = range.upperBound
+            haptic(.light)
+        } label: {
+            Text(label)
+                .font(.caption.weight(isSelected ? .semibold : .regular))
+                .padding(.horizontal, 10)
+                .padding(.vertical, 8)
+                .frame(maxWidth: .infinity)
+                .background(isSelected ? Color.accentColor : Color(.tertiarySystemBackground))
+                .foregroundColor(isSelected ? .white : .primary)
+                .clipShape(Capsule())
+        }
+        .buttonStyle(.plain)
+    }
+    
+    private func ratingChip(_ rating: Double) -> some View {
+        let isSelected = vm.filters.minRating == rating
+        let label = rating == 0 ? "Any" : "\(Int(rating))+"
+        
+        return Button {
+            vm.filters.minRating = rating
+            haptic(.light)
+        } label: {
+            HStack(spacing: 3) {
+                if rating > 0 {
+                    Image(systemName: "star.fill")
+                        .font(.caption2)
+                }
+                Text(label)
+            }
+            .font(.subheadline.weight(isSelected ? .semibold : .regular))
+            .padding(.horizontal, 14)
+            .padding(.vertical, 8)
+            .frame(maxWidth: .infinity)
+            .background(isSelected ? Color.accentColor : Color(.tertiarySystemBackground))
+            .foregroundColor(isSelected ? .white : .primary)
+            .clipShape(Capsule())
+        }
+        .buttonStyle(.plain)
+    }
+    
+    // MARK: - Search Sheet
+    
+    private var searchSheet: some View {
+        NavigationStack {
+            VStack(spacing: 0) {
+                // Search field
+                HStack(spacing: 12) {
+                    Image(systemName: "magnifyingglass")
+                        .foregroundColor(.secondary)
+                    
+                    TextField("Search movies...", text: $vm.searchQuery)
+                        .textInputAutocapitalization(.words)
+                        .disableAutocorrection(true)
+                        .onSubmit {
+                            vm.loadInitial()
+                        }
+                    
+                    if !vm.searchQuery.isEmpty {
+                        Button {
+                            vm.searchQuery = ""
+                        } label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                }
+                .padding()
+                .background(Color(.secondarySystemBackground))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .padding()
+                
+                // Results
+                if vm.searchQuery.isEmpty {
+                    quickSearchSuggestions
+                } else {
+                    searchResults
+                }
+            }
+            .navigationTitle("Search")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Done") {
+                        showingSearch = false
+                    }
+                }
+            }
+        }
+    }
+    
+    private var quickSearchSuggestions: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Quick Search")
+                .font(.headline)
+                .padding(.horizontal)
+            
+            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
+                ForEach(["Action", "Comedy", "Horror", "Sci-Fi", "Drama", "Romance"], id: \.self) { genre in
+                    Button {
+                        vm.searchQuery = genre
+                        vm.loadInitial()
+                    } label: {
+                        Text(genre)
+                            .font(.subheadline)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 12)
+                            .background(Color(.secondarySystemBackground))
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.horizontal)
+            
+            Spacer()
+        }
+        .padding(.top)
+    }
+    
+    private var searchResults: some View {
+        ScrollView {
+            LazyVStack(spacing: 10) {
+                ForEach(vm.displayedMovies.prefix(20)) { movie in
+                    NavigationLink {
+                        MovieDetailView(movie: movie)
+                            .environmentObject(vm)
+                            .environmentObject(entitlements)
+                            .environmentObject(store)
+                    } label: {
+                        SearchResultRow(movie: movie)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding()
+        }
+    }
+    
+    // MARK: - Helpers
+    
+    private var genreOptions: [(id: Int, name: String)] {
+        [
+            (28, "Action"), (12, "Adventure"), (16, "Animation"),
+            (35, "Comedy"), (80, "Crime"), (99, "Documentary"),
+            (18, "Drama"), (10751, "Family"), (14, "Fantasy"),
+            (27, "Horror"), (9648, "Mystery"), (10749, "Romance"),
+            (878, "Sci-Fi"), (53, "Thriller"), (10752, "War")
+        ]
+    }
+    
+    private func haptic(_ type: UINotificationFeedbackGenerator.FeedbackType) {
+        #if canImport(UIKit)
+        UINotificationFeedbackGenerator().notificationOccurred(type)
+        #endif
+    }
+    
+    private func haptic(_ style: UIImpactFeedbackGenerator.FeedbackStyle) {
+        #if canImport(UIKit)
+        UIImpactFeedbackGenerator(style: style).impactOccurred()
+        #endif
     }
 }
 
-// MARK: - Achievements Sheet
+// MARK: - Movie Discover Card
 
-struct AchievementsSheet: View {
-    let achievements: [Achievement]
-    let userXP: Int
-    let userLevel: UserLevel
-    @Environment(\.dismiss) private var dismiss
+struct MovieDiscoverCard: View {
+    let movie: TMDBMovie
+    @ObservedObject var vm: DiscoverVM
+    let showMatchScore: Bool
+    
+    @State private var isPressed = false
     
     var body: some View {
-        NavigationStack {
-            List {
-                Section {
-                    VStack(spacing: 8) {
-                        Text("\(userXP) XP")
-                            .font(.largeTitle.weight(.bold))
-                        Text(userLevel.title)
-                            .font(.headline)
+        VStack(alignment: .leading, spacing: 8) {
+            // Poster
+            ZStack(alignment: .topLeading) {
+                AsyncImage(url: movie.posterURL) { phase in
+                    switch phase {
+                    case .empty:
+                        Rectangle()
+                            .fill(Color(.secondarySystemBackground))
+                            .aspectRatio(2/3, contentMode: .fit)
+                            .overlay { ProgressView() }
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .aspectRatio(2/3, contentMode: .fill)
+                    case .failure:
+                        Rectangle()
+                            .fill(Color(.secondarySystemBackground))
+                            .aspectRatio(2/3, contentMode: .fit)
+                            .overlay {
+                                Image(systemName: "film")
+                                    .font(.title2)
+                                    .foregroundColor(.secondary)
+                            }
+                    @unknown default:
+                        Rectangle()
+                            .fill(Color(.secondarySystemBackground))
+                            .aspectRatio(2/3, contentMode: .fit)
+                    }
+                }
+                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                
+                // Top badges row
+                HStack {
+                    // Watchlist indicator
+                    if vm.isInWatchlist(movie) {
+                        Image(systemName: "bookmark.fill")
+                            .font(.caption)
+                            .foregroundColor(.white)
+                            .padding(6)
+                            .background(Color.accentColor)
+                            .clipShape(Circle())
+                    }
+                    
+                    Spacer()
+                    
+                    // Rating or Match score
+                    if showMatchScore {
+                        // Smart Match score for Plus users
+                        Text("92%")
+                            .font(.caption2.weight(.bold))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(Color.green)
+                            .clipShape(Capsule())
+                    } else if movie.voteAverage > 0 {
+                        // Regular rating
+                        HStack(spacing: 2) {
+                            Image(systemName: "star.fill")
+                                .font(.system(size: 9))
+                            Text(String(format: "%.1f", movie.voteAverage))
+                                .font(.caption2.weight(.bold))
+                        }
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 4)
+                        .background(.ultraThinMaterial)
+                        .clipShape(Capsule())
+                    }
+                }
+                .padding(8)
+            }
+            
+            // Title
+            Text(movie.title)
+                .font(.subheadline.weight(.medium))
+                .lineLimit(2)
+                .multilineTextAlignment(.leading)
+            
+            // Year
+            if let year = movie.releaseDate?.prefix(4) {
+                Text(String(year))
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+        }
+        .scaleEffect(isPressed ? 0.97 : 1.0)
+        .animation(.easeInOut(duration: 0.1), value: isPressed)
+        .onLongPressGesture(minimumDuration: 0, pressing: { pressing in
+            isPressed = pressing
+        }, perform: {})
+    }
+}
+
+// MARK: - Search Result Row
+
+struct SearchResultRow: View {
+    let movie: TMDBMovie
+    
+    var body: some View {
+        HStack(spacing: 12) {
+            AsyncImage(url: movie.posterURL) { phase in
+                switch phase {
+                case .success(let image):
+                    image
+                        .resizable()
+                        .aspectRatio(2/3, contentMode: .fill)
+                default:
+                    Rectangle()
+                        .fill(Color(.secondarySystemBackground))
+                }
+            }
+            .frame(width: 50, height: 75)
+            .clipShape(RoundedRectangle(cornerRadius: 6))
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text(movie.title)
+                    .font(.subheadline.weight(.medium))
+                    .foregroundColor(.primary)
+                    .lineLimit(2)
+                
+                HStack(spacing: 8) {
+                    if let year = movie.releaseDate?.prefix(4) {
+                        Text(String(year))
+                            .font(.caption)
                             .foregroundColor(.secondary)
                     }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical)
-                }
-                
-                Section("Achievements") {
-                    ForEach(achievements) { achievement in
-                        HStack(spacing: 12) {
-                            Image(systemName: achievement.icon)
-                                .font(.title2)
-                                .foregroundColor(achievement.isUnlocked ? .accentColor : .secondary)
-                                .frame(width: 40)
-                            
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(achievement.title)
-                                    .font(.subheadline.weight(.semibold))
-                                    .foregroundColor(achievement.isUnlocked ? .primary : .secondary)
-                                Text(achievement.description)
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-                            
-                            Spacer()
-                            
-                            if achievement.isUnlocked {
-                                Image(systemName: "checkmark.circle.fill")
-                                    .foregroundColor(.green)
-                            } else {
-                                Text("+\(achievement.xpReward) XP")
-                                    .font(.caption.weight(.semibold))
-                                    .foregroundColor(.secondary)
-                            }
+                    
+                    if movie.voteAverage > 0 {
+                        HStack(spacing: 2) {
+                            Image(systemName: "star.fill")
+                                .font(.system(size: 9))
+                                .foregroundColor(.yellow)
+                            Text(String(format: "%.1f", movie.voteAverage))
+                                .font(.caption)
+                                .foregroundColor(.secondary)
                         }
-                        .opacity(achievement.isUnlocked ? 1.0 : 0.6)
                     }
                 }
             }
-            .navigationTitle("Progress")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Done") { dismiss() }
-                }
-            }
+            
+            Spacer()
+            
+            Image(systemName: "chevron.right")
+                .font(.caption)
+                .foregroundColor(.secondary)
         }
+        .padding(12)
+        .background(Color(.secondarySystemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 10))
     }
+}
+
+#Preview {
+    DiscoverView()
+        .environmentObject(FilmFuelStore())
+        .environmentObject(FilmFuelEntitlements())
 }

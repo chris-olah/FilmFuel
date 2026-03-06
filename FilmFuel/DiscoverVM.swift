@@ -2,8 +2,8 @@
 //  DiscoverVM.swift
 //  FilmFuel
 //
-//  Redesigned for maximum retention & monetization
-//  Key patterns: Variable rewards, streaks, progression, social proof, loss aversion
+//  STREAMLINED: Keeps essential discovery features, removes excessive gamification
+//  Focus: Great movie discovery, natural premium value, clean data flow
 //
 
 import Foundation
@@ -14,16 +14,6 @@ import Combine
 
 private enum FavoriteStore {
     private static let key = "ff.discover.favorites.tmdb"
-    static func load() -> Set<Int> {
-        Set(UserDefaults.standard.array(forKey: key) as? [Int] ?? [])
-    }
-    static func save(_ set: Set<Int>) {
-        UserDefaults.standard.set(Array(set), forKey: key)
-    }
-}
-
-private enum RandomSeenStore {
-    private static let key = "ff.discover.randomSeen.tmdb"
     static func load() -> Set<Int> {
         Set(UserDefaults.standard.array(forKey: key) as? [Int] ?? [])
     }
@@ -62,54 +52,13 @@ private enum DislikedStore {
     }
 }
 
-// MARK: - Engagement Metrics Store
-
-private enum EngagementStore {
-    private static let prefix = "ff.engagement."
-    
-    static var totalSessions: Int {
-        get { UserDefaults.standard.integer(forKey: prefix + "sessions") }
-        set { UserDefaults.standard.set(newValue, forKey: prefix + "sessions") }
+private enum RandomSeenStore {
+    private static let key = "ff.discover.randomSeen.tmdb"
+    static func load() -> Set<Int> {
+        Set(UserDefaults.standard.array(forKey: key) as? [Int] ?? [])
     }
-    
-    static var currentStreak: Int {
-        get { UserDefaults.standard.integer(forKey: prefix + "streak") }
-        set { UserDefaults.standard.set(newValue, forKey: prefix + "streak") }
-    }
-    
-    static var longestStreak: Int {
-        get { UserDefaults.standard.integer(forKey: prefix + "longestStreak") }
-        set { UserDefaults.standard.set(newValue, forKey: prefix + "longestStreak") }
-    }
-    
-    static var lastSessionDate: Date? {
-        get { UserDefaults.standard.object(forKey: prefix + "lastSession") as? Date }
-        set { UserDefaults.standard.set(newValue, forKey: prefix + "lastSession") }
-    }
-    
-    static var totalMoviesExplored: Int {
-        get { UserDefaults.standard.integer(forKey: prefix + "explored") }
-        set { UserDefaults.standard.set(newValue, forKey: prefix + "explored") }
-    }
-    
-    static var perfectMatchesFound: Int {
-        get { UserDefaults.standard.integer(forKey: prefix + "perfectMatches") }
-        set { UserDefaults.standard.set(newValue, forKey: prefix + "perfectMatches") }
-    }
-    
-    static var weeklyGoalProgress: Int {
-        get { UserDefaults.standard.integer(forKey: prefix + "weeklyProgress") }
-        set { UserDefaults.standard.set(newValue, forKey: prefix + "weeklyProgress") }
-    }
-    
-    static var freeRewardsEarned: Int {
-        get { UserDefaults.standard.integer(forKey: prefix + "freeRewards") }
-        set { UserDefaults.standard.set(newValue, forKey: prefix + "freeRewards") }
-    }
-    
-    static var lastRewardClaimDate: Date? {
-        get { UserDefaults.standard.object(forKey: prefix + "lastReward") as? Date }
-        set { UserDefaults.standard.set(newValue, forKey: prefix + "lastReward") }
+    static func save(_ set: Set<Int>) {
+        UserDefaults.standard.set(Array(set), forKey: key)
     }
 }
 
@@ -158,6 +107,7 @@ enum MovieMood: String, CaseIterable, Identifiable {
         func has(_ g: Int) -> Bool { ids.contains(g) }
         
         switch self {
+        case .any:        return true
         case .cozy:       return has(10751) || has(16) || has(35) || has(10749)
         case .adrenaline: return has(28) || has(12) || has(53)
         case .dateNight:  return has(10749) || has(35)
@@ -165,78 +115,13 @@ enum MovieMood: String, CaseIterable, Identifiable {
         case .feelGood:   return has(35) || has(10751) || has(14)
         case .mindBend:   return has(878) || has(9648)
         case .spooky:     return has(27)
-        case .any:        return true
         }
     }
 }
 
 // MARK: - Taste Profile
 
-struct TasteProfile {
-    private(set) var genreCounts: [Int: Int] = [:]
-    private(set) var decadeCounts: [Int: Int] = [:]
-    private(set) var moodAffinities: [MovieMood: Int] = [:]
-    
-    var tasteStrength: Double {
-        let total = genreCounts.values.reduce(0, +)
-        return min(1.0, Double(total) / 50.0)
-    }
-    
-    mutating func record(genreIDs: [Int]) {
-        for g in genreIDs {
-            genreCounts[g, default: 0] += 1
-        }
-    }
-    
-    mutating func recordMood(_ mood: MovieMood) {
-        guard mood != .any else { return }
-        moodAffinities[mood, default: 0] += 1
-    }
-    
-    mutating func recordDecade(from movie: TMDBMovie, multiplier: Int = 1) {
-        guard let dateString = movie.releaseDate,
-              let year = Int(dateString.prefix(4)),
-              year > 1900 else { return }
-        
-        let decade = (year / 10) * 10
-        guard decade > 1900 else { return }
-        
-        for _ in 0..<multiplier {
-            decadeCounts[decade, default: 0] += 1
-        }
-    }
-    
-    var topGenreIDs: [Int] {
-        Array(genreCounts.sorted { $0.value > $1.value }.prefix(3).map { $0.key })
-    }
-    
-    var favoriteDecade: Int? {
-        decadeCounts.max(by: { $0.value < $1.value })?.key
-    }
-    
-    var favoriteMood: MovieMood? {
-        moodAffinities.max(by: { $0.value < $1.value })?.key
-    }
-    
-    func score(for movie: TMDBMovie) -> Int {
-        let favs = Set(topGenreIDs)
-        let movieGenres = Set(movie.genreIDs ?? [])
-        return favs.intersection(movieGenres).count
-    }
-    
-    /// Match percentage for social proof / excitement
-    func matchPercentage(for movie: TMDBMovie) -> Int {
-        guard !topGenreIDs.isEmpty else { return Int.random(in: 72...89) }
-        
-        let movieGenres = Set(movie.genreIDs ?? [])
-        let overlap = Set(topGenreIDs).intersection(movieGenres).count
-        let base = 65 + (overlap * 12)
-        let bonus = movie.voteAverage >= 7.5 ? 8 : 0
-        return min(99, base + bonus + Int.random(in: 0...5))
-    }
-}
-
-// MARK: - User Level & Progression
+// MARK: - User Level (Kept for compatibility with StatsView, SmartMixManager)
 
 enum UserLevel: Int, CaseIterable {
     case newbie = 0
@@ -279,23 +164,6 @@ enum UserLevel: Int, CaseIterable {
         }
     }
     
-    var perks: [String] {
-        switch self {
-        case .newbie:
-            return ["Basic discovery", "2 smart picks/day"]
-        case .explorer:
-            return ["Mood filters", "3 smart picks/day"]
-        case .enthusiast:
-            return ["Taste insights", "4 smart picks/day", "Early access previews"]
-        case .cinephile:
-            return ["Advanced filters", "6 smart picks/day", "Hidden gems unlock"]
-        case .connoisseur:
-            return ["Curator collections", "10 smart picks/day", "Priority recommendations"]
-        case .elite:
-            return ["Everything unlimited", "Beta features", "Direct feedback channel"]
-        }
-    }
-    
     static func level(for xp: Int) -> UserLevel {
         for level in Self.allCases.reversed() {
             if xp >= level.requiredXP {
@@ -310,85 +178,58 @@ enum UserLevel: Int, CaseIterable {
     }
 }
 
-// MARK: - Reward Types
-
-enum RewardType: Equatable {
-    case bonusSmartPicks(Int)
-    case exclusiveFilter
-    case hiddenGem
-    case streakBonus(Int)
-    case mysteryReward
+struct TasteProfile {
+    private(set) var genreCounts: [Int: Int] = [:]
+    private(set) var decadeCounts: [Int: Int] = [:]
     
-    var title: String {
-        switch self {
-        case .bonusSmartPicks(let count): return "+\(count) Smart Picks"
-        case .exclusiveFilter:            return "Exclusive Filter"
-        case .hiddenGem:                  return "Hidden Gem Unlocked"
-        case .streakBonus(let days):      return "\(days)-Day Streak Bonus"
-        case .mysteryReward:              return "Mystery Reward"
+    var tasteStrength: Double {
+        let total = genreCounts.values.reduce(0, +)
+        return min(1.0, Double(total) / 50.0)
+    }
+    
+    mutating func record(genreIDs: [Int]) {
+        for g in genreIDs {
+            genreCounts[g, default: 0] += 1
         }
     }
     
-    var icon: String {
-        switch self {
-        case .bonusSmartPicks: return "sparkles"
-        case .exclusiveFilter: return "slider.horizontal.3"
-        case .hiddenGem:       return "diamond.fill"
-        case .streakBonus:     return "flame.fill"
-        case .mysteryReward:   return "gift.fill"
+    mutating func recordDecade(from movie: TMDBMovie, multiplier: Int = 1) {
+        guard let dateString = movie.releaseDate,
+              let year = Int(dateString.prefix(4)),
+              year > 1900 else { return }
+        
+        let decade = (year / 10) * 10
+        guard decade > 1900 else { return }
+        
+        for _ in 0..<multiplier {
+            decadeCounts[decade, default: 0] += 1
         }
     }
-}
-
-// MARK: - Monetization Trigger Events
-
-enum MonetizationTrigger: Equatable {
-    case softPaywall(reason: String)
-    case hardPaywall(feature: String)
-    case limitReached(type: String, remaining: Int)
-    case streakAtRisk
-    case exclusiveContent
-    case socialProof(usersCount: Int)
-    case timeLimited(hoursRemaining: Int)
-    case upgradeNudge(benefit: String)
     
-    var urgency: Double {
-        switch self {
-        case .hardPaywall:                    return 1.0
-        case .limitReached(_, let remaining): return remaining <= 1 ? 0.9 : 0.6
-        case .streakAtRisk:                   return 0.85
-        case .timeLimited(let hours):         return hours <= 6 ? 0.8 : 0.5
-        case .exclusiveContent:               return 0.7
-        case .socialProof:                    return 0.5
-        case .softPaywall:                    return 0.4
-        case .upgradeNudge:                   return 0.3
-        }
+    var topGenreIDs: [Int] {
+        Array(genreCounts.sorted { $0.value > $1.value }.prefix(3).map { $0.key })
     }
-}
-
-// MARK: - Achievement System
-
-struct Achievement: Identifiable {
-    let id: String
-    let title: String
-    let description: String
-    let icon: String
-    let xpReward: Int
-    var isUnlocked: Bool = false
-    var progress: Double = 0
     
-    static let all: [Achievement] = [
-        Achievement(id: "first_favorite", title: "First Love", description: "Add your first favorite", icon: "heart.fill", xpReward: 10),
-        Achievement(id: "watchlist_5", title: "Planning Ahead", description: "Add 5 movies to watchlist", icon: "bookmark.fill", xpReward: 25),
-        Achievement(id: "seen_10", title: "Movie Marathon", description: "Mark 10 movies as seen", icon: "eye.fill", xpReward: 50),
-        Achievement(id: "streak_3", title: "Getting Hooked", description: "3-day discovery streak", icon: "flame.fill", xpReward: 30),
-        Achievement(id: "streak_7", title: "Week Warrior", description: "7-day discovery streak", icon: "flame.fill", xpReward: 75),
-        Achievement(id: "streak_30", title: "Monthly Master", description: "30-day streak", icon: "crown.fill", xpReward: 300),
-        Achievement(id: "all_moods", title: "Mood Explorer", description: "Try all mood filters", icon: "theatermasks.fill", xpReward: 40),
-        Achievement(id: "hidden_gem", title: "Gem Hunter", description: "Discover a hidden gem", icon: "diamond.fill", xpReward: 35),
-        Achievement(id: "perfect_match", title: "Soulmate Film", description: "Find a 95%+ match", icon: "sparkles", xpReward: 50),
-        Achievement(id: "share_first", title: "Spreading Joy", description: "Share your first movie", icon: "square.and.arrow.up.fill", xpReward: 20),
-    ]
+    var favoriteDecade: Int? {
+        decadeCounts.max(by: { $0.value < $1.value })?.key
+    }
+    
+    func score(for movie: TMDBMovie) -> Int {
+        let favs = Set(topGenreIDs)
+        let movieGenres = Set(movie.genreIDs ?? [])
+        return favs.intersection(movieGenres).count
+    }
+    
+    /// Smart Match percentage for premium users
+    func matchPercentage(for movie: TMDBMovie) -> Int {
+        guard !topGenreIDs.isEmpty else { return Int.random(in: 72...89) }
+        
+        let movieGenres = Set(movie.genreIDs ?? [])
+        let overlap = Set(topGenreIDs).intersection(movieGenres).count
+        let base = 65 + (overlap * 12)
+        let bonus = movie.voteAverage >= 7.5 ? 8 : 0
+        return min(99, base + bonus + Int.random(in: 0...5))
+    }
 }
 
 // MARK: - ViewModel
@@ -396,7 +237,7 @@ struct Achievement: Identifiable {
 @MainActor
 final class DiscoverVM: ObservableObject {
     
-    // MARK: - Mode & Flavor
+    // MARK: - Mode
     
     enum Mode: String, CaseIterable, Identifiable {
         case forYou, trending, popular, hiddenGems
@@ -426,29 +267,6 @@ final class DiscoverVM: ObservableObject {
         }
     }
     
-    enum RandomFlavor: String, CaseIterable, Identifiable {
-        case pure, hotRightNow, criticallyAcclaimed, fromYourTaste, surpriseMe
-        
-        var id: String { rawValue }
-        
-        var shortLabel: String {
-            switch self {
-            case .pure:                return "Pure Random"
-            case .hotRightNow:         return "Hot Right Now"
-            case .criticallyAcclaimed: return "Critics' Choice"
-            case .fromYourTaste:       return "Your Taste"
-            case .surpriseMe:          return "Surprise Me"
-            }
-        }
-        
-        var isPremium: Bool {
-            switch self {
-            case .fromYourTaste, .surpriseMe: return true
-            default: return false
-            }
-        }
-    }
-    
     // MARK: - Genre Mapping
     
     static let genreNameByID: [Int: String] = [
@@ -466,38 +284,8 @@ final class DiscoverVM: ObservableObject {
     @Published var selectedMood: MovieMood = .any
     @Published var useSmartMode: Bool = true
     @Published var tasteProfile = TasteProfile()
-    @Published var randomFlavor: RandomFlavor = .pure
     
-    // Engagement & Progression
-    @Published var currentStreak: Int = 0
-    @Published var userXP: Int = 0
-    @Published var userLevel: UserLevel = .newbie
-    @Published var achievements: [Achievement] = Achievement.all
-    @Published var weeklyGoal: Int = 7
-    @Published var weeklyProgress: Int = 0
-    
-    // Rewards & Notifications
-    @Published var pendingReward: RewardType?
-    @Published var showRewardAnimation: Bool = false
-    @Published var showStreakAtRisk: Bool = false
-    @Published var showLevelUp: Bool = false
-    @Published var newLevelReached: UserLevel?
-    
-    // Monetization
-    @Published var showPaywall: Bool = false
-    @Published var paywallTrigger: MonetizationTrigger?
-    @Published var smartPicksUsedToday: Int = 0
-    @Published var bonusSmartPicks: Int = 0
-    
-    // Social Proof
-    @Published var activeUsersNow: Int = 0
-    @Published var moviesDiscoveredToday: Int = 0
-    
-    // Tip nudges
-    @Published var showTipNudge: Bool = false
-    @Published var tipNudgeMessage: String?
-    
-    // User preferences
+    // User collections
     @Published var favorites: Set<Int> = FavoriteStore.load() {
         didSet { FavoriteStore.save(favorites) }
     }
@@ -511,21 +299,26 @@ final class DiscoverVM: ObservableObject {
         didSet { DislikedStore.save(dislikedMovieIDs) }
     }
     
+    // Mode & loading
     @Published var mode: Mode = .forYou {
         didSet { Task { await reloadForMode() } }
     }
-    
     @Published var isLoading = false
     @Published var errorMessage: String?
     @Published var searchQuery: String = "" {
         didSet { Task { await handleSearchChange() } }
     }
     
+    // Pagination
+    @Published private(set) var currentPage: Int = 1
+    @Published private(set) var hasMorePages: Bool = true
+    
     // MARK: - Computed Properties
     
     var displayedMovies: [TMDBMovie] {
         var result = movies
         
+        // Apply filters
         if filters.onlyFavorites {
             result = result.filter { favorites.contains($0.id) }
         }
@@ -551,18 +344,22 @@ final class DiscoverVM: ObservableObject {
             }
         }
         
+        // Apply mood filter
         if selectedMood != .any {
             result = result.filter { selectedMood.matches(movie: $0) }
         }
         
+        // Remove disliked
         if !dislikedMovieIDs.isEmpty {
             result = result.filter { !dislikedMovieIDs.contains($0.id) }
         }
         
+        // Smart sort for "For You" mode
         if useSmartMode, !tasteProfile.topGenreIDs.isEmpty, mode == .forYou, !isSearching {
             result = result.sorted { tasteProfile.score(for: $0) > tasteProfile.score(for: $1) }
         }
         
+        // Hide already seen in For You
         if mode == .forYou, !isSearching {
             result = result.filter { !seenMovieIDs.contains($0.id) }
         }
@@ -579,25 +376,6 @@ final class DiscoverVM: ObservableObject {
         return decade >= 2000 ? "\(decade)s" : "\(decade % 100)s"
     }
     
-    var smartPicksRemaining: Int {
-        let base = userLevel.rawValue + 2
-        let used = smartPicksUsedToday
-        return max(0, base + bonusSmartPicks - used)
-    }
-    
-    var xpToNextLevel: Int {
-        guard let next = userLevel.next else { return 0 }
-        return next.requiredXP - userXP
-    }
-    
-    var levelProgress: Double {
-        guard let next = userLevel.next else { return 1.0 }
-        let current = userLevel.requiredXP
-        let needed = next.requiredXP - current
-        let progress = userXP - current
-        return Double(progress) / Double(needed)
-    }
-    
     // MARK: - Private State
     
     private let client: TMDBClientProtocol
@@ -609,162 +387,12 @@ final class DiscoverVM: ObservableObject {
     private let maxLifetimeSeenCount = 600
     private let randomBaseSeed: Int
     private var randomReloadCount: Int = 0
-    private var shuffleCount: Int = 0
-    private var detailOpenCount: Int = 0
-    private var sessionStartTime: Date = Date()
-    private var moodsTriedThisSession: Set<MovieMood> = []
     
     // MARK: - Init
     
-    init(client: TMDBClientProtocol) {
+    init(client: TMDBClientProtocol = TMDBClient()) {
         self.client = client
         self.randomBaseSeed = Int.random(in: 0...999_999)
-        loadEngagementData()
-        generateSocialProof()
-    }
-    
-    // MARK: - Lifecycle
-    
-    private func loadEngagementData() {
-        currentStreak = EngagementStore.currentStreak
-        userXP = UserDefaults.standard.integer(forKey: "ff.user.xp")
-        userLevel = UserLevel.level(for: userXP)
-        weeklyProgress = EngagementStore.weeklyGoalProgress
-        smartPicksUsedToday = loadTodaysSmartPickUsage()
-        
-        checkAndUpdateStreak()
-        checkStreakAtRisk()
-    }
-    
-    private func generateSocialProof() {
-        // Simulated but believable numbers
-        let hour = Calendar.current.component(.hour, from: Date())
-        let baseUsers = hour >= 18 && hour <= 23 ? 1200 : 450
-        activeUsersNow = baseUsers + Int.random(in: -100...200)
-        moviesDiscoveredToday = 8500 + Int.random(in: -500...1500)
-    }
-    
-    private func checkAndUpdateStreak() {
-        guard let lastSession = EngagementStore.lastSessionDate else {
-            // First session ever
-            currentStreak = 1
-            EngagementStore.currentStreak = 1
-            EngagementStore.lastSessionDate = Date()
-            return
-        }
-        
-        let calendar = Calendar.current
-        let now = Date()
-        
-        if calendar.isDateInToday(lastSession) {
-            // Same day, streak continues
-            return
-        } else if calendar.isDateInYesterday(lastSession) {
-            // Yesterday - extend streak
-            currentStreak += 1
-            EngagementStore.currentStreak = currentStreak
-            EngagementStore.lastSessionDate = now
-            
-            if currentStreak > EngagementStore.longestStreak {
-                EngagementStore.longestStreak = currentStreak
-            }
-            
-            // Streak milestones
-            if [3, 7, 14, 30].contains(currentStreak) {
-                triggerStreakReward()
-            }
-        } else {
-            // Streak broken
-            currentStreak = 1
-            EngagementStore.currentStreak = 1
-            EngagementStore.lastSessionDate = now
-        }
-    }
-    
-    private func checkStreakAtRisk() {
-        guard let lastSession = EngagementStore.lastSessionDate,
-              currentStreak >= 3 else { return }
-        
-        let calendar = Calendar.current
-        if calendar.isDateInYesterday(lastSession) {
-            // User came back - check if it's getting late
-            let hour = calendar.component(.hour, from: Date())
-            if hour >= 20 {
-                showStreakAtRisk = true
-            }
-        }
-    }
-    
-    private func triggerStreakReward() {
-        let reward: RewardType = .streakBonus(currentStreak)
-        pendingReward = reward
-        
-        // Bonus smart picks for streaks
-        if currentStreak >= 7 {
-            bonusSmartPicks += 3
-        } else if currentStreak >= 3 {
-            bonusSmartPicks += 1
-        }
-        
-        addXP(currentStreak * 5)
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            self.showRewardAnimation = true
-        }
-    }
-    
-    // MARK: - XP & Leveling
-    
-    func addXP(_ amount: Int) {
-        let oldLevel = userLevel
-        userXP += amount
-        UserDefaults.standard.set(userXP, forKey: "ff.user.xp")
-        
-        let newLevel = UserLevel.level(for: userXP)
-        if newLevel.rawValue > oldLevel.rawValue {
-            userLevel = newLevel
-            newLevelReached = newLevel
-            showLevelUp = true
-            
-            // Level up rewards
-            bonusSmartPicks += 2
-        }
-    }
-    
-    // MARK: - Smart Picks Management
-    
-    private func loadTodaysSmartPickUsage() -> Int {
-        let key = "ff.smartPicks.\(todayKey())"
-        return UserDefaults.standard.integer(forKey: key)
-    }
-    
-    private func recordSmartPickUsage() {
-        smartPicksUsedToday += 1
-        let key = "ff.smartPicks.\(todayKey())"
-        UserDefaults.standard.set(smartPicksUsedToday, forKey: key)
-    }
-    
-    private func todayKey() -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        return formatter.string(from: Date())
-    }
-    
-    func canUseSmartMode(isPremium: Bool) -> Bool {
-        if isPremium { return true }
-        return smartPicksRemaining > 0
-    }
-    
-    func consumeSmartPick() -> Bool {
-        if smartPicksRemaining > 0 {
-            if bonusSmartPicks > 0 {
-                bonusSmartPicks -= 1
-            } else {
-                recordSmartPickUsage()
-            }
-            return true
-        }
-        return false
     }
     
     // MARK: - Public API
@@ -773,27 +401,20 @@ final class DiscoverVM: ObservableObject {
         Task { await reloadForMode() }
     }
     
-    func shuffleRandomFeed() {
-        guard mode == .forYou else {
-            loadInitial()
-            return
-        }
-        
-        shuffleCount += 1
-        addXP(2) // Small XP for engagement
-        
+    func loadNextPage() {
+        guard !isLoading, hasMorePages else { return }
         Task {
-            await reloadForMode()
-            maybeShowTipNudge(reason: .shuffle)
-            
-            // Variable reward - sometimes give bonus
-            if shuffleCount % 5 == 0 && Bool.random() {
-                pendingReward = .bonusSmartPicks(1)
-                bonusSmartPicks += 1
-                showRewardAnimation = true
-            }
+            await loadMore()
         }
     }
+    
+    func clearFilters() {
+        filters = .default
+        selectedMood = .any
+        loadInitial()
+    }
+    
+    // MARK: - Movie Actions
     
     func toggleFavorite(_ movie: TMDBMovie) {
         if favorites.contains(movie.id) {
@@ -804,8 +425,6 @@ final class DiscoverVM: ObservableObject {
                 tasteProfile.record(genreIDs: ids)
             }
             tasteProfile.recordDecade(from: movie)
-            addXP(3)
-            checkAchievement("first_favorite")
         }
     }
     
@@ -818,11 +437,6 @@ final class DiscoverVM: ObservableObject {
             watchlistMovieIDs.remove(movie.id)
         } else {
             watchlistMovieIDs.insert(movie.id)
-            addXP(2)
-            
-            if watchlistMovieIDs.count >= 5 {
-                checkAchievement("watchlist_5")
-            }
         }
     }
     
@@ -839,13 +453,6 @@ final class DiscoverVM: ObservableObject {
                 tasteProfile.record(genreIDs: ids)
             }
             tasteProfile.recordDecade(from: movie)
-            addXP(5)
-            weeklyProgress += 1
-            EngagementStore.weeklyGoalProgress = weeklyProgress
-            
-            if seenMovieIDs.count >= 10 {
-                checkAchievement("seen_10")
-            }
         }
     }
     
@@ -867,51 +474,37 @@ final class DiscoverVM: ObservableObject {
         dislikedMovieIDs.contains(movie.id)
     }
     
+    // MARK: - Mode & Mood Selection
+    
     func userSelectedMode(_ newMode: Mode) {
-        if newMode.isPremium {
-            paywallTrigger = .hardPaywall(feature: "Hidden Gems")
-            showPaywall = true
-            return
-        }
+        // Note: Premium check handled in View
         mode = newMode
     }
     
     func userSelectedMood(_ mood: MovieMood) {
         selectedMood = mood
-        tasteProfile.recordMood(mood)
-        moodsTriedThisSession.insert(mood)
-        
-        if moodsTriedThisSession.count >= MovieMood.allCases.count - 1 {
-            checkAchievement("all_moods")
-        }
     }
     
     func recordDetailOpen(_ movie: TMDBMovie) {
-        detailOpenCount += 1
-        EngagementStore.totalMoviesExplored += 1
-        
         if let ids = movie.genreIDs {
             tasteProfile.record(genreIDs: ids)
         }
         tasteProfile.recordDecade(from: movie)
-        addXP(1)
-        
-        // Check for perfect match achievement
-        let matchPercent = tasteProfile.matchPercentage(for: movie)
-        if matchPercent >= 95 {
-            EngagementStore.perfectMatchesFound += 1
-            checkAchievement("perfect_match")
-        }
-        
-        maybeShowTipNudge(reason: .detail)
+    }
+    
+    // MARK: - Smart Match (Premium Feature)
+    
+    func matchPercentage(for movie: TMDBMovie) -> Int {
+        tasteProfile.matchPercentage(for: movie)
     }
     
     func briefReasonFor(_ movie: TMDBMovie) -> String? {
         guard mode == .forYou, useSmartMode else { return nil }
         
-        if selectedMood != .any, selectedMood.matches(movie: movie) {
+        if selectedMood.matches(movie: movie) {
             return "Matches your \(selectedMood.label.lowercased()) mood"
         }
+
         
         let favGenreIDs = Set(tasteProfile.topGenreIDs)
         if !favGenreIDs.isEmpty, let movieIDs = movie.genreIDs {
@@ -928,12 +521,6 @@ final class DiscoverVM: ObservableObject {
         return nil
     }
     
-    func matchBadgeText(for movie: TMDBMovie) -> String? {
-        guard mode == .forYou, useSmartMode, !tasteProfile.topGenreIDs.isEmpty else { return nil }
-        let percent = tasteProfile.matchPercentage(for: movie)
-        return "\(percent)% match"
-    }
-    
     func trainTaste(on movie: TMDBMovie, isStrong: Bool) {
         guard let ids = movie.genreIDs, !ids.isEmpty else { return }
         
@@ -943,63 +530,16 @@ final class DiscoverVM: ObservableObject {
             tasteProfile.recordDecade(from: movie)
         }
         
-        addXP(isStrong ? 10 : 2)
-        
         if isStrong {
             useSmartMode = true
-            if mode == .forYou && randomFlavor != .fromYourTaste {
-                randomFlavor = .fromYourTaste
-            }
-        }
-    }
-    
-    // MARK: - Achievements
-    
-    private func checkAchievement(_ id: String) {
-        guard let index = achievements.firstIndex(where: { $0.id == id && !$0.isUnlocked }) else { return }
-        
-        achievements[index].isUnlocked = true
-        achievements[index].progress = 1.0
-        
-        let xp = achievements[index].xpReward
-        addXP(xp)
-        
-        pendingReward = .mysteryReward
-        showRewardAnimation = true
-    }
-    
-    // MARK: - Tip Nudges
-    
-    func dismissTipNudge() {
-        showTipNudge = false
-    }
-    
-    func recordTipSuccess() {
-        showTipNudge = false
-        addXP(50)
-    }
-    
-    private enum NudgeReason {
-        case shuffle, detail
-    }
-    
-    private func maybeShowTipNudge(reason: NudgeReason) {
-        switch reason {
-        case .shuffle where shuffleCount == 8:
-            tipNudgeMessage = "Loving the shuffle? 🍿 Tips help keep FilmFuel free!"
-            showTipNudge = true
-        case .detail where detailOpenCount == 5:
-            tipNudgeMessage = "You've explored \(detailOpenCount) movies! Consider a small tip? 🎬"
-            showTipNudge = true
-        default:
-            break
         }
     }
     
     // MARK: - Data Loading
     
     private func reloadForMode() async {
-        guard searchQuery.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
+        currentPage = 1
+        hasMorePages = true
         
         isSearching = false
         isLoading = true
@@ -1019,6 +559,36 @@ final class DiscoverVM: ObservableObject {
         } catch {
             errorMessage = "Could not load movies. Please try again."
             print("TMDB error: \(error)")
+        }
+        
+        isLoading = false
+    }
+    
+    private func loadMore() async {
+        guard !isLoading else { return }
+        
+        currentPage += 1
+        isLoading = true
+        
+        do {
+            let response: TMDBMovieListResponse
+            
+            switch mode {
+            case .forYou, .hiddenGems:
+                response = try await client.fetchDiscoverMovies(page: currentPage, sortBy: "popularity.desc")
+            case .trending:
+                response = try await client.fetchTrendingMovies(page: currentPage)
+            case .popular:
+                response = try await client.fetchPopularMovies(page: currentPage)
+            }
+            
+            let newMovies = response.results.filter { $0.posterPath != nil && $0.voteCount >= 20 }
+            movies.append(contentsOf: newMovies)
+            hasMorePages = currentPage < response.totalPages
+            
+        } catch {
+            print("Load more error: \(error)")
+            currentPage -= 1
         }
         
         isLoading = false
@@ -1079,6 +649,7 @@ final class DiscoverVM: ObservableObject {
         }
         
         movies = withImages
+        hasMorePages = response.totalPages > 1
     }
     
     private func loadRandomMovies() async throws {
@@ -1133,31 +704,7 @@ final class DiscoverVM: ObservableObject {
         }
         
         var shuffleRNG = SeededGenerator(seed: currentSeed &+ 10_000)
-        var feed = Array(unseen.shuffled(using: &shuffleRNG).prefix(maxRandomMovies))
-        
-        switch randomFlavor {
-        case .pure:
-            break
-        case .hotRightNow:
-            feed = feed.sorted {
-                if $0.voteAverage == $1.voteAverage { return $0.voteCount > $1.voteCount }
-                return $0.voteAverage > $1.voteAverage
-            }
-        case .criticallyAcclaimed:
-            feed = feed.filter { $0.voteAverage >= 7.7 }
-        case .fromYourTaste:
-            if !tasteProfile.topGenreIDs.isEmpty {
-                feed = feed.sorted {
-                    let s0 = tasteProfile.score(for: $0)
-                    let s1 = tasteProfile.score(for: $1)
-                    if s0 == s1 { return $0.voteAverage > $1.voteAverage }
-                    return s0 > s1
-                }
-            }
-        case .surpriseMe:
-            feed = feed.filter { $0.voteAverage >= 6.5 && $0.voteCount < 1000 }
-            feed.shuffle(using: &shuffleRNG)
-        }
+        let feed = Array(unseen.shuffled(using: &shuffleRNG).prefix(maxRandomMovies))
         
         sessionSeenRandomMovieIDs.formUnion(feed.map { $0.id })
         lifetimeSeenRandomMovieIDs.formUnion(feed.map { $0.id })
@@ -1169,24 +716,27 @@ final class DiscoverVM: ObservableObject {
         
         RandomSeenStore.save(lifetimeSeenRandomMovieIDs)
         movies = feed
+        hasMorePages = true
     }
     
     private func loadTrendingMovies() async throws {
         let response = try await client.fetchTrendingMovies(page: 1)
         movies = response.results.filter { $0.posterPath != nil && $0.voteCount >= 20 }
+        hasMorePages = response.totalPages > 1
     }
     
     private func loadPopularMovies() async throws {
         let response = try await client.fetchPopularMovies(page: 1)
         movies = response.results.filter { $0.posterPath != nil && $0.voteCount >= 20 }
+        hasMorePages = response.totalPages > 1
     }
     
     private func loadHiddenGems() async throws {
-        // Premium feature - would need special API call for underrated films
         let response = try await client.fetchDiscoverMovies(page: Int.random(in: 5...20), sortBy: "vote_average.desc")
         movies = response.results.filter {
             $0.posterPath != nil && $0.voteAverage >= 7.0 && $0.voteCount >= 50 && $0.voteCount <= 500
         }
+        hasMorePages = false // Hidden gems is curated
     }
     
     private func handleSearchChange() async {
@@ -1205,6 +755,7 @@ final class DiscoverVM: ObservableObject {
         do {
             let response = try await client.searchMovies(query: trimmed, page: 1)
             movies = response.results.filter { $0.posterPath != nil && $0.voteCount >= 20 }
+            hasMorePages = response.totalPages > 1
         } catch {
             errorMessage = "Search failed. Please try again."
         }
