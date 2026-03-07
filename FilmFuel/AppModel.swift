@@ -676,27 +676,38 @@ final class AppModel: ObservableObject {
     }
     
     private func refreshReminderIfNeededForToday() {
+        // --- Legacy system ---
         let d = UserDefaults.standard
         let h = d.integer(forKey: Prefs.reminderHourKey)
         let m = d.integer(forKey: Prefs.reminderMinuteKey)
         let raw = d.integer(forKey: Prefs.reminderModeKey)
         
-        guard (h > 0 || m > 0), let mode = ReminderContentMode(rawValue: raw) else { return }
-        
-        NotificationHelper.isReminderScheduled { isOn in
-            guard isOn else { return }
-            
-            let needsQuote = (mode == .triviaAndQuote || mode == .quoteOnly)
-            let quoteText: String? = needsQuote ? self.todayQuote.text : nil
-            let movieTitle: String? = needsQuote ? self.todayQuote.movie : nil
-            
-            NotificationHelper.refreshDailyReminderBody(
-                hour: h,
-                minute: m,
-                mode: mode,
-                todaysQuote: quoteText,
-                todaysMovie: movieTitle
-            ) { _ in }
+        if (h > 0 || m > 0), let mode = ReminderContentMode(rawValue: raw) {
+            NotificationHelper.isReminderScheduled { isOn in
+                guard isOn else { return }
+                let needsQuote = (mode == .triviaAndQuote || mode == .quoteOnly)
+                let quoteText: String? = needsQuote ? self.todayQuote.text : nil
+                let movieTitle: String? = needsQuote ? self.todayQuote.movie : nil
+                NotificationHelper.refreshDailyReminderBody(
+                    hour: h,
+                    minute: m,
+                    mode: mode,
+                    todaysQuote: quoteText,
+                    todaysMovie: movieTitle
+                ) { _ in }
+            }
+        }
+
+        // --- New FFNotificationManager system ---
+        // Reschedule with today's fresh quote/trivia so the notification
+        // content never shows yesterday's data.
+        if let settings = reminderSettingsBridge(), settings.mode != .off {
+            let quote = FFQuote(text: todayQuote.text, movie: todayQuote.movie)
+            let trivia = todayQuote.trivia
+            let answer = trivia.correctIndex >= 0 && trivia.correctIndex < trivia.choices.count
+                ? trivia.choices[trivia.correctIndex] : ""
+            let ffTrivia = FFTrivia(question: trivia.question, answer: answer)
+            FFNotificationManager.shared.reschedule(settings: settings, quote: quote, trivia: ffTrivia)
         }
     }
     
