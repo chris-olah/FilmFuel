@@ -40,18 +40,18 @@ struct SmartMix: Identifiable {
 // MARK: - Mix Badge
 
 enum MixBadge: String {
-    case new         = "NEW"
-    case hot         = "HOT"
-    case exclusive   = "EXCLUSIVE"
-    case limited     = "LIMITED"
-    case personalized = "FOR YOU"
+    case new
+    case hot
+    case exclusive
+    case limited
+    case personalized
 
     var color: Color {
         switch self {
-        case .new:          return .green
-        case .hot:          return .orange
-        case .exclusive:    return .purple
-        case .limited:      return .red
+        case .new: return .green
+        case .hot: return .orange
+        case .exclusive: return .purple
+        case .limited: return .red
         case .personalized: return .blue
         }
     }
@@ -61,7 +61,7 @@ enum MixBadge: String {
 
 enum SmartMixManager {
 
-    // MARK: - Main Build
+    // MARK: - Main Builder
 
     static func buildMixes(
         from movies: [TMDBMovie],
@@ -70,16 +70,17 @@ enum SmartMixManager {
         isPremium: Bool,
         userLevel: UserLevel = .newbie
     ) -> [SmartMix] {
+
         guard !movies.isEmpty else { return [] }
 
         var mixes: [SmartMix] = []
 
-        if let personalizedMix = buildPersonalizedMix(
+        if let personalized = buildPersonalizedMix(
             movies: movies,
             tasteProfile: tasteProfile,
             isPremium: isPremium
         ) {
-            mixes.append(personalizedMix)
+            mixes.append(personalized)
         }
 
         if mood != .any {
@@ -107,90 +108,22 @@ enum SmartMixManager {
 
         if let shortFilms = buildShortAndSweet(movies: movies) { mixes.append(shortFilms) }
 
-        // FIXED: Proper dedupe using Swift Set
-        var seen = Set<String>()
-        let deduped = mixes.filter { seen.insert($0.title).inserted }
+        if let mindBlown = buildMindBlownMix(movies: movies) { mixes.append(mindBlown) }
 
-        return Array(deduped.prefix(8))
+        // Remove duplicate mix titles
+        var seenTitles = Set<String>()
+        let dedupedMixes = mixes.filter { seenTitles.insert($0.title).inserted }
+
+        // Remove duplicate movies across mixes
+        let uniqueMovies = removeDuplicateMovies(from: dedupedMixes)
+
+        // Rank mixes
+        let ranked = rankMixes(uniqueMovies)
+
+        return Array(ranked.prefix(8))
     }
 
-    // MARK: - Daily Pick
-
-    static func buildDailyPick(
-        from movies: [TMDBMovie],
-        tasteProfile: TasteProfile,
-        seenMovieIDs: Set<Int>
-    ) -> TMDBMovie? {
-
-        let unseen = movies.filter { !seenMovieIDs.contains($0.id) }
-        guard !unseen.isEmpty else { return nil }
-
-        let scored = unseen.map { movie -> (movie: TMDBMovie, score: Double) in
-            let tasteScore = min(1.0, Double(tasteProfile.score(for: movie)) / 3.0) * 0.6
-            let qualityScore = (movie.voteAverage / 10.0) * 0.4
-            let popularityBonus = movie.voteCount >= 1000 ? 0.05 : 0.0
-            return (movie, tasteScore + qualityScore + popularityBonus)
-        }
-
-        let dayOfYear = Calendar.current.ordinality(of: .day, in: .year, for: Date()) ?? 1
-        var rng = SeededGenerator(seed: dayOfYear &* 777)
-
-        let topCandidates = scored.sorted { $0.score > $1.score }.prefix(5)
-        return topCandidates.randomElement(using: &rng)?.movie
-    }
-
-    // MARK: - Challenge Mix
-
-    static func buildChallengeMix(type: ChallengeType, from movies: [TMDBMovie]) -> SmartMix? {
-
-        switch type {
-
-        case .genreExplorer(let genreID, let genreName):
-
-            let candidates = movies.filter { ($0.genreIDs ?? []).contains(genreID) }
-            guard candidates.count >= 5 else { return nil }
-
-            return SmartMix(
-                title: "\(genreName) Explorer",
-                subtitle: "Watch 3 \(genreName.lowercased()) films to complete",
-                iconSystemName: "flag.checkered",
-                movies: topRated(candidates, limit: 10),
-                engagementHook: "Complete for +50 XP"
-            )
-
-        case .decadeJourney(let decade):
-
-            let label = decadeLabel(decade)
-            let candidates = movies.filter { decadeOf($0) == decade }
-
-            guard candidates.count >= 5 else { return nil }
-
-            return SmartMix(
-                title: "\(label) Time Machine",
-                subtitle: "Journey through the \(label)",
-                iconSystemName: "clock.arrow.circlepath",
-                movies: topRated(candidates, limit: 10),
-                isPremium: true,
-                engagementHook: "Complete for +100 XP"
-            )
-
-        case .criticsCircle:
-
-            let candidates = movies.filter { $0.voteAverage >= 8.0 }
-            guard candidates.count >= 5 else { return nil }
-
-            return SmartMix(
-                title: "Critics' Circle Challenge",
-                subtitle: "Watch 5 critically acclaimed films",
-                iconSystemName: "star.circle.fill",
-                movies: topRated(candidates, limit: 10),
-                isPremium: true,
-                engagementHook: "Complete for +150 XP"
-            )
-        }
-    }
-
-    // MARK: - Individual Mix Builders
+    // MARK: - Personalized Mix
 
     private static func buildPersonalizedMix(
         movies: [TMDBMovie],
@@ -200,20 +133,33 @@ enum SmartMixManager {
 
         guard !tasteProfile.topGenreIDs.isEmpty else { return nil }
 
-        let scored = movies
-            .map { (movie: $0, score: tasteProfile.score(for: $0)) }
-            .filter { $0.score > 0 }
-            .sorted {
-                $0.score != $1.score
-                    ? $0.score > $1.score
-                    : $0.movie.voteAverage > $1.movie.voteAverage
+        let scored = movies.map { movie -> (TMDBMovie, Double) in
+
+            var score = Double(tasteProfile.score(for: movie))
+
+            if let genres = movie.genreIDs {
+                for g in genres {
+                    if tasteProfile.topGenreIDs.contains(g) {
+                        score += 2.0
+                    }
+                }
             }
 
-        guard !scored.isEmpty else { return nil }
+            score += movie.voteAverage * 0.5
 
-        let fullCount = scored.count
+            return (movie, score)
+        }
+
+        let sorted = scored.sorted { $0.1 > $1.1 }
+
+        guard !sorted.isEmpty else { return nil }
+
+        let fullCount = sorted.count
         let limit = isPremium ? min(fullCount, 20) : min(fullCount, 5)
-        let picks = Array(scored.prefix(limit)).map { $0.movie }
+
+        var picks = Array(sorted.prefix(limit)).map { $0.0 }
+
+        picks = injectSurprises(into: picks, from: movies)
 
         return SmartMix(
             title: "Picked For You",
@@ -222,14 +168,16 @@ enum SmartMixManager {
                 : "Train your taste to unlock \(fullCount) personalized picks",
             iconSystemName: "sparkles",
             movies: picks,
-            badge: .personalized,
-            engagementHook: isPremium || fullCount <= 5
-                ? nil
-                : "Unlock \(fullCount - 5) more matches with Plus"
+            badge: .personalized
         )
     }
 
-    private static func buildMoodMix(mood: MovieMood, movies: [TMDBMovie]) -> SmartMix? {
+    // MARK: - Mood Mix
+
+    private static func buildMoodMix(
+        mood: MovieMood,
+        movies: [TMDBMovie]
+    ) -> SmartMix? {
 
         let matches = movies.filter { mood.matches(movie: $0) }
 
@@ -237,13 +185,17 @@ enum SmartMixManager {
 
         return SmartMix(
             title: "\(mood.emoji) \(mood.label) Tonight",
-            subtitle: "A quick mix tuned to your current mood",
+            subtitle: "A quick mix tuned to your mood",
             iconSystemName: "wand.and.stars",
-            movies: topRated(matches, limit: 15)
+            movies: weightedShuffle(matches, limit: 15)
         )
     }
 
-    private static func buildWeeklySpotlight(movies: [TMDBMovie]) -> SmartMix? {
+    // MARK: - Weekly Spotlight
+
+    private static func buildWeeklySpotlight(
+        movies: [TMDBMovie]
+    ) -> SmartMix? {
 
         let candidates = movies.filter { $0.voteAverage >= 7.5 }
 
@@ -261,10 +213,11 @@ enum SmartMixManager {
             subtitle: "Refreshes every Monday",
             iconSystemName: "calendar.badge.clock",
             movies: picks,
-            badge: .limited,
-            engagementHook: "New picks drop every Monday"
+            badge: .limited
         )
     }
+
+    // MARK: - Comfort Queue
 
     private static func buildComfortQueue(movies: [TMDBMovie]) -> SmartMix? {
 
@@ -277,13 +230,17 @@ enum SmartMixManager {
 
         return SmartMix(
             title: "Comfort Queue",
-            subtitle: "Cozy, feel-good picks for a low-key night in",
+            subtitle: "Cozy feel-good movies",
             iconSystemName: "sofa.fill",
-            movies: topRated(candidates, limit: 15)
+            movies: weightedShuffle(candidates, limit: 15)
         )
     }
 
-    private static func buildThrillsAndTwists(movies: [TMDBMovie]) -> SmartMix? {
+    // MARK: - Thrills
+
+    private static func buildThrillsAndTwists(
+        movies: [TMDBMovie]
+    ) -> SmartMix? {
 
         let candidates = movies.filter {
             MovieMood.adrenaline.matches(movie: $0) ||
@@ -294,14 +251,18 @@ enum SmartMixManager {
 
         return SmartMix(
             title: "Thrills & Twists",
-            subtitle: "High stakes, big action, and brain-twisting plots",
+            subtitle: "Action, suspense, and mind-bending plots",
             iconSystemName: "bolt.fill",
-            movies: topRated(candidates, limit: 15),
+            movies: weightedShuffle(candidates, limit: 15),
             badge: .hot
         )
     }
 
-    private static func buildDateNightStack(movies: [TMDBMovie]) -> SmartMix? {
+    // MARK: - Date Night
+
+    private static func buildDateNightStack(
+        movies: [TMDBMovie]
+    ) -> SmartMix? {
 
         let candidates = movies.filter {
             MovieMood.dateNight.matches(movie: $0)
@@ -311,97 +272,98 @@ enum SmartMixManager {
 
         return SmartMix(
             title: "Date Night Stack",
-            subtitle: "Rom-coms and crowd-pleasers that are easy to agree on",
+            subtitle: "Rom-coms and crowd pleasers",
             iconSystemName: "heart.circle.fill",
-            movies: topRated(candidates, limit: 15)
+            movies: weightedShuffle(candidates, limit: 15)
         )
     }
 
-    private static func buildNewReleases(movies: [TMDBMovie], isPremium: Bool) -> SmartMix? {
+    // MARK: - New Releases
+
+    private static func buildNewReleases(
+        movies: [TMDBMovie],
+        isPremium: Bool
+    ) -> SmartMix? {
 
         let currentYear = Calendar.current.component(.year, from: Date())
 
-        let recent = movies
-            .filter {
-                guard let date = $0.releaseDate,
-                      let year = Int(date.prefix(4)) else { return false }
+        let recent = movies.filter {
+            guard let date = $0.releaseDate,
+                  let year = Int(date.prefix(4)) else { return false }
 
-                return year >= currentYear - 2
-            }
-            .sorted { ($0.releaseDate ?? "") > ($1.releaseDate ?? "") }
+            return year >= currentYear - 2
+        }
 
         guard recent.count >= 4 else { return nil }
 
-        let freeLimit = 6
-        let picks = isPremium
-            ? Array(recent.prefix(20))
-            : Array(recent.prefix(freeLimit))
+        let picks = weightedShuffle(recent, limit: isPremium ? 20 : 6)
 
         return SmartMix(
             title: "Fresh Off the Reel",
-            subtitle: isPremium
-                ? "The newest releases hitting screens now"
-                : "Showing \(freeLimit) of \(recent.count) new releases",
+            subtitle: "The newest releases",
             iconSystemName: "sparkles.tv.fill",
             movies: picks,
-            badge: .new,
-            engagementHook: isPremium
-                ? nil
-                : "Unlock all \(recent.count) new releases with Plus"
+            badge: .new
         )
     }
 
-    private static func buildHiddenGems(movies: [TMDBMovie], isPremium: Bool) -> SmartMix? {
+    // MARK: - Hidden Gems
+
+    private static func buildHiddenGems(
+        movies: [TMDBMovie],
+        isPremium: Bool
+    ) -> SmartMix? {
 
         let candidates = movies.filter {
-            $0.voteAverage >= 7.0 &&
+            $0.voteAverage >= 7 &&
             $0.voteCount >= 100 &&
             $0.voteCount <= 2000
         }
 
         guard candidates.count >= 4 else { return nil }
 
+        let picks = isPremium
+            ? weightedShuffle(candidates, limit: 15)
+            : Array(candidates.prefix(2))
+
         return SmartMix(
             title: "Hidden Gems",
-            subtitle: isPremium
-                ? "Underrated films most people haven't discovered"
-                : "Exclusive access with FilmFuel+",
+            subtitle: "Underrated films most people miss",
             iconSystemName: "diamond.fill",
-            movies: isPremium
-                ? topRated(candidates, limit: 15)
-                : Array(candidates.prefix(2)),
+            movies: picks,
             isPremium: true,
-            badge: .exclusive,
-            engagementHook: isPremium
-                ? nil
-                : "Unlock \(candidates.count) hidden gems with Plus"
+            badge: .exclusive
         )
     }
 
-    private static func buildCriticsChoice(movies: [TMDBMovie], isPremium: Bool) -> SmartMix? {
+    // MARK: - Critics Choice
+
+    private static func buildCriticsChoice(
+        movies: [TMDBMovie],
+        isPremium: Bool
+    ) -> SmartMix? {
 
         let candidates = movies.filter {
-            $0.voteAverage >= 8.0 &&
+            $0.voteAverage >= 8 &&
             $0.voteCount >= 500
         }
 
         guard candidates.count >= 4 else { return nil }
 
+        let picks = isPremium
+            ? weightedShuffle(candidates, limit: 15)
+            : Array(candidates.prefix(2))
+
         return SmartMix(
             title: "Critics' Choice",
-            subtitle: isPremium
-                ? "Only the highest-rated films make the cut"
-                : "Premium collection for FilmFuel+ members",
+            subtitle: "Highest-rated films",
             iconSystemName: "star.fill",
-            movies: isPremium
-                ? topRated(candidates, limit: 15)
-                : Array(candidates.prefix(2)),
-            isPremium: true,
-            engagementHook: isPremium
-                ? nil
-                : "See all \(candidates.count) top-rated picks with Plus"
+            movies: picks,
+            isPremium: true
         )
     }
+
+    // MARK: - Decade Mix
 
     private static func buildDecadeDive(
         decade: Int,
@@ -413,56 +375,137 @@ enum SmartMixManager {
 
         guard candidates.count >= 4 else { return nil }
 
-        let label = decadeLabel(decade)
+        let picks = isPremium
+            ? weightedShuffle(candidates, limit: 15)
+            : Array(candidates.prefix(3))
 
         return SmartMix(
-            title: "\(label) Classics",
-            subtitle: isPremium
-                ? "Your favorite era, curated"
-                : "Unlock decade collections with Plus",
+            title: "\(decadeLabel(decade)) Classics",
+            subtitle: "Films from your favorite era",
             iconSystemName: "clock.fill",
-            movies: isPremium
-                ? topRated(candidates, limit: 15)
-                : Array(candidates.prefix(3)),
+            movies: picks,
             isPremium: true,
-            badge: .personalized,
-            engagementHook: isPremium
-                ? nil
-                : "Explore the \(label) with Plus"
+            badge: .personalized
         )
     }
 
-    private static func buildShortAndSweet(movies: [TMDBMovie]) -> SmartMix? {
+    // MARK: - Short Movies
 
-        let shortGenres: Set<Int> = [35, 27, 16, 10770]
+    private static func buildShortAndSweet(
+        movies: [TMDBMovie]
+    ) -> SmartMix? {
+
+        let genres: Set<Int> = [35,27,16]
 
         let candidates = movies.filter {
             $0.voteAverage >= 6.5 &&
-            shortGenres.intersection($0.genreIDs ?? []).count > 0
+            genres.intersection($0.genreIDs ?? []).count > 0
         }
 
         guard candidates.count >= 4 else { return nil }
 
         return SmartMix(
             title: "Short & Sweet",
-            subtitle: "Great picks for when you have less than 2 hours",
+            subtitle: "Great picks under 2 hours",
             iconSystemName: "timer",
-            movies: topRated(candidates, limit: 12)
+            movies: weightedShuffle(candidates, limit: 12)
         )
     }
 
-    // MARK: - Shared Helpers
+    // MARK: - Hook Mix
 
-    private static func topRated(_ list: [TMDBMovie], limit: Int) -> [TMDBMovie] {
+    private static func buildMindBlownMix(
+        movies: [TMDBMovie]
+    ) -> SmartMix? {
 
-        Array(
-            list.sorted {
-                $0.voteAverage != $1.voteAverage
-                    ? $0.voteAverage > $1.voteAverage
-                    : $0.voteCount > $1.voteCount
-            }
-            .prefix(limit)
+        let candidates = movies.filter {
+            $0.voteAverage >= 7.5 &&
+            ($0.genreIDs ?? []).contains(878)
+        }
+
+        guard candidates.count >= 4 else { return nil }
+
+        return SmartMix(
+            title: "Mind-Blowing Sci-Fi",
+            subtitle: "Movies that melt your brain",
+            iconSystemName: "brain.head.profile",
+            movies: weightedShuffle(candidates, limit: 12),
+            badge: .hot
         )
+    }
+
+    // MARK: - Helpers
+
+    private static func weightedShuffle(
+        _ list: [TMDBMovie],
+        limit: Int
+    ) -> [TMDBMovie] {
+
+        let weighted = list.map { movie -> (TMDBMovie, Double) in
+
+            let rating = movie.voteAverage * 1.2
+            let popularity = log(Double(movie.voteCount + 1))
+            let randomness = Double.random(in: 0...2)
+
+            return (movie, rating + popularity + randomness)
+        }
+
+        return weighted
+            .sorted { $0.1 > $1.1 }
+            .prefix(limit)
+            .map { $0.0 }
+    }
+
+    private static func injectSurprises(
+        into movies: [TMDBMovie],
+        from pool: [TMDBMovie]
+    ) -> [TMDBMovie] {
+
+        var result = movies
+
+        if Double.random(in: 0...1) < 0.25 {
+            if let random = pool.randomElement(),
+               !result.contains(where: { $0.id == random.id }) {
+                result.append(random)
+            }
+        }
+
+        return result
+    }
+
+    private static func removeDuplicateMovies(
+        from mixes: [SmartMix]
+    ) -> [SmartMix] {
+
+        var seenIDs = Set<Int>()
+
+        return mixes.map { mix in
+
+            let filtered = mix.movies.filter { movie in
+                if seenIDs.contains(movie.id) { return false }
+                seenIDs.insert(movie.id)
+                return true
+            }
+
+            return SmartMix(
+                title: mix.title,
+                subtitle: mix.subtitle,
+                iconSystemName: mix.iconSystemName,
+                movies: filtered,
+                isPremium: mix.isPremium,
+                badge: mix.badge,
+                engagementHook: mix.engagementHook
+            )
+        }
+    }
+
+    private static func rankMixes(
+        _ mixes: [SmartMix]
+    ) -> [SmartMix] {
+
+        mixes.sorted {
+            $0.movies.count > $1.movies.count
+        }
     }
 
     private static func decadeOf(_ movie: TMDBMovie) -> Int? {
@@ -476,15 +519,7 @@ enum SmartMixManager {
     private static func decadeLabel(_ decade: Int) -> String {
 
         decade >= 2000
-            ? "\(decade)s"
-            : "'\(decade % 100)s"
+        ? "\(decade)s"
+        : "'\(decade % 100)s"
     }
-}
-
-// MARK: - Challenge Types
-
-enum ChallengeType {
-    case genreExplorer(genreID: Int, genreName: String)
-    case decadeJourney(decade: Int)
-    case criticsCircle
 }

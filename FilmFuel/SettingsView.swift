@@ -445,7 +445,7 @@ struct SettingsView: View {
 
     private var versionString: String {
         let v = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "2.0"
-        let b = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "2"
+        let b = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
         return "\(v) (\(b))"
     }
 
