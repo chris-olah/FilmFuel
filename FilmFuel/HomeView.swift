@@ -33,6 +33,9 @@ struct HomeView: View {
     
     // NEW: Paywall state (was missing!)
     @State private var showPaywall = false
+
+    // Quote favorite
+    @State private var quoteFavorited = false
     
     /// Daily quiz
     var onStartQuiz: (() -> Void)? = nil
@@ -153,11 +156,31 @@ struct HomeView: View {
         QuoteCard(
             text: appModel.todayQuote.text,
             movie: appModel.todayQuote.movie,
-            year: appModel.todayQuote.year
+            year: appModel.todayQuote.year,
+            isFavorited: quoteFavorited,
+            onFavorite: {
+                let q = appModel.todayQuote
+                let key = "\(q.movie)|\(q.year)|\(q.text)"
+                var keys = HomeQuoteFavoritesStore.load()
+                if keys.contains(key) {
+                    keys.remove(key)
+                    quoteFavorited = false
+                } else {
+                    keys.insert(key)
+                    quoteFavorited = true
+                }
+                HomeQuoteFavoritesStore.save(keys)
+                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+            }
         )
         .opacity(quoteAppeared ? 1 : 0)
         .offset(y: quoteAppeared ? 0 : 20)
         .padding(.top, 20)
+        .onAppear {
+            let q = appModel.todayQuote
+            let key = "\(q.movie)|\(q.year)|\(q.text)"
+            quoteFavorited = HomeQuoteFavoritesStore.load().contains(key)
+        }
     }
     
     // MARK: - Achievements Card
@@ -723,30 +746,56 @@ private struct QuoteCard: View {
     let text: String
     let movie: String
     let year: Int
-    
-    var body: some View {
-        VStack(spacing: 20) {
-            Text("\"\(text)\"")
-                .font(.title2.weight(.semibold))
-                .multilineTextAlignment(.center)
-                .padding(.horizontal)
-                .lineLimit(6)
-                .minimumScaleFactor(0.8)
+    var isFavorited: Bool = false
+    var onFavorite: (() -> Void)? = nil
 
-            VStack(spacing: 4) {
-                Text(movie)
-                    .font(.callout.weight(.bold))
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.9)
-                    .truncationMode(.tail)
-                
-                Text(String(year))
-                    .font(.caption.weight(.medium))
-                    .foregroundStyle(.secondary)
+    @State private var heartBounce = false
+
+    var body: some View {
+        ZStack(alignment: .bottomTrailing) {
+            VStack(spacing: 20) {
+                Text("\"\(text)\"")
+                    .font(.title2.weight(.semibold))
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal)
+                    .lineLimit(6)
+                    .minimumScaleFactor(0.8)
+
+                VStack(spacing: 4) {
+                    Text(movie)
+                        .font(.callout.weight(.bold))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.9)
+                        .truncationMode(.tail)
+
+                    Text(String(year))
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(.secondary)
+                }
             }
+            .padding(.vertical, 32)
+            .frame(maxWidth: .infinity)
+
+            // Favorite button — small, bottom-right corner
+            Button {
+                withAnimation(.spring(response: 0.25, dampingFraction: 0.45)) {
+                    heartBounce = true
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                    heartBounce = false
+                }
+                onFavorite?()
+            } label: {
+                Image(systemName: isFavorited ? "heart.fill" : "heart")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(isFavorited ? Color.red : Color.secondary)
+                    .scaleEffect(heartBounce ? 1.45 : 1.0)
+                    .padding(9)
+                    .background(Circle().fill(.ultraThinMaterial))
+            }
+            .buttonStyle(.plain)
+            .padding(14)
         }
-        .padding(.vertical, 32)
-        .frame(maxWidth: .infinity)
         .background(
             RoundedRectangle(cornerRadius: 24, style: .continuous)
                 .fill(.ultraThinMaterial)
@@ -764,6 +813,21 @@ private struct QuoteCard: View {
                 )
         )
         .padding(.horizontal, 20)
+    }
+}
+
+// MARK: - Home Quote Favorites Store
+// Shares the same UserDefaults key as FavoritesScreen so they stay in sync.
+
+enum HomeQuoteFavoritesStore {
+    private static let key = "ff.discover.favorites"
+
+    static func load() -> Set<String> {
+        Set(UserDefaults.standard.array(forKey: key) as? [String] ?? [])
+    }
+
+    static func save(_ set: Set<String>) {
+        UserDefaults.standard.set(Array(set), forKey: key)
     }
 }
 
