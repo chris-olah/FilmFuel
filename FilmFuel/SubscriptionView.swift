@@ -29,7 +29,6 @@ struct SubscriptionView: View {
                             .multilineTextAlignment(.center)
                             .padding(.top, 16)
                     } else {
-                        // Show yearly first as "best value", then monthly
                         ForEach(sortedProducts, id: \.id) { product in
                             productCard(product)
                         }
@@ -74,48 +73,22 @@ struct SubscriptionView: View {
 
     // MARK: - Helpers
 
-    /// Prefer showing yearly first as the "best value"
     private var sortedProducts: [Product] {
         manager.products.sorted { a, b in
-            let aID = a.id.lowercased()
-            let bID = b.id.lowercased()
-
-            let aIsYearly = aID.contains("year")
-            let bIsYearly = bID.contains("year")
-
-            if aIsYearly != bIsYearly {
-                return aIsYearly && !bIsYearly
-            }
-
-            // Otherwise sort by price
+            let aIsYearly = a.id.lowercased().contains("year")
+            let bIsYearly = b.id.lowercased().contains("year")
+            if aIsYearly != bIsYearly { return aIsYearly }
             return a.displayPrice < b.displayPrice
         }
     }
 
-    private func productTypeLabel(for product: Product) -> String {
-        let id = product.id.lowercased()
-        if id.contains("year") {
-            return "Yearly plan"
-        } else if id.contains("month") {
-            return "Monthly plan"
-        } else {
-            return "Subscription"
-        }
-    }
-
-    private func productTagline(for product: Product) -> String {
-        let id = product.id.lowercased()
-        if id.contains("year") {
-            return "Best value for FilmFuel+ all year long."
-        } else if id.contains("month") {
-            return "Flexibility to enjoy FilmFuel+ month by month."
-        } else {
-            return "Unlock full FilmFuel+ access."
-        }
-    }
-
-    private func isBestValue(_ product: Product) -> Bool {
+    private func isYearly(_ product: Product) -> Bool {
         product.id.lowercased().contains("year")
+    }
+
+    private func productTypeLabel(for product: Product) -> String {
+        if isYearly(product) { return "Yearly plan" }
+        return "Monthly plan"
     }
 
     // MARK: - Subviews
@@ -140,27 +113,32 @@ struct SubscriptionView: View {
     }
 
     private func productCard(_ product: Product) -> some View {
-        let bestValue = isBestValue(product)
+        let yearly = isYearly(product)
 
         return Button {
-            Task {
-                await manager.purchase(product)
-            }
+            Task { await manager.purchase(product) }
         } label: {
             VStack(alignment: .leading, spacing: 8) {
-                HStack {
+                HStack(alignment: .top) {
                     Text(product.displayName)
                         .font(.headline)
 
-                    if bestValue {
-                        Spacer()
-                        Text("Best value")
-                            .font(.caption2.bold())
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(Color.yellow.opacity(0.9))
-                            .foregroundColor(.black)
-                            .clipShape(Capsule())
+                    Spacer()
+
+                    if yearly {
+                        VStack(alignment: .trailing, spacing: 4) {
+                            Text("Best value")
+                                .font(.caption2.bold())
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(Color.yellow.opacity(0.9))
+                                .foregroundColor(.black)
+                                .clipShape(Capsule())
+
+                            Text("Save 58%")
+                                .font(.caption2.weight(.semibold))
+                                .foregroundStyle(.yellow)
+                        }
                     }
                 }
 
@@ -168,13 +146,31 @@ struct SubscriptionView: View {
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
 
-                Text(productTagline(for: product))
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
+                if yearly {
+                    Text("Just \(product.displayPrice)/year — that's less than a coffee a month.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                } else {
+                    Text("Flexibility to enjoy FilmFuel+ month by month.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
 
-                Text(product.displayPrice)
-                    .font(.title3.bold())
-                    .padding(.top, 4)
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    Text(product.displayPrice)
+                        .font(.title3.bold())
+
+                    if yearly {
+                        Text("/ year")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    } else {
+                        Text("/ month")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .padding(.top, 4)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(16)
@@ -184,8 +180,10 @@ struct SubscriptionView: View {
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .strokeBorder(bestValue ? Color.yellow.opacity(0.9) : Color.white.opacity(0.18),
-                                  lineWidth: bestValue ? 2 : 1)
+                    .strokeBorder(
+                        yearly ? Color.yellow.opacity(0.9) : Color.white.opacity(0.18),
+                        lineWidth: yearly ? 2 : 1
+                    )
             )
         }
         .buttonStyle(.plain)
