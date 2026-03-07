@@ -13,6 +13,7 @@ struct SettingsView: View {
     @EnvironmentObject var appModel: AppModel
     @EnvironmentObject var entitlements: FilmFuelEntitlements
     @EnvironmentObject var store: FilmFuelStore
+    @EnvironmentObject var discoverVM: DiscoverVM   // ← Added
 
     var onShowTipJar: (() -> Void)? = nil
 
@@ -266,15 +267,48 @@ struct SettingsView: View {
 
             Divider().padding(.leading, 52)
 
-            SettingsNavRow(
-                icon: "film.stack.fill",
-                iconColor: .accentColor,
-                title: "Want to Watch",
-                subtitle: "Your saved movie list"
-            ) {
-                // Replace with your WantToWatchView once created
-                EmptyView()
+            // ✅ Wired up with real count badge and discoverVM
+            NavigationLink {
+                WantToWatchView()
+                    .environmentObject(discoverVM)
+                    .environmentObject(entitlements)
+                    .environmentObject(store)
+            } label: {
+                HStack(spacing: 14) {
+                    iconPill(systemName: "film.stack.fill", color: .accentColor)
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Want to Watch")
+                            .font(.subheadline.weight(.medium))
+                            .foregroundStyle(.primary)
+                        Text("Your saved movie list")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    Spacer()
+
+                    // Live count badge
+                    let count = discoverVM.watchlistMovies.count
+                    if count > 0 {
+                        Text("\(count)")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(.secondary)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(Color(.tertiarySystemBackground))
+                            .clipShape(Capsule())
+                    }
+
+                    Image(systemName: "chevron.right")
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(Color(.tertiaryLabel))
+                }
+                .padding(.vertical, 10)
+                .padding(.horizontal, 14)
+                .contentShape(Rectangle())
             }
+            .buttonStyle(.plain)
         }
     }
 
@@ -642,5 +676,6 @@ struct MailView: UIViewControllerRepresentable {
             .environmentObject(AppModel())
             .environmentObject(FilmFuelEntitlements())
             .environmentObject(FilmFuelStore())
+            .environmentObject(DiscoverVM(client: TMDBClient()))
     }
 }

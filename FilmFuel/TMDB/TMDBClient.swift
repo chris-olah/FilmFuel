@@ -445,7 +445,7 @@ struct TMDBMovieListResponse: Decodable {
     }
 }
 
-struct TMDBMovie: Decodable, Identifiable, Hashable {
+struct TMDBMovie: Codable, Identifiable, Hashable {
     let id: Int
     let title: String
     let overview: String

@@ -20,6 +20,7 @@ enum RootTab: Hashable {
 
 struct AppRootView: View {
     @StateObject private var appModel = AppModel()
+    @StateObject private var discoverVM = DiscoverVM()
     @EnvironmentObject var store: FilmFuelStore
     @EnvironmentObject var entitlements: FilmFuelEntitlements
     
@@ -74,6 +75,7 @@ struct AppRootView: View {
                     
                     // DISCOVER
                     DiscoverView(onTipTapped: { showTipJar = true })
+                        .environmentObject(discoverVM)
                         .environmentObject(store)
                         .environmentObject(entitlements)
                         .tabItem {
@@ -84,6 +86,9 @@ struct AppRootView: View {
                     // SETTINGS
                     SettingsView(onShowTipJar: { showTipJar = true })
                         .environmentObject(appModel)
+                        .environmentObject(discoverVM)
+                        .environmentObject(entitlements)
+                        .environmentObject(store)
                         .tabItem {
                             Label("Settings", systemImage: "gearshape.fill")
                         }

@@ -12,7 +12,7 @@ import UIKit
 #endif
 
 struct DiscoverView: View {
-    @StateObject private var vm: DiscoverVM
+    @EnvironmentObject private var vm: DiscoverVM
     @State private var showingFilters = false
     @State private var showingPlusPaywall = false
     @State private var selectedMovie: TMDBMovie? = nil
@@ -23,10 +23,8 @@ struct DiscoverView: View {
     var onTipTapped: (() -> Void)?
     
     init(
-        client: TMDBClientProtocol = TMDBClient(),
         onTipTapped: (() -> Void)? = nil
     ) {
-        _vm = StateObject(wrappedValue: DiscoverVM(client: client))
         self.onTipTapped = onTipTapped
     }
     
@@ -917,6 +915,7 @@ struct SearchResultRow: View {
 
 #Preview {
     DiscoverView()
+        .environmentObject(DiscoverVM())
         .environmentObject(FilmFuelStore())
         .environmentObject(FilmFuelEntitlements())
 }

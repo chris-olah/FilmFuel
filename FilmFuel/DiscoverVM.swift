@@ -32,13 +32,28 @@ private enum SeenStore {
     }
 }
 
+// MARK: - WatchlistStore (persists full movie objects)
+
 private enum WatchlistStore {
-    private static let key = "ff.discover.watchlist.tmdb"
-    static func load() -> Set<Int> {
-        Set(UserDefaults.standard.array(forKey: key) as? [Int] ?? [])
+    private static let idsKey    = "ff.discover.watchlist.tmdb"
+    private static let moviesKey = "ff.discover.watchlist.movies"
+
+    static func loadIDs() -> Set<Int> {
+        Set(UserDefaults.standard.array(forKey: idsKey) as? [Int] ?? [])
     }
-    static func save(_ set: Set<Int>) {
-        UserDefaults.standard.set(Array(set), forKey: key)
+
+    static func loadMovies() -> [TMDBMovie] {
+        guard let data = UserDefaults.standard.data(forKey: moviesKey),
+              let movies = try? JSONDecoder().decode([TMDBMovie].self, from: data)
+        else { return [] }
+        return movies
+    }
+
+    static func save(ids: Set<Int>, movies: [TMDBMovie]) {
+        UserDefaults.standard.set(Array(ids), forKey: idsKey)
+        if let data = try? JSONEncoder().encode(movies) {
+            UserDefaults.standard.set(data, forKey: moviesKey)
+        }
     }
 }
 
@@ -292,9 +307,11 @@ final class DiscoverVM: ObservableObject {
     @Published var seenMovieIDs: Set<Int> = SeenStore.load() {
         didSet { SeenStore.save(seenMovieIDs) }
     }
-    @Published var watchlistMovieIDs: Set<Int> = WatchlistStore.load() {
-        didSet { WatchlistStore.save(watchlistMovieIDs) }
-    }
+
+    // Watchlist: IDs for fast lookup + full objects for display
+    @Published var watchlistMovieIDs: Set<Int> = WatchlistStore.loadIDs()
+    @Published var watchlistMovies: [TMDBMovie] = WatchlistStore.loadMovies()
+
     @Published var dislikedMovieIDs: Set<Int> = DislikedStore.load() {
         didSet { DislikedStore.save(dislikedMovieIDs) }
     }
@@ -390,7 +407,6 @@ final class DiscoverVM: ObservableObject {
     
     // MARK: - Init
     
-    @MainActor
     init(client: TMDBClientProtocol = TMDBClient()) {
         self.client = client
         self.randomBaseSeed = Int.random(in: 0...999_999)
@@ -434,16 +450,27 @@ final class DiscoverVM: ObservableObject {
         favorites.contains(movie.id)
     }
     
+    // MARK: - Watchlist (stores full movie objects)
+
     func toggleWatchlist(_ movie: TMDBMovie) {
         if watchlistMovieIDs.contains(movie.id) {
             watchlistMovieIDs.remove(movie.id)
+            watchlistMovies.removeAll { $0.id == movie.id }
         } else {
             watchlistMovieIDs.insert(movie.id)
+            watchlistMovies.insert(movie, at: 0)
         }
+        WatchlistStore.save(ids: watchlistMovieIDs, movies: watchlistMovies)
     }
     
     func isInWatchlist(_ movie: TMDBMovie) -> Bool {
         watchlistMovieIDs.contains(movie.id)
+    }
+
+    func removeFromWatchlist(_ movie: TMDBMovie) {
+        watchlistMovieIDs.remove(movie.id)
+        watchlistMovies.removeAll { $0.id == movie.id }
+        WatchlistStore.save(ids: watchlistMovieIDs, movies: watchlistMovies)
     }
     
     func toggleSeen(_ movie: TMDBMovie) {
@@ -469,6 +496,8 @@ final class DiscoverVM: ObservableObject {
             dislikedMovieIDs.insert(movie.id)
             favorites.remove(movie.id)
             watchlistMovieIDs.remove(movie.id)
+            watchlistMovies.removeAll { $0.id == movie.id }
+            WatchlistStore.save(ids: watchlistMovieIDs, movies: watchlistMovies)
         }
     }
     
