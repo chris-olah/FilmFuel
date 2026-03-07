@@ -55,6 +55,7 @@ final class MovieDetailVM: ObservableObject {
     @Published var rentProviders: [MovieWatchProvider] = []
     @Published var buyProviders: [MovieWatchProvider] = []
     @Published var watchProvidersRegion: String?
+    @Published var watchProvidersLink: URL?
     
     // TMDB Recommendations (better than local filtering)
     @Published var recommendations: [TMDBMovie] = []
@@ -185,6 +186,9 @@ final class MovieDetailVM: ObservableObject {
                 )
             }.sorted { $0.name < $1.name }
 
+            if let linkString = region.link {
+                self.watchProvidersLink = URL(string: linkString)
+            }
             self.watchProvidersRegion = regionCode
             hasLoadedProviders = true
 
@@ -312,11 +316,39 @@ final class MovieDetailVM: ObservableObject {
     }
 
     var whereToWatchURL: URL? {
-        URL(string: "https://www.themoviedb.org/movie/\(movie.id)/watch")
+        watchProvidersLink ?? URL(string: "https://www.themoviedb.org/movie/\(movie.id)/watch")
     }
     
     var tmdbURL: URL? {
         URL(string: "https://www.themoviedb.org/movie/\(movie.id)")
+    }
+
+    var imdbURL: URL? {
+        guard let imdbId = detail?.imdbId, !imdbId.isEmpty else { return nil }
+        return URL(string: "https://www.imdb.com/title/\(imdbId)/")
+    }
+
+    var formattedBudget: String? {
+        guard let budget = detail?.budget, budget > 0 else { return nil }
+        return formatMoney(budget)
+    }
+
+    var formattedRevenue: String? {
+        guard let revenue = detail?.revenue, revenue > 0 else { return nil }
+        return formatMoney(revenue)
+    }
+
+    private func formatMoney(_ amount: Int) -> String {
+        if amount >= 1_000_000_000 {
+            return String(format: "$%.1fB", Double(amount) / 1_000_000_000)
+        } else if amount >= 1_000_000 {
+            return String(format: "$%.0fM", Double(amount) / 1_000_000)
+        }
+        return "$\(amount)"
+    }
+
+    var movieStatus: String? {
+        detail?.status
     }
     
     // Combined providers for simple display

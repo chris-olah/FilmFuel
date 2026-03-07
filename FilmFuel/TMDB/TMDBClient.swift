@@ -502,6 +502,11 @@ struct TMDBMovieDetail: Decodable {
     let backdropPath: String?
     let posterPath: String?
     let tagline: String?
+    let imdbId: String?
+    let budget: Int?
+    let revenue: Int?
+    let status: String?
+    let originalLanguage: String?
 
     var yearText: String {
         guard let releaseDate,
@@ -544,6 +549,11 @@ struct TMDBMovieDetail: Decodable {
         case backdropPath  = "backdrop_path"
         case posterPath    = "poster_path"
         case tagline
+        case imdbId        = "imdb_id"
+        case budget
+        case revenue
+        case status
+        case originalLanguage = "original_language"
     }
 }
 

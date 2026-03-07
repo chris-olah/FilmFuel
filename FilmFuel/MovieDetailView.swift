@@ -52,7 +52,7 @@ struct MovieDetailView: View {
             VStack(spacing: 0) {
                 headerImageSection
                 
-                VStack(alignment: .leading, spacing: 16) {
+                VStack(alignment: .leading, spacing: 24) {
                     // Quick actions bar (floating style)
                     quickActionsBar
                         .padding(.top, -24) // Overlap with header
@@ -773,18 +773,18 @@ struct MovieDetailView: View {
     // MARK: - Where to Watch Section
 
     private var whereToWatchSection: some View {
-        Group {
-            if !vm.watchProviders.isEmpty {
-                VStack(alignment: .leading, spacing: 10) {
+        let hasAny = !vm.streamingProviders.isEmpty || !vm.rentProviders.isEmpty || !vm.buyProviders.isEmpty
+
+        return Group {
+            if hasAny {
+                VStack(alignment: .leading, spacing: 12) {
                     HStack {
                         Text("Where to Watch")
                             .font(.headline)
-                        
                         Spacer()
-                        
                         if let region = vm.watchProvidersRegion {
                             Text(region)
-                                .font(.caption)
+                                .font(.caption.weight(.medium))
                                 .foregroundColor(.secondary)
                                 .padding(.horizontal, 8)
                                 .padding(.vertical, 3)
@@ -793,19 +793,32 @@ struct MovieDetailView: View {
                         }
                     }
 
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 10) {
-                            ForEach(vm.watchProviders) { provider in
-                                providerChip(provider: provider)
-                            }
-                        }
-                        .padding(.vertical, 2)
+                    if !vm.streamingProviders.isEmpty {
+                        providerRow(
+                            label: "Free",
+                            color: .green,
+                            providers: vm.streamingProviders
+                        )
+                    }
+                    if !vm.rentProviders.isEmpty {
+                        providerRow(
+                            label: "Rent",
+                            color: .orange,
+                            providers: vm.rentProviders
+                        )
+                    }
+                    if !vm.buyProviders.isEmpty {
+                        providerRow(
+                            label: "Buy",
+                            color: .blue,
+                            providers: vm.buyProviders
+                        )
                     }
 
                     if let url = vm.whereToWatchURL {
                         Link(destination: url) {
                             HStack(spacing: 4) {
-                                Text("See all options on TMDB")
+                                Text("See all options")
                                 Image(systemName: "arrow.up.right")
                             }
                             .font(.caption)
@@ -813,22 +826,23 @@ struct MovieDetailView: View {
                         }
                     }
                 }
+                .padding(14)
+                .background(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .fill(Color(.secondarySystemBackground))
+                )
+
             } else if let url = vm.whereToWatchURL {
                 VStack(alignment: .leading, spacing: 10) {
                     Text("Where to Watch")
                         .font(.headline)
-
                     Link(destination: url) {
                         HStack(spacing: 8) {
-                            Image(systemName: "play.tv")
-                                .font(.title3)
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text("Check availability")
-                                    .font(.subheadline.weight(.medium))
-                                Text("See streaming options on TMDB")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
+                            Image(systemName: "play.tv.fill")
+                                .foregroundColor(.accentColor)
+                            Text("Check streaming options")
+                                .font(.subheadline.weight(.medium))
+                                .foregroundColor(.primary)
                             Spacer()
                             Image(systemName: "arrow.up.right")
                                 .font(.caption)
@@ -843,20 +857,18 @@ struct MovieDetailView: View {
             }
         }
     }
-    
-    private func providerChip(provider: MovieWatchProvider) -> some View {
-        HStack(spacing: 6) {
-            // Provider logo placeholder (could use actual logo if available)
-            Image(systemName: "tv")
-                .font(.caption)
-                .foregroundColor(.accentColor)
-            Text(provider.name)
-                .font(.caption.weight(.medium))
+
+    private func providerRow(label: String, color: Color, providers: [MovieWatchProvider]) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 10) {
+            Text(label)
+                .font(.subheadline.weight(.semibold))
+                .foregroundColor(color)
+                .frame(width: 36, alignment: .leading)
+            Text(providers.map(\.name).joined(separator: ", "))
+                .font(.subheadline)
+                .foregroundColor(.primary)
+                .fixedSize(horizontal: false, vertical: true)
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
-        .background(Color(.secondarySystemBackground))
-        .clipShape(Capsule())
     }
 
     // MARK: - Plus Upsell Section

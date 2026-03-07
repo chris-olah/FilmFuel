@@ -527,7 +527,6 @@ final class StatsManager {
     
     private func checkTriviaAchievements() {
         let answered = totalTriviaQuestionsAnswered
-        let correct = totalTriviaCorrect
         let accuracy = triviaAccuracy
         let bestEndless = defaults.integer(forKey: "ff.bestEndlessRound")
         
