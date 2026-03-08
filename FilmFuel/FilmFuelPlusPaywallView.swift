@@ -20,20 +20,6 @@ struct FilmFuelPlusPaywallView: View {
     @State private var showingTerms = false
     @State private var isProcessing = false
     @State private var pulseButton = false
-    @State private var showSocialProof = true
-    @State private var socialProofIndex = 0
-    
-    // REMOVED: Fake timer that reset every launch
-    // @State private var timeRemaining: Int = 3600 * 23 + 60 * 47
-    // let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
-    
-    // Social proof messages (real-feeling, not fake)
-    private let socialProofMessages = [
-        "Sarah from Austin just upgraded",
-        "127 people upgraded this week",
-        "Most popular: Yearly plan",
-        "4.9★ average rating"
-    ]
     
     enum PlusPlan: String, CaseIterable {
         case monthly, yearly
@@ -84,9 +70,6 @@ struct FilmFuelPlusPaywallView: View {
                     // Hero section
                     heroSection
                     
-                    // Social proof
-                    socialProofSection
-                    
                     // Value proposition
                     valueStack
                     
@@ -98,9 +81,6 @@ struct FilmFuelPlusPaywallView: View {
                     
                     // Risk reversal
                     riskReversal
-                    
-                    // Testimonials
-                    testimonialSection
                     
                     // What you're missing
                     missingOutSection
@@ -233,84 +213,6 @@ struct FilmFuelPlusPaywallView: View {
     }
     
     // MARK: - Social Proof
-    
-    private var socialProofSection: some View {
-        VStack(spacing: 12) {
-            // User avatars + count
-            HStack(spacing: -8) {
-                ForEach(0..<5) { i in
-                    Circle()
-                        .fill(
-                            LinearGradient(
-                                colors: [Color.accentColor, Color.accentColor.opacity(0.7)],
-                                startPoint: .top,
-                                endPoint: .bottom
-                            )
-                        )
-                        .frame(width: 32, height: 32)
-                        .overlay(
-                            Text(["👤", "👩", "👨", "🧑", "👱"][i])
-                                .font(.caption)
-                        )
-                        .overlay(
-                            Circle()
-                                .stroke(Color(.systemBackground), lineWidth: 2)
-                        )
-                }
-                
-                Text("+12,847")
-                    .font(.subheadline.weight(.semibold))
-                    .padding(.leading, 12)
-            }
-            
-            HStack(spacing: 4) {
-                ForEach(0..<5) { _ in
-                    Image(systemName: "star.fill")
-                        .foregroundColor(.yellow)
-                        .font(.caption)
-                }
-                Text("4.9")
-                    .font(.subheadline.weight(.semibold))
-                Text("from 2,341 reviews")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-            
-            // Rotating social proof (less pushy)
-            if showSocialProof {
-                HStack(spacing: 6) {
-                    Circle()
-                        .fill(Color.green)
-                        .frame(width: 8, height: 8)
-                    Text(socialProofMessages[socialProofIndex])
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(Color(.secondarySystemBackground))
-                .clipShape(Capsule())
-                .onAppear {
-                    cycleSocialProof()
-                }
-            }
-        }
-    }
-    
-    private func cycleSocialProof() {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
-            withAnimation(.easeInOut(duration: 0.3)) {
-                showSocialProof = false
-            }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                socialProofIndex = (socialProofIndex + 1) % socialProofMessages.count
-                withAnimation(.easeInOut(duration: 0.3)) {
-                    showSocialProof = true
-                }
-                cycleSocialProof()
-            }
-        }
-    }
     
     // MARK: - Value Stack
     
@@ -541,62 +443,6 @@ struct FilmFuelPlusPaywallView: View {
         }
         .padding()
         .background(Color.green.opacity(0.1))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
-    }
-    
-    // MARK: - Testimonials
-    
-    private var testimonialSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("What members say")
-                .font(.headline)
-            
-            VStack(spacing: 12) {
-                testimonialCard(
-                    name: "Mike R.",
-                    text: "FilmFuel+ changed how I find movies. The smart picks are scary accurate!",
-                    rating: 5
-                )
-                
-                testimonialCard(
-                    name: "Jessica L.",
-                    text: "Finally an app that actually understands my taste. Worth every penny.",
-                    rating: 5
-                )
-                
-                testimonialCard(
-                    name: "David K.",
-                    text: "Hidden Gems mode alone is worth the subscription. Found so many great films!",
-                    rating: 5
-                )
-            }
-        }
-    }
-    
-    private func testimonialCard(name: String, text: String, rating: Int) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Text(name)
-                    .font(.subheadline.weight(.semibold))
-                
-                Spacer()
-                
-                HStack(spacing: 2) {
-                    ForEach(0..<rating, id: \.self) { _ in
-                        Image(systemName: "star.fill")
-                            .font(.caption2)
-                            .foregroundColor(.yellow)
-                    }
-                }
-            }
-            
-            Text("\"\(text)\"")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-                .italic()
-        }
-        .padding()
-        .background(Color(.secondarySystemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
     
