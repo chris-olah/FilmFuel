@@ -59,9 +59,6 @@ struct DiscoverView: View {
             .background(Color(.systemBackground))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    filterButton
-                }
                 ToolbarItem(placement: .principal) {
                     logoTitle
                 }
@@ -70,7 +67,20 @@ struct DiscoverView: View {
                 }
             }
             .sheet(isPresented: $showingFilters) {
-                filtersSheet
+                DiscoverFiltersSheet(
+                    filters: $vm.filters,
+                    isPremiumUnlocked: entitlements.isPlus,
+                    onUpgradeTapped: {
+                        showingFilters = false
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                            showingPlusPaywall = true
+                        }
+                    },
+                    onApply: {
+                        vm.loadInitial()
+                    }
+                )
+                .presentationDetents([.medium, .large])
             }
             .sheet(isPresented: $showingPlusPaywall) {
                 FilmFuelPlusPaywallView()
@@ -98,26 +108,54 @@ struct DiscoverView: View {
 
     private var inlineSearchBar: some View {
         HStack(spacing: 8) {
-            Image(systemName: "magnifyingglass")
-                .foregroundColor(.secondary)
+            HStack(spacing: 8) {
+                Image(systemName: "magnifyingglass")
+                    .foregroundColor(.secondary)
 
-            TextField("Search movies…", text: $vm.searchQuery)
-                .autocorrectionDisabled()
-                .textInputAutocapitalization(.words)
-                .submitLabel(.search)
+                TextField("Search movies…", text: $vm.searchQuery)
+                    .autocorrectionDisabled()
+                    .textInputAutocapitalization(.words)
+                    .submitLabel(.search)
 
-            if !vm.searchQuery.isEmpty {
-                Button {
-                    vm.searchQuery = ""
-                } label: {
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundColor(.secondary)
+                if !vm.searchQuery.isEmpty {
+                    Button {
+                        vm.searchQuery = ""
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundColor(.secondary)
+                    }
+                }
+            }
+            .padding(10)
+            .background(Color(.secondarySystemBackground))
+            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+
+            // Filter button inline with search bar
+            Button {
+                showingFilters = true
+                haptic(.light)
+            } label: {
+                ZStack(alignment: .topTrailing) {
+                    Image(systemName: "slider.horizontal.3")
+                        .font(.body.weight(.medium))
+                        .foregroundColor(vm.filters.isActive ? .accentColor : .primary)
+                        .frame(width: 36, height: 36)
+                        .background(
+                            vm.filters.isActive
+                                ? Color.accentColor.opacity(0.12)
+                                : Color(.secondarySystemBackground)
+                        )
+                        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+
+                    if vm.filters.isActive {
+                        Circle()
+                            .fill(Color.accentColor)
+                            .frame(width: 8, height: 8)
+                            .offset(x: 2, y: -2)
+                    }
                 }
             }
         }
-        .padding(10)
-        .background(Color(.secondarySystemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
     
     // MARK: - Header
@@ -487,26 +525,7 @@ struct DiscoverView: View {
     }
     
     // MARK: - Toolbar
-    
-    private var filterButton: some View {
-        Button {
-            showingFilters = true
-            haptic(.light)
-        } label: {
-            ZStack(alignment: .topTrailing) {
-                Image(systemName: "slider.horizontal.3")
-                    .font(.body.weight(.medium))
-                
-                if vm.filters.isActive {
-                    Circle()
-                        .fill(Color.accentColor)
-                        .frame(width: 8, height: 8)
-                        .offset(x: 4, y: -4)
-                }
-            }
-        }
-    }
-    
+
     private var trailingButtons: some View {
         HStack(spacing: 16) {
             // Plus badge or upgrade button
@@ -530,220 +549,8 @@ struct DiscoverView: View {
         }
     }
     
-    // MARK: - Filters Sheet
-    
-    private var filtersSheet: some View {
-        NavigationStack {
-            List {
-                // Genres
-                Section("Genres") {
-                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 80))], spacing: 8) {
-                        ForEach(genreOptions, id: \.id) { genre in
-                            genreChip(genre)
-                        }
-                    }
-                    .padding(.vertical, 4)
-                }
-                
-                // Year range
-                Section("Release Year") {
-                    HStack(spacing: 8) {
-                        yearPreset("2020s", range: 2020...2025)
-                        yearPreset("2010s", range: 2010...2019)
-                        yearPreset("2000s", range: 2000...2009)
-                        yearPreset("Classics", range: 1950...1999)
-                    }
-                }
-                
-                // Rating
-                Section("Minimum Rating") {
-                    HStack(spacing: 12) {
-                        ForEach([0.0, 6.0, 7.0, 8.0], id: \.self) { rating in
-                            ratingChip(rating)
-                        }
-                    }
-                }
-                
-                // Premium filters
-                Section {
-                    // Director filter (Premium)
-                    premiumFilterRow(
-                        icon: "person.fill",
-                        title: "Filter by Director",
-                        subtitle: "Find films by your favorite directors"
-                    )
-                    
-                    // Actor filter (Premium)
-                    premiumFilterRow(
-                        icon: "star.fill",
-                        title: "Filter by Actor",
-                        subtitle: "Discover movies with specific actors"
-                    )
-                    
-                    // Runtime filter (Premium)
-                    premiumFilterRow(
-                        icon: "clock.fill",
-                        title: "Filter by Runtime",
-                        subtitle: "Short films, epics, or anything in between"
-                    )
-                } header: {
-                    HStack {
-                        Text("Premium Filters")
-                        Spacer()
-                        if !entitlements.isPlus {
-                            Image(systemName: "lock.fill")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                }
-            }
-            .navigationTitle("Filters")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Reset") {
-                        vm.clearFilters()
-                    }
-                    .foregroundColor(.secondary)
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Apply") {
-                        showingFilters = false
-                        vm.loadInitial()
-                    }
-                    .fontWeight(.semibold)
-                }
-            }
-        }
-        .presentationDetents([.medium, .large])
-    }
-    
-    private func premiumFilterRow(icon: String, title: String, subtitle: String) -> some View {
-        Button {
-            if entitlements.isPlus {
-                // Open specific filter
-            } else {
-                showingFilters = false
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                    showingPlusPaywall = true
-                }
-            }
-        } label: {
-            HStack(spacing: 12) {
-                Image(systemName: icon)
-                    .font(.body)
-                    .foregroundColor(entitlements.isPlus ? .accentColor : .secondary)
-                    .frame(width: 24)
-                
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(title)
-                        .font(.subheadline)
-                        .foregroundColor(entitlements.isPlus ? .primary : .secondary)
-                    Text(subtitle)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                
-                Spacer()
-                
-                if entitlements.isPlus {
-                    Image(systemName: "chevron.right")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                } else {
-                    Text("Plus")
-                        .font(.caption2.weight(.bold))
-                        .foregroundColor(.accentColor)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 3)
-                        .background(Color.accentColor.opacity(0.15))
-                        .clipShape(Capsule())
-                }
-            }
-        }
-    }
-    
-    private func genreChip(_ genre: (id: Int, name: String)) -> some View {
-        let isSelected = vm.filters.selectedGenreIDs.contains(genre.id)
-        
-        return Button {
-            if isSelected {
-                vm.filters.selectedGenreIDs.remove(genre.id)
-            } else {
-                vm.filters.selectedGenreIDs.insert(genre.id)
-            }
-            haptic(.light)
-        } label: {
-            Text(genre.name)
-                .font(.caption.weight(isSelected ? .semibold : .regular))
-                .padding(.horizontal, 10)
-                .padding(.vertical, 6)
-                .background(isSelected ? Color.accentColor : Color(.tertiarySystemBackground))
-                .foregroundColor(isSelected ? .white : .primary)
-                .clipShape(Capsule())
-        }
-        .buttonStyle(.plain)
-    }
-    
-    private func yearPreset(_ label: String, range: ClosedRange<Int>) -> some View {
-        let isSelected = vm.filters.minYear == range.lowerBound
-        
-        return Button {
-            vm.filters.minYear = range.lowerBound
-            vm.filters.maxYear = range.upperBound
-            haptic(.light)
-        } label: {
-            Text(label)
-                .font(.caption.weight(isSelected ? .semibold : .regular))
-                .padding(.horizontal, 10)
-                .padding(.vertical, 8)
-                .frame(maxWidth: .infinity)
-                .background(isSelected ? Color.accentColor : Color(.tertiarySystemBackground))
-                .foregroundColor(isSelected ? .white : .primary)
-                .clipShape(Capsule())
-        }
-        .buttonStyle(.plain)
-    }
-    
-    private func ratingChip(_ rating: Double) -> some View {
-        let isSelected = vm.filters.minRating == rating
-        let label = rating == 0 ? "Any" : "\(Int(rating))+"
-        
-        return Button {
-            vm.filters.minRating = rating
-            haptic(.light)
-        } label: {
-            HStack(spacing: 3) {
-                if rating > 0 {
-                    Image(systemName: "star.fill")
-                        .font(.caption2)
-                }
-                Text(label)
-            }
-            .font(.subheadline.weight(isSelected ? .semibold : .regular))
-            .padding(.horizontal, 14)
-            .padding(.vertical, 8)
-            .frame(maxWidth: .infinity)
-            .background(isSelected ? Color.accentColor : Color(.tertiarySystemBackground))
-            .foregroundColor(isSelected ? .white : .primary)
-            .clipShape(Capsule())
-        }
-        .buttonStyle(.plain)
-    }
-    
     // MARK: - Helpers
-    
-    private var genreOptions: [(id: Int, name: String)] {
-        [
-            (28, "Action"), (12, "Adventure"), (16, "Animation"),
-            (35, "Comedy"), (80, "Crime"), (99, "Documentary"),
-            (18, "Drama"), (10751, "Family"), (14, "Fantasy"),
-            (27, "Horror"), (9648, "Mystery"), (10749, "Romance"),
-            (878, "Sci-Fi"), (53, "Thriller"), (10752, "War")
-        ]
-    }
-    
+
     private func haptic(_ type: UINotificationFeedbackGenerator.FeedbackType) {
         #if canImport(UIKit)
         UINotificationFeedbackGenerator().notificationOccurred(type)

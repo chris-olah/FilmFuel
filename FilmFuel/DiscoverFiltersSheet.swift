@@ -15,6 +15,12 @@ struct DiscoverFiltersSheet: View {
     /// Called when the user taps an upgrade CTA in the sheet
     let onUpgradeTapped: (() -> Void)?
 
+    /// Called when the user taps Apply — triggers a fresh movie reload in DiscoverVM
+    var onApply: (() -> Void)? = nil
+
+    // Snapshot so Cancel truly reverts any changes made while the sheet was open
+    @State private var snapshot: DiscoverFilters = .default
+
     // Common TMDB genre IDs
     private struct GenreOption: Identifiable {
         let id: Int        // TMDB genre id
@@ -297,16 +303,20 @@ struct DiscoverFiltersSheet: View {
                 }
             }
             .navigationTitle("Filters")
+            .onAppear { snapshot = filters }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
+                        filters = snapshot   // revert any in-progress changes
                         dismiss()
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Apply") {
+                        onApply?()
                         dismiss()
                     }
+                    .fontWeight(.semibold)
                 }
                 ToolbarItem(placement: .bottomBar) {
                     if filters.isActive {

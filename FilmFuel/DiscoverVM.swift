@@ -596,7 +596,7 @@ final class DiscoverVM: ObservableObject {
     }
     
     private func loadMore() async {
-        guard !isLoading else { return }
+        guard !isLoading, hasMorePages, mode != .hiddenGems else { return }
         
         currentPage += 1
         isLoading = true
@@ -763,11 +763,47 @@ final class DiscoverVM: ObservableObject {
     }
     
     private func loadHiddenGems() async throws {
-        let response = try await client.fetchDiscoverMovies(page: Int.random(in: 5...20), sortBy: "vote_average.desc")
-        movies = response.results.filter {
-            $0.posterPath != nil && $0.voteAverage >= 7.0 && $0.voteCount >= 50 && $0.voteCount <= 500
+        // Fetch across multiple random pages to get enough candidates
+        var allResults: [TMDBMovie] = []
+        let pagesToFetch = [
+            Int.random(in: 3...8),
+            Int.random(in: 9...16),
+            Int.random(in: 17...25)
+        ]
+
+        for page in pagesToFetch {
+            let params = TMDBDiscoverParams(
+                sortBy: "vote_average.desc",
+                minRating: 7.0,
+                minYear: nil,
+                maxYear: nil,
+                genreIDs: nil,
+                watchProviderIDs: nil,
+                watchRegion: "US",
+                minRuntime: nil,
+                maxRuntime: nil,
+                actorPersonID: nil,
+                directorPersonID: nil
+            )
+            if let resp = try? await client.fetchFilteredDiscoverMovies(page: page, params: params) {
+                allResults.append(contentsOf: resp.results)
+            }
         }
-        hasMorePages = false // Hidden gems is curated
+
+        // Deduplicate
+        var seenIDs = Set<Int>()
+        allResults = allResults.filter { seenIDs.insert($0.id).inserted }
+
+        // Hidden gems: strong rating, not mainstream (voteCount 100–5000)
+        let gems = allResults.filter {
+            $0.posterPath != nil &&
+            $0.voteAverage >= 7.0 &&
+            $0.voteCount >= 100 &&
+            $0.voteCount <= 5000
+        }
+
+        movies = Array(gems.shuffled().prefix(40))
+        hasMorePages = false
     }
     
     private func handleSearchChange() async {
