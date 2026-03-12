@@ -340,9 +340,8 @@ struct SubscriptionView: View {
     }
 
     // MARK: - Footer
-
     private var footerText: some View {
-        VStack(spacing: 5) {
+        VStack(spacing: 8) {
             Text("Cancel anytime in your App Store account settings.")
                 .font(.caption)
                 .foregroundStyle(.white.opacity(0.3))
@@ -353,6 +352,16 @@ struct SubscriptionView: View {
                 .foregroundStyle(.white.opacity(0.22))
                 .multilineTextAlignment(.center)
                 .lineSpacing(2)
+
+            HStack(spacing: 16) {
+                Link("Privacy Policy", destination: URL(string: "https://github.com/chris-olah/FilmFuel/blob/main/FilmFuel/Docs/PRIVACY_POLICY.md")!)
+
+                Link("Terms of Use", destination: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!)
+            }
+            .font(.caption)
+            .foregroundStyle(.white.opacity(0.6))
+            .padding(.top, 4)
         }
     }
+
 }
